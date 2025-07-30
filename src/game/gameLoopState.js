@@ -2,19 +2,19 @@ class GameLoopState {
     #currentChallenge = null;
     #activeModifiers = [];
     #currentLevel = 1;
-    #correctInput = true;
     #timer = 3000;
     #inputReceived = false;
     #decisionStartTime = Date.now();
+    #spamCount = 0;
 
     reset() {
         this.#currentChallenge = null;
         this.#activeModifiers = [];
         this.#currentLevel = 1;
-        this.#correctInput = true;
         this.#timer = 3000;
         this.#inputReceived = false;
         this.#decisionStartTime = Date.now();
+        this.#spamCount = 0;
     }
 
     get currentChallenge() {
@@ -45,18 +45,6 @@ class GameLoopState {
         this.#currentLevel++;
     }
 
-    get correctInput() {
-        return this.#correctInput;
-    }
-
-    set correctInput(value) {
-        this.#correctInput = value;
-    }
-
-    toggleCorrectInput() {
-        this.#correctInput = !this.#correctInput;
-    }
-
     get timer() {
         return this.#timer;
     }
@@ -79,6 +67,17 @@ class GameLoopState {
 
     set decisionStartTime(time) {
         this.#decisionStartTime = time;
+    }
+    get spamCount() {
+        return this.#spamCount;
+    }
+
+    set spamCount(count) {
+        this.#spamCount = count;
+    }
+
+    incrementSpamCount() {
+        this.#spamCount++;
     }
 }
 

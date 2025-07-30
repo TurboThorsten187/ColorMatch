@@ -1,6 +1,9 @@
 import { GameLoopStateInstance as GLS } from "./gameLoopState.js";
 import { GameState , Game} from "./gameState.js";
 import { Challenge } from "./challenge.js";
+import { applyLogicModifiers } from "./modifierHandler.js";
+import { InputType } from "./challenge.js";
+import { ALL_MODIFIERS } from "../modifiers/modifiers.js";
 
 const Colors = Object.freeze({
     RED: "red",
@@ -15,45 +18,81 @@ const Colors = Object.freeze({
 export function evaluateInput(key) {
     if (GLS.inputReceived) return;
 
+    const correctInput = GLS.currentChallenge.correctInput;
+
+    if (correctInput === InputType.NONE) {
+        Game.state = GameState.GAME_OVER;
+        return;
+    }
+
+    if (correctInput === InputType.SPAM) {
+        GLS.spamCount = (GLS.spamCount || 0) + 1;
+
+        if (GLS.spamCount >= 5) {
+            GLS.incrementLevel();
+            updateChallenge();
+            GLS.inputReceived = false;
+            GLS.decisionStartTime = Date.now();
+            GLS.spamCount = 0;
+        }
+
+        return;
+    }
+
     GLS.inputReceived = true;
 
-    const correctInput = GLS.correctInput;
-    if (key === "ArrowLeft" && correctInput ||
-        key === "ArrowRight" && !correctInput) {
-        GLS.incrementLevel();
-        
-        updateChallenge();
+    const isCorrect = (
+        (key === "ArrowLeft" && correctInput === InputType.TRUE) ||
+        (key === "ArrowRight" && correctInput === InputType.FALSE)
+    );
 
+    if (isCorrect) {
+        GLS.incrementLevel();
+        updateChallenge();
         GLS.inputReceived = false;
         GLS.decisionStartTime = Date.now();
-    } 
-    else {
+    } else {
         Game.state = GameState.GAME_OVER;
     }
 }
 
 export function updateGame() {
-    if (Game.state !== GameState.PLAYING) return;
-
     const now = Date.now();
-    const elapsed = now - GLS.decisionStartTime;
 
-    if (!GLS.inputReceived && elapsed > GLS.timer) {
-        Game.state = GameState.GAME_OVER;
+    if (now - GLS.decisionStartTime > GLS.currentDecisionTime) {
+        if (GLS.currentChallenge.correctInput === InputType.NONE) {
+            GLS.incrementLevel();
+            updateChallenge();
+            GLS.inputReceived = false;
+            GLS.decisionStartTime = now;
+        } else if (GLS.currentChallenge.correctInput === InputType.SPAM) {
+            if ((GLS.spamCount || 0) < 5) {
+                Game.state = GameState.GAME_OVER;
+            } else {
+                GLS.incrementLevel();
+                updateChallenge();
+                GLS.inputReceived = false;
+                GLS.decisionStartTime = now;
+                GLS.spamCount = 0;
+            }
+        } else {
+            Game.state = GameState.GAME_OVER;
+        }
     }
 }
+
 
 function createNewChallenge() {
     const colorValues = Object.values(Colors);
     const color = colorValues[Math.floor(Math.random() * colorValues.length)];
 
     let text = color;
-    let correctInput = true;
+    let correctInput = InputType.TRUE;
 
     if (Math.random() < 0.5) {
         const otherColors = colorValues.filter(c => c !== color);
         text = otherColors[Math.floor(Math.random() * otherColors.length)];
-        correctInput = false;
+        correctInput = InputType.FALSE;
     }
 
     return new Challenge(text, color, correctInput);
@@ -63,15 +102,8 @@ export function updateChallenge() {
     if (Game.state !== GameState.PLAYING) return;
 
     GLS.currentChallenge = createNewChallenge();
-    GLS.currentChallenge = applyModifiers(GLS.currentChallenge);
-    GLS.correctInput = GLS.currentChallenge.correctInput;
-}
-
-export function applyModifiers(challenge) {
-    GLS.activeModifiers.forEach(modifier => {
-        challenge = modifier.apply(challenge);
-    });
-    return challenge;
+    GLS.activeModifiers = pickModifiers(GLS.currentLevel);
+    GLS.currentChallenge.correctInput = applyLogicModifiers(GLS.currentChallenge);
 }
 
 export function pickModifiers(level) {
@@ -101,5 +133,5 @@ export function pickModifiers(level) {
         available.splice(idx, 1);
     }
 
-    GLS.activeModifiers = picked;
+    return picked;
 }
