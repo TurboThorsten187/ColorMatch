@@ -1,5 +1,6 @@
 class GameLoopState {
-    #currentModifiers = [];
+    #currentChallenge = null;
+    #activeModifiers = [];
     #currentLevel = 1;
     #correctInput = true;
     #timer = 3000;
@@ -7,7 +8,8 @@ class GameLoopState {
     #decisionStartTime = Date.now();
 
     reset() {
-        this.#currentModifiers = [];
+        this.#currentChallenge = null;
+        this.#activeModifiers = [];
         this.#currentLevel = 1;
         this.#correctInput = true;
         this.#timer = 3000;
@@ -15,12 +17,20 @@ class GameLoopState {
         this.#decisionStartTime = Date.now();
     }
 
-    get currentModifiers() {
-        return [...this.#currentModifiers];
+    get currentChallenge() {
+        return this.#currentChallenge;
     }
 
-    set currentModifiers(modifiers) {
-        this.#currentModifiers = [...modifiers];
+    set currentChallenge(challenge) {
+        this.#currentChallenge = challenge;
+    }
+
+    get activeModifiers() {
+        return this.#activeModifiers;
+    }
+
+    set activeModifiers(modifiers) {
+        this.#activeModifiers = modifiers;
     }
 
     get currentLevel() {

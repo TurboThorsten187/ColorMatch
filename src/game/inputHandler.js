@@ -1,4 +1,4 @@
-import { evaluateInput } from "./gameLoop.js";
+import { evaluateInput, updateChallenge } from "./gameLoop.js";
 import { GameState, Game } from "./gameState.js";
 import { GameLoopStateInstance as GLS } from "./gameLoopState.js";
 
@@ -11,6 +11,7 @@ export function setInputs() {
             if (key === "Enter") {
                 Game.state = GameState.PLAYING;
                 GLS.reset();
+                updateChallenge();
             }
             break;
 
