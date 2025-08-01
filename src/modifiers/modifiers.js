@@ -1,16 +1,3 @@
-export const ALL_MODIFIERS = [
-    new InvertInputModifier(),
-    new NoClickModifier(),
-    new SpamClickModifier(),
-    new VerticalMirrorModifier(),
-    new HorizontalMirrorModifier(),
-    new BackgroundColorModifier(),
-    new BlinkModifier(),
-    new InvertColorsModifier(),
-    new BlurredModifier(),
-    new RotationModifier()
-];
-
 export class Modifier {
     constructor(name, minLevel, conflictsWith = []) {
         this.name = name;
@@ -34,7 +21,7 @@ export class NoClickModifier extends Modifier {
 
 export class SpamClickModifier extends Modifier {
     constructor() {
-        super("SpamClick", 15, ["Noclick", "InvertInput", "BackgroundColor", "Blink", "InvertColors"]);
+        super("SpamClick", 1, ["Noclick", "InvertInput", "BackgroundColor", "Blink", "InvertColors"]);
     }
 }
 
@@ -80,3 +67,16 @@ export class RotationModifier extends Modifier {
         super("Rotation", 10);
     }
 }
+
+export const ALL_MODIFIERS = [
+    new InvertInputModifier(),
+    new NoClickModifier(),
+    new SpamClickModifier(),
+    new VerticalMirrorModifier(),
+    new HorizontalMirrorModifier(),
+    new BackgroundColorModifier(),
+    new BlinkModifier(),
+    new InvertColorsModifier(),
+    new BlurredModifier(),
+    new RotationModifier()
+];

@@ -29,15 +29,22 @@ export function evaluateInput(key) {
         GLS.spamCount = (GLS.spamCount || 0) + 1;
 
         if (GLS.spamCount >= 5) {
-            GLS.incrementLevel();
-            updateChallenge();
-            GLS.inputReceived = false;
-            GLS.decisionStartTime = Date.now();
+            Game.state = GameState.WAIT_AFTER_SPAM;
             GLS.spamCount = 0;
-        }
 
+            setTimeout(() => {
+                GLS.incrementLevel();
+                updateChallenge();
+                GLS.inputReceived = false;
+                GLS.decisionStartTime = Date.now();
+                Game.state = GameState.PLAYING;
+            }, 1000);
+
+            return;
+        }
         return;
     }
+
 
     GLS.inputReceived = true;
 
@@ -59,7 +66,7 @@ export function evaluateInput(key) {
 export function updateGame() {
     const now = Date.now();
 
-    if (now - GLS.decisionStartTime > GLS.currentDecisionTime) {
+    if (now - GLS.decisionStartTime > GLS.timer) {
         if (GLS.currentChallenge.correctInput === InputType.NONE) {
             GLS.incrementLevel();
             updateChallenge();
@@ -113,7 +120,7 @@ export function pickModifiers(level) {
     const modifierCount = Math.floor(Math.random() * (maxModifierCount + 1));
 
     const available = ALL_MODIFIERS.filter(mod => level >= mod.minLevel);
-    if (available.length === 0) return;
+    if (available.length === 0) return null;
 
     const picked = [];
 
