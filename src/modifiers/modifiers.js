@@ -11,21 +11,6 @@ export const ALL_MODIFIERS = [
     new RotationModifier()
 ];
 
-export {
-    Modifier,
-    InvertInputModifier,
-    NoClickModifier,
-    SpamClickModifier,
-    VerticalMirrorModifier,
-    HorizontalMirrorModifier,
-    BackgroundColorModifier,
-    BlinkModifier,
-    InvertColorsModifier,
-    BlurredModifier,
-    RotationModifier
-};
-
-
 export class Modifier {
     constructor(name, minLevel, conflictsWith = []) {
         this.name = name;
