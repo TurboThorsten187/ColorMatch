@@ -5,7 +5,7 @@ import { applyLogicModifiers } from "./modifierHandler.js";
 import { InputType } from "./challenge.js";
 import { ALL_MODIFIERS } from "../modifiers/modifiers.js";
 
-const Colors = Object.freeze({
+export const Colors = Object.freeze({
     RED: "red",
     GREEN: "green",
     BLUE: "blue",
@@ -109,7 +109,7 @@ export function updateChallenge() {
     if (Game.state !== GameState.PLAYING) return;
 
     GLS.currentChallenge = createNewChallenge();
-    GLS.activeModifiers = pickModifiers(GLS.currentLevel);
+    GLS.activeModifiers = testpickModifiers(GLS.currentLevel);
     GLS.currentChallenge.correctInput = applyLogicModifiers(GLS.currentChallenge);
 }
 
@@ -139,6 +139,13 @@ export function pickModifiers(level) {
 
         available.splice(idx, 1);
     }
+
+    return picked;
+}
+
+export function testpickModifiers(level) {
+    GLS.activeModifiers = [];
+    const picked = [ALL_MODIFIERS.find(mod => mod.name === "NoClickModifier")];
 
     return picked;
 }

@@ -9,62 +9,62 @@ export class Modifier {
 // Input-Logic-Modifiers
 export class InvertInputModifier extends Modifier {
     constructor() {
-        super("InvertInput", 10, ["NoClick", "SpamClick"]);
+        super("InvertInputModifier", 10, ["NoClickModifier", "SpamClickModifier"]);
     }
 }
 
 export class NoClickModifier extends Modifier {
     constructor() {
-        super("NoClick", 10, ["InvertInput", "SpamClick"]);
+        super("NoClickModifier", 10, ["InvertInputModifier", "SpamClickModifier"]);
     }
 }
 
 export class SpamClickModifier extends Modifier {
     constructor() {
-        super("SpamClick", 1, ["Noclick", "InvertInput", "BackgroundColor", "Blink", "InvertColors"]);
+        super("SpamClickModifier", 15, ["NoClickModifier", "InvertInputModifier", "BackgroundColorModifier", "BlinkModifier", "InvertColorsModifier"]);
     }
 }
 
 // Visual Modifiers
 export class VerticalMirrorModifier extends Modifier {
     constructor() {
-        super("VerticalMirror", 5);
+        super("VerticalMirrorModifier", 5);
     }
 }
 
 export class HorizontalMirrorModifier extends Modifier {
     constructor() {
-        super("HorizontalMirror", 5);
+        super("HorizontalMirrorModifier", 5);
     }
 }
 
 export class BackgroundColorModifier extends Modifier {
     constructor() {
-        super("BackgroundColor", 5, ["SpamClick"]);
+        super("BackgroundColorModifier", 5, ["SpamClickModifier"]);
     }
 }
 
 export class BlinkModifier extends Modifier {
     constructor() {
-        super("Blink", 10, ["SpamClick"]);
+        super("BlinkModifier", 10, ["SpamClickModifier"]);
     }
 }
 
 export class InvertColorsModifier extends Modifier {
     constructor() {
-        super("InvertColors", 15, ["SpamClick"]);
+        super("InvertColorsModifier", 15, ["SpamClickModifier"]);
     }
 }
 
 export class BlurredModifier extends Modifier {
     constructor() {
-        super("Blurred", 10);
+        super("BlurredModifier", 10);
     }
 }
 
 export class RotationModifier extends Modifier {
     constructor() {
-        super("Rotation", 10);
+        super("RotationModifier", 10);
     }
 }
 
