@@ -79,7 +79,8 @@ function nextLevel() {
     GLS.incrementLevel();
     updateChallenge();
     GLS.inputReceived = false;
-    GLS.spamCount = 0;  
+    GLS.spamCount = 0;
+    GLS.timer = Math.max(1500, 3000 - GLS.currentLevel * 50);
     GLS.decisionStartTime = Date.now();
 }
 
