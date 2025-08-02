@@ -86,7 +86,7 @@ export function renderGame() {
     ctx.textBaseline = "middle";
 
     // === Blurred Modifier ===
-    ctx.filter = modifiers.some(m => m.name === "BlurredModifier") ? "blur(5px)" : "none";
+    ctx.filter = modifiers.some(m => m.name === "BlurredModifier") ? "blur(10px)" : "none";
 
     // Subtexts above (über Haupttext)
     ctx.font = `bold ${subFontSize}px sans-serif`;
