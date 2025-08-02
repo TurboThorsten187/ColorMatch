@@ -3,8 +3,8 @@ export const ctx = canvas.getContext("2d");
 
 function resizeCanvasToWindow() {
   const dpr = window.devicePixelRatio || 1;
-  canvas.style.width = window.innerWidth + "px";
-  canvas.style.height = window.innerHeight + "px";
+
+  // KEIN .style.width oder .style.height hier
   canvas.width = window.innerWidth * dpr;
   canvas.height = window.innerHeight * dpr;
 

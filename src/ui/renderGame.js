@@ -22,7 +22,7 @@ export function renderGame() {
     let bgColor = "white";
     const bgMod = modifiers.find(m => m.name === "BackgroundColorModifier");
     if (bgMod) {
-        if (challenge.correctInput === InputType.FALSE) {
+        if ((challenge.correctInput === InputType.FALSE) && !(modifiers.find(m => m.name === "InvertInputModifier"))) {
             bgColor = challenge.text;
         } else {
             const otherColors = Object.values(Colors).filter(c => c !== challenge.color);

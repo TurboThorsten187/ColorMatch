@@ -52,7 +52,7 @@ export class BlinkModifier extends Modifier {
 
 export class InvertColorsModifier extends Modifier {
     constructor() {
-        super("InvertColorsModifier", 15, ["SpamClickModifier"]);
+        super("InvertColorsModifier", 30, ["SpamClickModifier"]);
     }
 }
 

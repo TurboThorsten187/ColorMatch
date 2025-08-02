@@ -4,6 +4,7 @@ import { Challenge } from "./challenge.js";
 import { applyLogicModifiers } from "./modifierHandler.js";
 import { InputType } from "./challenge.js";
 import { ALL_MODIFIERS } from "../modifiers/modifiers.js";
+import { setHighscore } from "./highscore.js";
 
 export const Colors = Object.freeze({
     RED: "red",
@@ -21,7 +22,7 @@ export function evaluateInput(key) {
     const correctInput = GLS.currentChallenge.correctInput;
 
     if (correctInput === InputType.NONE) {
-        Game.state = GameState.GAME_OVER;
+        gameOver();
         return;
     }
 
@@ -33,11 +34,8 @@ export function evaluateInput(key) {
             GLS.spamCount = 0;
 
             setTimeout(() => {
-                GLS.incrementLevel();
-                updateChallenge();
-                GLS.inputReceived = false;
-                GLS.decisionStartTime = Date.now();
                 Game.state = GameState.PLAYING;
+                nextLevel();
             }, 1000);
 
             return;
@@ -54,38 +52,35 @@ export function evaluateInput(key) {
     );
 
     if (isCorrect) {
-        GLS.incrementLevel();
-        updateChallenge();
-        GLS.inputReceived = false;
-        GLS.decisionStartTime = Date.now();
+        nextLevel();
     } else {
-        Game.state = GameState.GAME_OVER;
+        gameOver();
     }
 }
 
 export function updateGame() {
     const now = Date.now();
 
-    if (now - GLS.decisionStartTime > GLS.timer) {
+    if (now - GLS.decisionStartTime > GLS.timer) { //Times up
         if (GLS.currentChallenge.correctInput === InputType.NONE) {
-            GLS.incrementLevel();
-            updateChallenge();
-            GLS.inputReceived = false;
-            GLS.decisionStartTime = now;
-        } else if (GLS.currentChallenge.correctInput === InputType.SPAM) {
-            if ((GLS.spamCount || 0) < 5) {
-                Game.state = GameState.GAME_OVER;
-            } else {
-                GLS.incrementLevel();
-                updateChallenge();
-                GLS.inputReceived = false;
-                GLS.decisionStartTime = now;
-                GLS.spamCount = 0;
-            }
+            nextLevel();
         } else {
-            Game.state = GameState.GAME_OVER;
+            gameOver();
         }
     }
+}
+
+function gameOver() {
+    setHighscore(GLS.currentLevel);
+    Game.state = GameState.GAME_OVER;
+}
+
+function nextLevel() {
+    GLS.incrementLevel();
+    updateChallenge();
+    GLS.inputReceived = false;
+    GLS.spamCount = 0;  
+    GLS.decisionStartTime = Date.now();
 }
 
 
@@ -109,7 +104,7 @@ export function updateChallenge() {
     if (Game.state !== GameState.PLAYING) return;
 
     GLS.currentChallenge = createNewChallenge();
-    GLS.activeModifiers = testpickModifiers(GLS.currentLevel);
+    GLS.activeModifiers = pickModifiers(GLS.currentLevel);
     GLS.currentChallenge.correctInput = applyLogicModifiers(GLS.currentChallenge);
 }
 
@@ -145,7 +140,14 @@ export function pickModifiers(level) {
 
 export function testpickModifiers(level) {
     GLS.activeModifiers = [];
-    const picked = [ALL_MODIFIERS.find(mod => mod.name === "NoClickModifier")];
+
+    const namesToTest = [
+        "InvertInputModifier",
+        "BackgroundColorModifier"
+    ];
+
+    const picked = ALL_MODIFIERS.filter(mod => namesToTest.includes(mod.name));
+    GLS.activeModifiers = picked;
 
     return picked;
 }

@@ -1,0 +1,23 @@
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+}
+
+#gameCanvas {
+  display: block;
+  width: 100vw;
+  height: 100vh;
+}
+
+@font-face {
+    font-family: "Core Sans G 65 Bold";
+    src: url("https://db.onlinewebfonts.com/t/dd2db6d843e5b4dbfadd3d09defa4b91.eot");
+    src: url("https://db.onlinewebfonts.com/t/dd2db6d843e5b4dbfadd3d09defa4b91.eot?#iefix")format("embedded-opentype"),
+    url("https://db.onlinewebfonts.com/t/dd2db6d843e5b4dbfadd3d09defa4b91.woff2")format("woff2"),
+    url("https://db.onlinewebfonts.com/t/dd2db6d843e5b4dbfadd3d09defa4b91.woff")format("woff"),
+    url("https://db.onlinewebfonts.com/t/dd2db6d843e5b4dbfadd3d09defa4b91.ttf")format("truetype"),
+    url("https://db.onlinewebfonts.com/t/dd2db6d843e5b4dbfadd3d09defa4b91.svg#Core Sans G 65 Bold")format("svg");
+    font-weight: bold;
+    font-style: normal;
+}
