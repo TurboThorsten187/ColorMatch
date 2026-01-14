@@ -1,6 +1,7 @@
 export const GameState = Object.freeze({
     MENU: "menu",
     PLAYING: "playing",
+    WAIT_AFTER_SPAM: "wait_after_spam",
     GAME_OVER: "game_over"
 });
 

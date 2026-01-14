@@ -2,17 +2,18 @@ import { InputType } from "./challenge.js";
 import { GameLoopStateInstance as GLS } from "./gameLoopState.js";
 
 export function applyLogicModifiers(challenge) {
+  const modifiers = GLS.activeModifiers ?? [];
   let correctInput = challenge.correctInput;
 
-  if (GLS.activeModifiers.some(mod => mod.name === "InvertInput")) {
+  if (modifiers.some(mod => mod.name === "InvertInputModifier")) {
     correctInput = correctInput === InputType.TRUE ? InputType.FALSE : InputType.TRUE;
   }
 
-  if (GLS.activeModifiers.some(mod => mod.name === "NoClick")) {
+  if (modifiers.some(mod => mod.name === "NoClickModifier")) {
     correctInput = InputType.NONE;
   }
 
-  if (GLS.activeModifiers.some(mod => mod.name === "SpamClick")) {
+  if (modifiers.some(mod => mod.name === "SpamClickModifier")) {
     correctInput = InputType.SPAM;
   }
 
