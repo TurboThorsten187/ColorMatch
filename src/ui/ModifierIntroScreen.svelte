@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { COLOR_CSS, COLORS } from "../game/colors.ts";
+    import { COLOR_CSS } from "../game/colors.ts";
     import type { IntroId, ModifierIntro } from "../game/intros.ts";
     import { groupById, type ModifierId } from "../game/modifiers.ts";
     import { scramble, wordMotion } from "./effects.ts";
@@ -39,12 +39,6 @@
         return `translate(${x}px, ${y}px) scale(${scale})`;
     });
 
-    // What each color looks like with Inverted Colors (CSS invert)
-    function inverted(css: string): string {
-        const value = Number.parseInt(css.slice(1), 16);
-        return `#${(0xffffff - value).toString(16).padStart(6, "0")}`;
-    }
-
     // "ANSWER THE *OPPOSITE*" → plain and highlighted parts
     function parts(line: string): { text: string; marked: boolean }[] {
         return line.split("*").map((text, index) => ({ text, marked: index % 2 === 1 }));
@@ -76,7 +70,6 @@
                     class:mirror={intro.id === "mirror"}
                     class:blur={intro.id === "blur"}
                     class:rotate={intro.id === "rotation"}
-                    class:invert={intro.id === "invertColors"}
                     class:vanish={intro.id === "blink"}
                     class:lure={intro.id === "background"}
                     style:color={COLOR_CSS[intro.example.color]}
@@ -99,17 +92,6 @@
                 {#if row < intro.lines.length - 1}<br />{/if}
             {/each}
         </p>
-
-        {#if intro.id === "invertColors"}
-            <ul class="swatches">
-                {#each COLORS as color (color)}
-                    <li>
-                        <i style:background={inverted(COLOR_CSS[color])}></i>
-                        <span style:color={COLOR_CSS[color]}>{color.toUpperCase()}</span>
-                    </li>
-                {/each}
-            </ul>
-        {/if}
     </div>
 
     <button class="gotit" onclick={ongotit} {@attach (node) => node.focus()}>GOT IT</button>
@@ -213,10 +195,6 @@
         transform: rotate(-24deg);
     }
 
-    .invert {
-        filter: invert(1);
-    }
-
     .vanish {
         animation: blink 1s steps(1) infinite;
     }
@@ -230,28 +208,6 @@
         margin: 0;
         text-align: center;
         line-height: 2.1;
-    }
-
-    .swatches {
-        margin: 0;
-        padding: 0;
-        list-style: none;
-        display: grid;
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-        gap: 8px 10px;
-        font-size: 8px;
-    }
-
-    li {
-        display: flex;
-        align-items: center;
-        gap: 6px;
-    }
-
-    i {
-        width: 14px;
-        height: 14px;
-        flex: none;
     }
 
     .gotit {

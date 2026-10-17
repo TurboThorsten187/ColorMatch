@@ -8,7 +8,6 @@ export type ModifierId =
     | "mirrorHorizontal"
     | "background"
     | "blink"
-    | "invertColors"
     | "blur"
     | "rotation"
     | "moving"
@@ -29,8 +28,7 @@ export type ModifierGroupId =
     | "blink"
     | "scrambled"
     | "invertInput"
-    | "spam"
-    | "invertColors";
+    | "spam";
 
 export type Tier = "easy" | "medium" | "hard";
 
@@ -71,9 +69,8 @@ export const MODIFIER_GROUPS: readonly ModifierGroup[] = [
     // SPAM! replaces the word, so nothing that is about the word or its color makes sense with it
     group("spam", "hard", ["spam"], {
         rule: true,
-        conflictsWith: ["background", "blink", "scrambled", "invertColors"],
+        conflictsWith: ["background", "blink", "scrambled"],
     }),
-    group("invertColors", "hard", ["invertColors"]),
 ];
 
 export function groupById(id: ModifierGroupId): ModifierGroup {

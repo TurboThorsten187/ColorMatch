@@ -29,7 +29,6 @@ die schweren; innerhalb einer Stufe wird die Reihenfolge jede Runde neu gemischt
 | Scrambled                    | schwer | Buchstaben werden laufend neu gemischt           |
 | Inverted Input               | schwer | richtige Antwort ist umgedreht                   |
 | Spam                         | schwer | fünfmal schnell drücken oder tippen (egal wo)    |
-| Inverted Colors              | schwer | alle Farben sind invertiert                      |
 
 Ein neuer Modifier kommt in seinem Einführungslevel allein und mit 1 s Extrazeit. Sonst wird gemischt: bis Level 14
 höchstens ein Modifier gleichzeitig, bis Level 29 zwei, danach drei, und frisch eingeführte kommen häufiger. Ab Level
@@ -43,7 +42,7 @@ startet direkt das Spiel. Taucht ein Modifier zum ersten Mal auf, pausiert das L
 erklärt ihn; **GOT IT** (oder Enter) spielt weiter. Jede Karte erscheint nur einmal.
 
 Unter **STATS** im Menü stehen Spiele, Hi-Score, durchschnittliches Level (auf dem man verloren hat), durchschnittliche
-Reaktionszeit (nur Level mit TRUE/FALSE-Antwort) und Spielzeit ohne Pausen, dazu 17 Awards: Level 10, 25, 50 und 100
+Reaktionszeit (nur Level mit TRUE/FALSE-Antwort) und Spielzeit ohne Pausen, dazu 16 Awards: Level 10, 25, 50 und 100
 schaffen sowie je 10 Level mit einem Modifier (beide Spiegel zählen zusammen). Badges antippen zeigt Bedingung und
 Fortschritt. Ein neuer Award erscheint sofort kurz unter dem Timer und wird auf dem Game-Over-Screen aufgelistet.
 

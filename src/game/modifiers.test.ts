@@ -6,7 +6,7 @@ describe("modifier groups", () => {
         const variants = MODIFIER_GROUPS.flatMap((group) => group.variants);
 
         expect(new Set(variants).size).toBe(variants.length);
-        expect(variants).toHaveLength(14);
+        expect(variants).toHaveLength(13);
     });
 
     it("find the groups of a level's modifiers", () => {

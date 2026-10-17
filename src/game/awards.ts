@@ -13,7 +13,6 @@ export type AwardId =
     | "blink"
     | "blur"
     | "rotation"
-    | "invertColors"
     | "moving"
     | "scrambled"
     | "shaky"
@@ -76,7 +75,6 @@ export const AWARDS: readonly Award[] = [
     modifierAward("blink", "BK", "BLINK", "look", "BLINK", ["blink"]),
     modifierAward("blur", "BL", "SHARP EYES", "look", "BLURRED", ["blur"]),
     modifierAward("rotation", "RO", "DIZZY", "look", "ROTATED", ["rotation"]),
-    modifierAward("invertColors", "IC", "NEGATIVE", "look", "INVERTED COLOR", ["invertColors"]),
     modifierAward("moving", "MV", "MOVING TARGET", "look", "MOVING", ["moving"]),
     modifierAward("scrambled", "SC", "UNSCRAMBLED", "look", "SCRAMBLED", ["scrambled"]),
     modifierAward("shaky", "SH", "STEADY HAND", "look", "SHAKY", ["shaky"]),
