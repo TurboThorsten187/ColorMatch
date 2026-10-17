@@ -26,6 +26,8 @@ Sounds are Kenney CC0 OGG files in `src/assets/sounds/` (source names in the REA
 - `src/App.svelte` – the only stateful place: rAF loop, keyboard and pointer input (left/right screen half),
   pause on `blur`/`visibilitychange`, highscore, settings and stats persistence, sounds and stats for game transitions
   in `update()`. Settings and stats screens are a `view` in App, not a game phase.
+- The tutorial (`src/game/tutorial.ts`) runs beside the game state, which stays in the menu meanwhile. A level with a
+  modifier never seen before is stored paused in `update()` until its intro cards (`src/game/intros.ts`) are confirmed.
 - Awards are defined in `src/game/awards.ts`; `src/game/stats.ts` counts cleared levels per award, is saved after every
   cleared level and reports newly unlocked awards (toast in game, list on game over).
 

@@ -4,14 +4,16 @@
     interface Props {
         // The answer that was just given, lights up its label
         flash: Answer | null;
+        // The tutorial points at the right answer
+        highlight?: Answer | null;
     }
 
-    let { flash }: Props = $props();
+    let { flash, highlight = null }: Props = $props();
 </script>
 
 <div class="hints" aria-hidden="true">
-    <span class="hint" class:flash={flash === "true"}>◄ TRUE</span>
-    <span class="hint" class:flash={flash === "false"}>FALSE ►</span>
+    <span class="hint" class:flash={flash === "true"} class:highlight={highlight === "true"}>◄ TRUE</span>
+    <span class="hint" class:flash={flash === "false"} class:highlight={highlight === "false"}>FALSE ►</span>
 </div>
 
 <style>
@@ -38,9 +40,28 @@
             border-color 150ms;
     }
 
+    .highlight {
+        border-color: #ffe14d;
+        color: #ffe14d;
+        animation: blink 1s steps(1) infinite;
+    }
+
     .flash {
         border-color: #fff;
         background: #fff;
         color: #000;
+        animation: none;
+    }
+
+    @keyframes blink {
+        50% {
+            opacity: 0;
+        }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .highlight {
+            animation: none;
+        }
     }
 </style>
