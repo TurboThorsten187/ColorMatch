@@ -1,5 +1,3 @@
-import type { Rng } from "./random.ts";
-
 export type ModifierId =
     // Change which input is correct
     | "invertInput"
@@ -12,52 +10,87 @@ export type ModifierId =
     | "blink"
     | "invertColors"
     | "blur"
-    | "rotation";
+    | "rotation"
+    | "moving"
+    | "scrambled"
+    | "shaky"
+    | "pulsing";
 
-interface ModifierDefinition {
-    readonly id: ModifierId;
-    readonly minLevel: number;
-    readonly conflictsWith: readonly ModifierId[];
+// Modifiers are introduced, picked and explained per group; both mirrors form one group
+export type ModifierGroupId =
+    | "mirror"
+    | "rotation"
+    | "pulsing"
+    | "shaky"
+    | "background"
+    | "blur"
+    | "moving"
+    | "noClick"
+    | "blink"
+    | "scrambled"
+    | "invertInput"
+    | "spam"
+    | "invertColors";
+
+export type Tier = "easy" | "medium" | "hard";
+
+export interface ModifierGroup {
+    readonly id: ModifierGroupId;
+    // Every game introduces all easy groups first, then the medium and then the hard ones
+    readonly tier: Tier;
+    // A level with this group gets one of these modifiers
+    readonly variants: readonly ModifierId[];
+    // Changes which input is correct; a level has at most one of these
+    readonly rule: boolean;
+    readonly conflictsWith: readonly ModifierGroupId[];
 }
 
-export const MODIFIERS: readonly ModifierDefinition[] = [
-    { id: "invertInput", minLevel: 10, conflictsWith: ["noClick", "spam"] },
-    { id: "noClick", minLevel: 10, conflictsWith: ["invertInput", "spam"] },
-    {
-        id: "spam",
-        minLevel: 15,
-        conflictsWith: ["noClick", "invertInput", "background", "blink", "invertColors"],
-    },
-    { id: "mirrorVertical", minLevel: 5, conflictsWith: [] },
-    { id: "mirrorHorizontal", minLevel: 5, conflictsWith: [] },
-    { id: "background", minLevel: 5, conflictsWith: ["spam"] },
-    { id: "blink", minLevel: 10, conflictsWith: ["spam"] },
-    { id: "invertColors", minLevel: 30, conflictsWith: ["spam"] },
-    { id: "blur", minLevel: 10, conflictsWith: [] },
-    { id: "rotation", minLevel: 10, conflictsWith: [] },
+export const TIERS: readonly Tier[] = ["easy", "medium", "hard"];
+
+function group(
+    id: ModifierGroupId,
+    tier: Tier,
+    variants: readonly ModifierId[],
+    { rule = false, conflictsWith = [] as readonly ModifierGroupId[] } = {},
+): ModifierGroup {
+    return { id, tier, variants, rule, conflictsWith };
+}
+
+export const MODIFIER_GROUPS: readonly ModifierGroup[] = [
+    group("mirror", "easy", ["mirrorVertical", "mirrorHorizontal"]),
+    group("rotation", "easy", ["rotation"]),
+    group("pulsing", "easy", ["pulsing"]),
+    group("shaky", "easy", ["shaky"]),
+    group("background", "medium", ["background"]),
+    group("blur", "medium", ["blur"]),
+    group("moving", "medium", ["moving"]),
+    group("noClick", "medium", ["noClick"], { rule: true }),
+    group("blink", "medium", ["blink"]),
+    group("scrambled", "hard", ["scrambled"]),
+    group("invertInput", "hard", ["invertInput"], { rule: true }),
+    // SPAM! replaces the word, so nothing that is about the word or its color makes sense with it
+    group("spam", "hard", ["spam"], {
+        rule: true,
+        conflictsWith: ["background", "blink", "scrambled", "invertColors"],
+    }),
+    group("invertColors", "hard", ["invertColors"]),
 ];
 
-const MAX_MODIFIERS = 3;
-
-// One more modifier slot every 10 levels (up to 3); the actual count is random, zero included
-export function maxModifierCount(level: number): number {
-    return Math.min(MAX_MODIFIERS, Math.floor(level / 10) + 1);
+export function groupById(id: ModifierGroupId): ModifierGroup {
+    const found = MODIFIER_GROUPS.find((candidate) => candidate.id === id);
+    if (!found) throw new Error(`Modifier group ${id} is missing in MODIFIER_GROUPS`);
+    return found;
 }
 
-export function pickModifiers(level: number, rng: Rng): ReadonlySet<ModifierId> {
-    const count = Math.floor(rng() * (maxModifierCount(level) + 1));
-    const available = MODIFIERS.filter((modifier) => level >= modifier.minLevel);
-    const picked: ModifierDefinition[] = [];
+export function conflicts(a: ModifierGroupId, b: ModifierGroupId): boolean {
+    const first = groupById(a);
+    const second = groupById(b);
+    return (first.rule && second.rule) || first.conflictsWith.includes(b) || second.conflictsWith.includes(a);
+}
 
-    while (picked.length < count && available.length > 0) {
-        const [candidate] = available.splice(Math.floor(rng() * available.length), 1);
-        const conflict = picked.some(
-            (other) => other.conflictsWith.includes(candidate.id) || candidate.conflictsWith.includes(other.id),
-        );
-        if (!conflict) {
-            picked.push(candidate);
-        }
-    }
-
-    return new Set(picked.map((modifier) => modifier.id));
+// The groups of a level's modifiers, in list order
+export function groupsOf(modifiers: ReadonlySet<ModifierId>): ModifierGroupId[] {
+    return MODIFIER_GROUPS.filter((candidate) => candidate.variants.some((id) => modifiers.has(id))).map(
+        (candidate) => candidate.id,
+    );
 }

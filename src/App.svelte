@@ -430,7 +430,12 @@
     {:else if game.phase === "spamPause"}
         <SpamPauseScreen />
     {:else if game.phase === "paused" && intros.length > 0}
-        <ModifierIntroScreen intro={introById(intros[0])} level={game.resumeTo.level} ongotit={gotIt} />
+        <ModifierIntroScreen
+            intro={introById(intros[0])}
+            level={game.resumeTo.level}
+            elapsed={now - game.pausedAt}
+            ongotit={gotIt}
+        />
     {:else if game.phase === "paused"}
         <PauseScreen />
     {:else if game.phase === "gameOver"}

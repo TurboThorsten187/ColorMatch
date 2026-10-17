@@ -1,35 +1,33 @@
 import { describe, expect, it } from "vitest";
-import { maxModifierCount, MODIFIERS, pickModifiers } from "./modifiers.ts";
+import { conflicts, groupsOf, MODIFIER_GROUPS, type ModifierId } from "./modifiers.ts";
 
-describe("pickModifiers", () => {
-    it("picks nothing before level 5", () => {
-        for (let level = 1; level < 5; level++) {
-            for (let run = 0; run < 50; run++) {
-                expect(pickModifiers(level, Math.random).size).toBe(0);
-            }
-        }
+describe("modifier groups", () => {
+    it("contain every modifier exactly once", () => {
+        const variants = MODIFIER_GROUPS.flatMap((group) => group.variants);
+
+        expect(new Set(variants).size).toBe(variants.length);
+        expect(variants).toHaveLength(14);
     });
 
-    it("respects level limits, max count and conflicts", () => {
-        for (let level = 1; level <= 60; level++) {
-            for (let run = 0; run < 200; run++) {
-                const picked = pickModifiers(level, Math.random);
+    it("find the groups of a level's modifiers", () => {
+        const modifiers = new Set<ModifierId>(["mirrorHorizontal", "spam"]);
 
-                expect(picked.size).toBeLessThanOrEqual(maxModifierCount(level));
-                for (const modifier of MODIFIERS.filter((m) => picked.has(m.id))) {
-                    expect(modifier.minLevel).toBeLessThanOrEqual(level);
-                    for (const other of picked) {
-                        expect(modifier.conflictsWith).not.toContain(other);
-                    }
-                }
-            }
-        }
+        expect(groupsOf(modifiers)).toEqual(["mirror", "spam"]);
+        expect(groupsOf(new Set())).toEqual([]);
     });
 
-    it("allows one more modifier every 10 levels, up to 3", () => {
-        expect(maxModifierCount(5)).toBe(1);
-        expect(maxModifierCount(10)).toBe(2);
-        expect(maxModifierCount(20)).toBe(3);
-        expect(maxModifierCount(99)).toBe(3);
+    it("never combine two groups that change the correct input", () => {
+        expect(conflicts("invertInput", "noClick")).toBe(true);
+        expect(conflicts("spam", "invertInput")).toBe(true);
+        expect(conflicts("invertInput", "mirror")).toBe(false);
+    });
+
+    it("conflict both ways", () => {
+        for (const a of MODIFIER_GROUPS) {
+            for (const b of MODIFIER_GROUPS) {
+                expect(conflicts(a.id, b.id)).toBe(conflicts(b.id, a.id));
+            }
+        }
+        expect(conflicts("scrambled", "spam")).toBe(true);
     });
 });

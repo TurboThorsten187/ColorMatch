@@ -13,7 +13,11 @@ export type AwardId =
     | "blink"
     | "blur"
     | "rotation"
-    | "invertColors";
+    | "invertColors"
+    | "moving"
+    | "scrambled"
+    | "shaky"
+    | "pulsing";
 
 // "rule" awards belong to modifiers that change the correct input, "look" awards to the visual ones
 export type AwardKind = "milestone" | "rule" | "look";
@@ -73,6 +77,10 @@ export const AWARDS: readonly Award[] = [
     modifierAward("blur", "BL", "SHARP EYES", "look", "BLURRED", ["blur"]),
     modifierAward("rotation", "RO", "DIZZY", "look", "ROTATED", ["rotation"]),
     modifierAward("invertColors", "IC", "NEGATIVE", "look", "INVERTED COLOR", ["invertColors"]),
+    modifierAward("moving", "MV", "MOVING TARGET", "look", "MOVING", ["moving"]),
+    modifierAward("scrambled", "SC", "UNSCRAMBLED", "look", "SCRAMBLED", ["scrambled"]),
+    modifierAward("shaky", "SH", "STEADY HAND", "look", "SHAKY", ["shaky"]),
+    modifierAward("pulsing", "PU", "HEARTBEAT", "look", "PULSING", ["pulsing"]),
 ];
 
 export function awardById(id: AwardId): Award {

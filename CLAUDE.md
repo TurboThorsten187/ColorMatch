@@ -30,6 +30,10 @@ Sounds are Kenney CC0 OGG files in `src/assets/sounds/` (source names in the REA
   modifier never seen before is stored paused in `update()` until its intro cards (`src/game/intros.ts`) are confirmed.
 - Awards are defined in `src/game/awards.ts`; `src/game/stats.ts` counts cleared levels per award, is saved after every
   cleared level and reports newly unlocked awards (toast in game, list on game over).
+- Modifiers belong to groups (`MODIFIER_GROUPS` in `src/game/modifiers.ts`, both mirrors are one group) with a tier.
+  `src/game/progression.ts` holds the per-game curriculum (`PlayingState.curriculum`: a new group every 3 levels from
+  level 5, alone on its intro level), the per-level pick and the time limit. A new modifier needs a group, an intro
+  card, an award and, if animated, a function in `src/ui/effects.ts` driven by the level's `seed` and elapsed time.
 
 ## Conventions
 

@@ -1,14 +1,12 @@
 import { type Answer, type Challenge, createChallenge } from "./challenge.ts";
+import { groupsOf, type ModifierGroupId } from "./modifiers.ts";
+import { createCurriculum, type Curriculum, introducedAt, pickGroups, timeLimitFor } from "./progression.ts";
 import type { Rng } from "./random.ts";
 
 export const SPAM_PRESSES_NEEDED = 5;
 export const SPAM_PAUSE_MS = 1000;
 // Frantic presses right after losing must not skip the result: RETRY, MENU and Enter wait this long
 export const GAME_OVER_LOCK_MS = 1000;
-
-const START_TIME_MS = 3000;
-const MIN_TIME_MS = 1500;
-const TIME_STEP_MS = 50;
 
 export type PlayingState = {
     readonly phase: "playing";
@@ -17,9 +15,17 @@ export type PlayingState = {
     readonly startedAt: number;
     readonly timeLimit: number;
     readonly spamCount: number;
+    readonly curriculum: Curriculum;
 };
 
-export type SpamPauseState = { readonly phase: "spamPause"; readonly level: number; readonly resumeAt: number };
+export type SpamPauseState = {
+    readonly phase: "spamPause";
+    readonly level: number;
+    readonly resumeAt: number;
+    readonly curriculum: Curriculum;
+    // The groups of the SPAM! level, the next level must not repeat them
+    readonly groups: readonly ModifierGroupId[];
+};
 
 export type GameOverState = { readonly phase: "gameOver"; readonly score: number; readonly endedAt: number };
 
@@ -35,12 +41,8 @@ export const MENU: GameState = { phase: "menu" };
 // All transitions below are pure: they take the current time in ms and return a new state,
 // or the same state object when nothing changes.
 
-export function timeLimitFor(level: number): number {
-    return level === 1 ? START_TIME_MS : Math.max(MIN_TIME_MS, START_TIME_MS - level * TIME_STEP_MS);
-}
-
 export function startGame(now: number, rng: Rng): GameState {
-    return playLevel(1, now, rng);
+    return playLevel(1, now, rng, createCurriculum(rng), []);
 }
 
 export function answer(state: GameState, input: Answer, now: number, rng: Rng): GameState {
@@ -52,11 +54,17 @@ export function answer(state: GameState, input: Answer, now: number, rng: Rng): 
     if (expected === "spam") {
         const spamCount = state.spamCount + 1;
         return spamCount >= SPAM_PRESSES_NEEDED
-            ? { phase: "spamPause", level: state.level, resumeAt: now + SPAM_PAUSE_MS }
+            ? {
+                  phase: "spamPause",
+                  level: state.level,
+                  resumeAt: now + SPAM_PAUSE_MS,
+                  curriculum: state.curriculum,
+                  groups: groupsOf(state.challenge.modifiers),
+              }
             : { ...state, spamCount };
     }
 
-    return input === expected ? playLevel(state.level + 1, now, rng) : gameOver(state.level, now);
+    return input === expected ? nextLevel(state, now, rng) : gameOver(state.level, now);
 }
 
 // The "go on" input outside of a running level: start, continue, or retry after game over
@@ -85,11 +93,9 @@ export function tick(state: GameState, now: number, rng: Rng): GameState {
     switch (state.phase) {
         case "playing":
             if (now - state.startedAt <= state.timeLimit) return state;
-            return state.challenge.expected === "none"
-                ? playLevel(state.level + 1, now, rng)
-                : gameOver(state.level, now);
+            return state.challenge.expected === "none" ? nextLevel(state, now, rng) : gameOver(state.level, now);
         case "spamPause":
-            return now >= state.resumeAt ? playLevel(state.level + 1, now, rng) : state;
+            return now >= state.resumeAt ? playLevel(state.level + 1, now, rng, state.curriculum, state.groups) : state;
         default:
             return state;
     }
@@ -111,14 +117,26 @@ export function resume(state: GameState, now: number): GameState {
         : { ...previous, resumeAt: previous.resumeAt + pausedFor };
 }
 
-function playLevel(level: number, now: number, rng: Rng): PlayingState {
+function nextLevel(state: PlayingState, now: number, rng: Rng): PlayingState {
+    return playLevel(state.level + 1, now, rng, state.curriculum, groupsOf(state.challenge.modifiers));
+}
+
+function playLevel(
+    level: number,
+    now: number,
+    rng: Rng,
+    curriculum: Curriculum,
+    previous: readonly ModifierGroupId[],
+): PlayingState {
+    const groups = pickGroups(level, curriculum, previous, rng);
     return {
         phase: "playing",
         level,
-        challenge: createChallenge(level, rng),
+        challenge: createChallenge(groups, level, rng),
         startedAt: now,
-        timeLimit: timeLimitFor(level),
+        timeLimit: timeLimitFor(level, groups.length, introducedAt(curriculum, level) !== null),
         spamCount: 0,
+        curriculum,
     };
 }
 

@@ -160,7 +160,7 @@
     .badges {
         margin-top: 16px;
         display: grid;
-        grid-template-columns: repeat(4, minmax(0, 64px));
+        grid-template-columns: repeat(5, minmax(0, 60px));
         justify-content: space-between;
         row-gap: 10px;
         font-size: 12px;

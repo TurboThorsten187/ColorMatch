@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { MENU, pause, type PlayingState } from "./game.ts";
+import { type GameState, MENU, pause, type PlayingState } from "./game.ts";
 import { INTROS, introsForLevel, newIntros } from "./intros.ts";
-import { type ModifierId, MODIFIERS } from "./modifiers.ts";
+import { MODIFIER_GROUPS, type ModifierId } from "./modifiers.ts";
 import { blockedStorage, memoryStorage } from "./testStorage.ts";
 import {
     answerPractice,
@@ -33,10 +33,12 @@ function playing(level: number, modifiers: ModifierId[]): PlayingState {
             expected: "true",
             background: null,
             rotationDeg: 0,
+            seed: 0,
         },
         startedAt: 0,
         timeLimit: 3000,
         spamCount: 0,
+        curriculum: MODIFIER_GROUPS.map((group) => group.id),
     };
 }
 
@@ -101,10 +103,8 @@ describe("modifier intros", () => {
         expect(newIntros(new Set(), [])).toEqual([]);
     });
 
-    it("cover every modifier exactly once", () => {
-        const covered = INTROS.flatMap((intro) => intro.modifiers);
-
-        expect([...covered].sort()).toEqual(MODIFIERS.map((modifier) => modifier.id).sort());
+    it("cover every modifier group exactly once", () => {
+        expect(INTROS.map((intro) => intro.id).sort()).toEqual(MODIFIER_GROUPS.map((group) => group.id).sort());
     });
 
     it("are due when a level begins", () => {
@@ -112,7 +112,9 @@ describe("modifier intros", () => {
 
         expect(introsForLevel(MENU, playing(1, ["mirrorVertical"]), [])).toEqual(["mirror"]);
         expect(introsForLevel(playing(5, []), blurred, [])).toEqual(["blur"]);
-        expect(introsForLevel({ phase: "spamPause", level: 5, resumeAt: 0 }, blurred, [])).toEqual(["blur"]);
+        const spamPause: GameState = { phase: "spamPause", level: 5, resumeAt: 0, curriculum: [], groups: ["spam"] };
+
+        expect(introsForLevel(spamPause, blurred, [])).toEqual(["blur"]);
         expect(introsForLevel(playing(5, []), blurred, ["blur"])).toEqual([]);
     });
 

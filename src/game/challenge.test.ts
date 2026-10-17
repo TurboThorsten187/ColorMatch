@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { createChallenge, expectedInput } from "./challenge.ts";
-import type { ModifierId } from "./modifiers.ts";
+import { MODIFIER_GROUPS, type ModifierId } from "./modifiers.ts";
 
 const set = (...ids: ModifierId[]): ReadonlySet<ModifierId> => new Set(ids);
 
@@ -24,16 +24,35 @@ describe("expectedInput", () => {
 describe("createChallenge", () => {
     it("expects true exactly when the word names its own color", () => {
         for (let run = 0; run < 500; run++) {
-            const challenge = createChallenge(1, Math.random);
+            const challenge = createChallenge([], 1, Math.random);
 
             expect(challenge.modifiers.size).toBe(0);
             expect(challenge.expected).toBe(challenge.word === challenge.color ? "true" : "false");
         }
     });
 
+    it("uses one modifier of every picked group", () => {
+        for (let run = 0; run < 200; run++) {
+            const challenge = createChallenge(["mirror", "blur", "spam"], 20, Math.random);
+
+            expect(challenge.modifiers.size).toBe(3);
+            expect(challenge.modifiers.has("mirrorVertical") !== challenge.modifiers.has("mirrorHorizontal")).toBe(
+                true,
+            );
+            expect(challenge.expected).toBe("spam");
+            expect(challenge.seed).toBeGreaterThanOrEqual(0);
+            expect(challenge.seed).toBeLessThan(1);
+        }
+    });
+
     it("only sets background and rotation with their modifiers", () => {
+        const groups = MODIFIER_GROUPS.map((group) => group.id);
         for (let run = 0; run < 2000; run++) {
-            const challenge = createChallenge(40, Math.random);
+            const challenge = createChallenge(
+                groups.filter(() => Math.random() < 0.3),
+                40,
+                Math.random,
+            );
 
             expect(challenge.background !== null).toBe(challenge.modifiers.has("background"));
             if (challenge.background !== null) {
