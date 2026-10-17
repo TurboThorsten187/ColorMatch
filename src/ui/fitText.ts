@@ -1,17 +1,22 @@
-import { ctx } from "./canvasSetup.ts";
-
 export interface TextLine {
-    text: string;
-    fontSize: number;
+    readonly text: string;
+    readonly fontSize: number;
 }
 
-// Faktor (≤ 1), mit dem alle Schriftgrößen multipliziert werden müssen,
-// damit jede Zeile höchstens maxWidth breit ist (z. B. auf Handys im Hochformat).
-export function fitText(lines: readonly TextLine[], maxWidth: number, fontFamily = "sans-serif"): number {
+let measureContext: CanvasRenderingContext2D | null = null;
+
+// Factor (≤ 1) to multiply all font sizes with so that every line is at most maxWidth wide,
+// e.g. on phones in portrait mode. Measures with the same font the DOM renders with.
+export function fitScale(lines: readonly TextLine[], maxWidth: number, fontFamily = "sans-serif"): number {
+    measureContext ??= document.createElement("canvas").getContext("2d");
+    if (!measureContext) {
+        throw new Error("2D canvas context for text measurement not available");
+    }
+
     let widest = 0;
     for (const line of lines) {
-        ctx.font = `bold ${line.fontSize}px ${fontFamily}`;
-        widest = Math.max(widest, ctx.measureText(line.text).width);
+        measureContext.font = `bold ${line.fontSize}px ${fontFamily}`;
+        widest = Math.max(widest, measureContext.measureText(line.text).width);
     }
     return widest > maxWidth ? maxWidth / widest : 1;
 }

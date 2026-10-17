@@ -1,26 +1,65 @@
-import { type Color, randomColor } from "./colors.ts";
+import { type Color, COLORS, randomColor } from "./colors.ts";
+import { type ModifierId, pickModifiers } from "./modifiers.ts";
+import type { Rng } from "./random.ts";
 
-export const InputType = {
-    TRUE: "true",
-    FALSE: "false",
-    NONE: "none",
-    SPAM: "spam",
-} as const;
+// "true": the word names its own ink color, "false": it does not
+export type Answer = "true" | "false";
 
-export type InputType = (typeof InputType)[keyof typeof InputType];
+// What the player has to do: answer, keep still ("none") or press repeatedly ("spam")
+export type ExpectedInput = Answer | "none" | "spam";
 
 export interface Challenge {
-    readonly text: Color;
+    readonly word: Color;
     readonly color: Color;
-    readonly correctInput: InputType;
+    readonly modifiers: ReadonlySet<ModifierId>;
+    readonly expected: ExpectedInput;
+    // Only set with the background modifier
+    readonly background: Color | null;
+    // Only non-zero with the rotation modifier
+    readonly rotationDeg: number;
 }
 
-// In 50 % der Fälle passt das Wort zur Schriftfarbe (TRUE), sonst nicht (FALSE)
-export function createChallenge(): Challenge {
-    const color = randomColor();
+export function createChallenge(level: number, rng: Rng): Challenge {
+    const color = randomColor(rng);
+    const matches = rng() >= 0.5;
+    const word = matches ? color : randomColor(rng, color);
+    const modifiers = pickModifiers(level, rng);
+    const expected = expectedInput(matches ? "true" : "false", modifiers);
 
-    if (Math.random() < 0.5) {
-        return { text: randomColor(color), color, correctInput: InputType.FALSE };
+    return {
+        word,
+        color,
+        modifiers,
+        expected,
+        background: modifiers.has("background") ? backgroundColor(word, color, expected, modifiers, level) : null,
+        rotationDeg: modifiers.has("rotation") ? rotationDeg(level) : 0,
+    };
+}
+
+export function expectedInput(answer: Answer, modifiers: ReadonlySet<ModifierId>): ExpectedInput {
+    if (modifiers.has("spam")) return "spam";
+    if (modifiers.has("noClick")) return "none";
+    if (modifiers.has("invertInput")) return answer === "true" ? "false" : "true";
+    return answer;
+}
+
+// A mismatching word gets a background in the color it names as a lure,
+// otherwise any color that differs from the ink so the text stays visible.
+function backgroundColor(
+    word: Color,
+    color: Color,
+    expected: ExpectedInput,
+    modifiers: ReadonlySet<ModifierId>,
+    level: number,
+): Color {
+    if (expected === "false" && !modifiers.has("invertInput")) {
+        return word;
     }
-    return { text: color, color, correctInput: InputType.TRUE };
+    const others = COLORS.filter((other) => other !== color);
+    return others[(level * 31 + 7) % others.length];
+}
+
+// Pseudo-random but stable per level, between -90 and +90 degrees
+function rotationDeg(level: number): number {
+    return ((level * 53 + 19) % 181) - 90;
 }

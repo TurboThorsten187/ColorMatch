@@ -1,18 +1,22 @@
-export const Colors = {
-    RED: "red",
-    GREEN: "green",
-    BLUE: "blue",
-    YELLOW: "yellow",
-    PURPLE: "purple",
-    CYAN: "cyan",
-} as const;
+import { pick, type Rng } from "./random.ts";
 
-export type Color = (typeof Colors)[keyof typeof Colors];
+export const COLORS = ["red", "green", "blue", "yellow", "purple", "cyan"] as const;
 
-export const COLOR_LIST: readonly Color[] = Object.values(Colors);
+export type Color = (typeof COLORS)[number];
 
-// Zufällige Farbe, optional ohne eine bestimmte Farbe
-export function randomColor(exclude?: Color): Color {
-    const candidates = COLOR_LIST.filter(c => c !== exclude);
-    return candidates[Math.floor(Math.random() * candidates.length)];
+// The color name is the word shown on screen, this is the CSS value used to paint it
+export const COLOR_CSS: Readonly<Record<Color, string>> = {
+    red: "red",
+    green: "green",
+    blue: "blue",
+    yellow: "yellow",
+    purple: "purple",
+    cyan: "cyan",
+};
+
+export function randomColor(rng: Rng, exclude?: Color): Color {
+    return pick(
+        rng,
+        COLORS.filter((color) => color !== exclude),
+    );
 }

@@ -1,6 +1,8 @@
+import { svelte } from "@sveltejs/vite-plugin-svelte";
 import { defineConfig } from "vite";
 
 export default defineConfig({
-    // Relative Pfade, damit der Build auch unter https://<user>.github.io/ColorMatch/ läuft
+    // Relative asset paths so the build also works under https://<user>.github.io/ColorMatch/
     base: "./",
+    plugins: [svelte()],
 });
