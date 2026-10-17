@@ -26,7 +26,13 @@ verwischen oder die Regeln ändern:
 | Spam                         | 15       | fünfmal schnell drücken oder tippen (egal wo)    |
 | Inverted Colors              | 30       | alle Farben sind invertiert                      |
 
-Der Highscore wird lokal im Browser gespeichert.
+Unter **SETUP** im Menü lassen sich Sound (an/aus, Lautstärke in 8 Stufen) und die Scanlines einstellen.
+**HOLD TO RESET** (1,5 s gedrückt halten) löscht Highscore und Einstellungen. Esc führt zurück ins Menü.
+Highscore und Einstellungen werden lokal im Browser gespeichert.
+
+Sounds gibt es für Treffer, Fehler, Zeitablauf, jeden Tipp einer Spam-Aufgabe (wird pro Tipp höher), Buttons sowie
+einen Jingle für Game Over und neuen Rekord. Sie starten erst nach der ersten Eingabe, weil Browser vorher keinen Ton
+erlauben. Die Dateien sind OGG Vorbis; Safari und iOS spielen sie ab Version 18.4 ab.
 
 ## Entwicklung
 
@@ -47,11 +53,20 @@ npm run preview    # Build lokal ansehen
 
 Das Spiel ist mit Svelte 5 und TypeScript gebaut (`src/`):
 
-- `src/game/` – reine Spiellogik ohne DOM: Zustandsautomat (`game.ts`), Aufgaben, Modifier, Farben, Highscore.
-  Alle Übergänge sind Funktionen `(Zustand, Eingabe, Zeit, Zufall) → neuer Zustand` und damit direkt testbar.
+- `src/game/` – reine Spiellogik ohne DOM: Zustandsautomat (`game.ts`), Aufgaben, Modifier, Farben, Highscore,
+  Einstellungen. Alle Übergänge sind Funktionen `(Zustand, Eingabe, Zeit, Zufall) → neuer Zustand` und damit direkt
+  testbar.
 - `src/ui/` – Svelte-Komponenten für die einzelnen Screens; Modifier werden per CSS (Transform, Filter) dargestellt.
+  `sound.ts` spielt die Sounds über die Web Audio API ab.
+- `src/assets/sounds/` – die Sound-Dateien.
 - `src/App.svelte` – verbindet beides: Spielschleife (`requestAnimationFrame`), Tastatur und Touch, Pause beim
-  Verlassen des Tabs, Highscore-Speicher.
+  Verlassen des Tabs, Highscore und Einstellungen speichern, Sounds zu Spielereignissen.
+
+## Credits
+
+Sounds: [Kenney](https://kenney.nl) (Digital Audio, Interface Sounds), Lizenz CC0. Verwendet und umbenannt:
+`powerUp2` → `hit`, `error_008` → `miss`, `error_006` → `timeout`, `tick_001` → `spam-tap`, `click_003` → `click`,
+`zapThreeToneDown` → `game-over`, `zapThreeToneUp` → `record`.
 
 ## Deployment
 
