@@ -13,11 +13,13 @@ import {
     SPAM_PRESSES_NEEDED,
     SPAM_WORD,
     startGame,
+    SURGE_BANNER_MS,
+    type SurgeBannerState,
     tick,
     toMenu,
 } from "./game.ts";
 import { groupsOf, MODIFIER_GROUPS } from "./modifiers.ts";
-import { introLevel, tempoFor, timeLimitFor } from "./progression.ts";
+import { introLevel, SURGE_FIRST_LEVEL, SURGE_GROUP_COUNT, tempoFor, timeLimitFor } from "./progression.ts";
 
 const rng = Math.random;
 const CURRICULUM = MODIFIER_GROUPS.map((group) => group.id);
@@ -181,6 +183,49 @@ describe("game", () => {
     });
 });
 
+describe("surge", () => {
+    const banner: SurgeBannerState = {
+        phase: "surgeBanner",
+        level: SURGE_FIRST_LEVEL,
+        resumeAt: 100 + SURGE_BANNER_MS,
+        curriculum: CURRICULUM,
+    };
+
+    it("shows the banner after the level before a surge", () => {
+        expect(answer(playing("true", SURGE_FIRST_LEVEL - 1), "true", 100, rng)).toEqual(banner);
+        expect(tick(playing("none", SURGE_FIRST_LEVEL - 1), 1e6, rng)).toMatchObject({
+            phase: "surgeBanner",
+            resumeAt: 1e6 + SURGE_BANNER_MS,
+        });
+        const spamPause: GameState = {
+            phase: "spamPause",
+            level: SURGE_FIRST_LEVEL - 1,
+            resumeAt: 100,
+            curriculum: CURRICULUM,
+            groups: ["spam"],
+        };
+        expect(tick(spamPause, 100, rng)).toEqual(banner);
+    });
+
+    it("starts the surge level when the banner is gone, with its stacked groups and the base time only", () => {
+        expect(tick(banner, banner.resumeAt - 1, rng)).toBe(banner);
+
+        const surge = tick(banner, banner.resumeAt, rng);
+        if (surge.phase !== "playing") throw new Error("Surge did not start");
+        expect(surge).toMatchObject({
+            level: SURGE_FIRST_LEVEL,
+            startedAt: banner.resumeAt,
+            timeLimit: timeLimitFor(SURGE_FIRST_LEVEL, 0, false),
+        });
+        expect(groupsOf(surge.challenge.modifiers)).toHaveLength(SURGE_GROUP_COUNT);
+    });
+
+    it("ignores answers during the banner", () => {
+        expect(answer(banner, "true", 200, rng)).toBe(banner);
+        expect(confirm(banner, 200, rng)).toBe(banner);
+    });
+});
+
 describe("pause", () => {
     it("resumes the same challenge with the remaining time", () => {
         const state = playing("true");
@@ -200,6 +245,13 @@ describe("pause", () => {
 
     it("also delays the end of the spam pause", () => {
         const state: GameState = { phase: "spamPause", level: 3, resumeAt: 1000, curriculum: CURRICULUM, groups: [] };
+        const resumed = resume(pause(state, 500), 10500);
+
+        expect(resumed).toEqual({ ...state, resumeAt: 11000 });
+    });
+
+    it("also delays the end of the surge banner", () => {
+        const state: GameState = { phase: "surgeBanner", level: 50, resumeAt: 1000, curriculum: CURRICULUM };
         const resumed = resume(pause(state, 500), 10500);
 
         expect(resumed).toEqual({ ...state, resumeAt: 11000 });

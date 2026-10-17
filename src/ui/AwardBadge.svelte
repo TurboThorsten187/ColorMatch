@@ -11,6 +11,7 @@
 
     const KIND_COLORS: Readonly<Record<AwardKind, string>> = {
         milestone: COLOR_CSS.green,
+        surge: COLOR_CSS.purple,
         rule: COLOR_CSS.yellow,
         look: COLOR_CSS.blue,
     };

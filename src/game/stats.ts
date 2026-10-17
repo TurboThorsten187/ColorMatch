@@ -1,6 +1,7 @@
 import { type Award, type AwardId, AWARDS, MODIFIER_CLEARS_NEEDED } from "./awards.ts";
 import type { KeyValueStore } from "./highscore.ts";
 import type { ModifierId } from "./modifiers.ts";
+import { isSurgeLevel } from "./progression.ts";
 
 const STATS_KEY = "colormatch_stats";
 
@@ -49,9 +50,7 @@ function unlock(stats: Stats, earned: (award: Award) => boolean): ClearResult {
 export function clearLevel(stats: Stats, clear: LevelClear): ClearResult {
     const clears = { ...stats.clears };
     for (const award of AWARDS) {
-        if (award.kind !== "milestone" && award.modifiers.some((id) => clear.modifiers.has(id))) {
-            clears[award.id] = (clears[award.id] ?? 0) + 1;
-        }
+        if (counts(award, clear)) clears[award.id] = (clears[award.id] ?? 0) + 1;
     }
     const next: Stats = {
         ...stats,
@@ -62,6 +61,17 @@ export function clearLevel(stats: Stats, clear: LevelClear): ClearResult {
     return unlock(next, (award) =>
         award.kind === "milestone" ? clear.level >= award.level : (clears[award.id] ?? 0) >= MODIFIER_CLEARS_NEEDED,
     );
+}
+
+function counts(award: Award, clear: LevelClear): boolean {
+    switch (award.kind) {
+        case "milestone":
+            return false;
+        case "surge":
+            return isSurgeLevel(clear.level);
+        default:
+            return award.modifiers.some((id) => clear.modifiers.has(id));
+    }
 }
 
 // Highscores from before awards existed count for the level milestones too, without a notification

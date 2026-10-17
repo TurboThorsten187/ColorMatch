@@ -16,7 +16,7 @@ geht aus wie ein alter Röhrenfernseher. RETRY und MENU (Enter / Esc) reagieren 
 Weitertippen das Ergebnis nicht überspringt.
 
 Der Balken oben zeigt die verbleibende Zeit: 3 s in Level 1, mit jedem Level etwas weniger, bis es sich bei gut
-1,2 s einpendelt. Ab Level 5 kommt alle 3 Level ein neuer Modifier dazu, zuerst die leichten, dann die mittleren, dann
+1,2 s einpendelt; ab Level 40 sinkt sie weiter bis 1,0 s bei Level 80. Ab Level 5 kommt alle 3 Level ein neuer Modifier dazu, zuerst die leichten, dann die mittleren, dann
 die schweren; innerhalb einer Stufe wird die Reihenfolge jede Runde neu gemischt.
 
 | Modifier         | Stufe  | Wirkung                                                                                            |
@@ -38,10 +38,16 @@ Ein neuer Modifier kommt in seinem Einführungslevel allein und mit 1 s Extrazei
 höchstens ein Modifier gleichzeitig, bis Level 29 zwei, danach drei, und frisch eingeführte kommen häufiger. Ab Level
 15 kommt ein neuer Modifier im Level nach seiner Einführung meist gleich noch einmal, zusammen mit einem bekannten.
 Jeder weitere Modifier in einem Level bringt 0,3 s Extrazeit. Rotation, Pulsing, Shaky, Moving, Blink und Scrambled
-werden mit dem Level schneller, so wie die Zeit pro Level schrumpft (bis gut doppelt so schnell ab Level 40). Jeder
+werden mit dem Level schneller, so wie die Zeit pro Level schrumpft (gut doppelt so schnell bei Level 40, 2,5-mal
+ab Level 80). Jeder
 startet bei seiner Einführung im normalen Tempo und holt dann innerhalb von 8 Leveln auf; ein spät eingeführter wird
 also schneller schnell als ein früher. Höchstens einer pro Level ändert die Regeln (Inverted
 Input, Don't Click, Spam), und dieselbe Kombination kommt nie zweimal hintereinander.
+
+Nach der letzten Einführung (Level 38) wird es weiter härter: Von Level 40 bis 80 werden Level ohne Modifier immer
+seltener und verschwinden dann ganz, und zwei oder drei Modifier auf einmal werden häufiger. Ab Level 50 ist jedes
+zehnte Level ein **Surge**: Ein Banner zeigt 0,9 s lang SURGE, dann kommen vier Modifier gleichzeitig (höchstens eine
+Regel), aber nur mit der Grundzeit, ohne Extrazeit pro Modifier.
 
 Beim allerersten Start erklärt ein kurzes Tutorial das Spiel: drei Karten, nach jeder wird sofort geübt (vier Wörter
 ohne Zeitdruck, die richtige Seite blinkt, ein falsches Wort kommt nochmal). **SKIP** oder Esc überspringt es, danach
@@ -49,8 +55,8 @@ startet direkt das Spiel. Taucht ein Modifier zum ersten Mal auf, pausiert das L
 erklärt ihn; **GOT IT** (oder Enter) spielt weiter. Jede Karte erscheint nur einmal.
 
 Unter **STATS** im Menü stehen Spiele, Hi-Score, durchschnittliches Level (auf dem man verloren hat), durchschnittliche
-Reaktionszeit (nur Level mit TRUE/FALSE-Antwort) und Spielzeit ohne Pausen, dazu 16 Awards: Level 10, 25, 50 und 100
-schaffen sowie je 10 Level mit einem Modifier (beide Spiegel zählen zusammen). Badges antippen zeigt Bedingung und
+Reaktionszeit (nur Level mit TRUE/FALSE-Antwort) und Spielzeit ohne Pausen, dazu 17 Awards: Level 10, 25, 50 und 100
+schaffen, 10 Surges und je 10 Level mit einem Modifier (alle Spiegel zählen zusammen), jeweils über alle Spiele. Badges antippen zeigt Bedingung und
 Fortschritt. Ein neuer Award erscheint sofort kurz unter dem Timer und wird auf dem Game-Over-Screen aufgelistet.
 
 Unter **SETUP** lassen sich Sound (an/aus, Lautstärke in 8 Stufen) und die Scanlines einstellen; **REPLAY** zeigt
@@ -83,7 +89,7 @@ Das Spiel ist mit Svelte 5 und TypeScript gebaut (`src/`):
 
 - `src/game/` – reine Spiellogik ohne DOM: Zustandsautomat (`game.ts`), Aufgaben, Modifier, Farben, Highscore,
   Einstellungen, Awards (`awards.ts`), Stats (`stats.ts`), Tutorial (`tutorial.ts`), Modifier-Karten
-  (`intros.ts`) und Progression (`progression.ts`: Einführungsreihenfolge, Auswahl pro Level, Zeitlimit). Alle
+  (`intros.ts`) und Progression (`progression.ts`: Einführungsreihenfolge, Auswahl pro Level, Surges, Zeitlimit). Alle
   Übergänge sind Funktionen `(Zustand, Eingabe, Zeit, Zufall) → neuer Zustand` und damit direkt testbar.
 - `src/ui/` – Svelte-Komponenten für die einzelnen Screens; Modifier werden per CSS (Transform, Filter) dargestellt,
   Bewegung, Zittern, Pulsieren und Mischen berechnet `effects.ts` aus der Zeit seit Levelbeginn.

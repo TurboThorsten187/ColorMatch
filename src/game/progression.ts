@@ -10,7 +10,7 @@ export const INTRO_EVERY = 3;
 // would repeat the introduction level, which no level may do, so there is no practice while levels hold one group.
 export const PRACTICE_CHANCE = 0.7;
 
-// Time per level: 3 s at level 1, flattening out towards 1.2 s
+// Time per level: 3 s at level 1, flattening out towards 1.2 s, then down to 1.0 s in the late game
 const BASE_MIN_MS = 1200;
 const BASE_RANGE_MS = 1800;
 const BASE_DECAY = 0.93;
@@ -23,6 +23,18 @@ const FRESH_FADE_LEVELS = 6;
 // How likely 1, 2 or 3 groups are on a level with modifiers, cut off at the level's maximum
 const COUNT_WEIGHTS = [0.6, 0.3, 0.1];
 const PICK_ATTEMPTS = 6;
+
+// After the last introduction the levels keep getting harder until LATE_UNTIL_LEVEL: less time, no more plain
+// levels and more groups at once
+const LATE_FROM_LEVEL = 40;
+const LATE_UNTIL_LEVEL = 80;
+const LATE_MIN_DROP_MS = 200;
+const LATE_COUNT_WEIGHTS = [0.2, 0.4, 0.4];
+
+// Every few levels a surge stacks more groups than any other level, announced by a banner
+export const SURGE_FIRST_LEVEL = 50;
+export const SURGE_EVERY = 10;
+export const SURGE_GROUP_COUNT = 4;
 
 export function createCurriculum(rng: Rng): Curriculum {
     return TIERS.flatMap((tier) =>
@@ -50,18 +62,25 @@ export function maxGroupCount(level: number): number {
     return level < 15 ? 1 : level < 30 ? 2 : 3;
 }
 
-// Outside of introductions and practice, a level stays free of modifiers this often
-export function plainChance(level: number): number {
-    return Math.max(0.15, 0.45 - 0.01 * (level - FIRST_INTRO_LEVEL));
+export function isSurgeLevel(level: number): boolean {
+    return level >= SURGE_FIRST_LEVEL && (level - SURGE_FIRST_LEVEL) % SURGE_EVERY === 0;
 }
 
+// Outside of introductions and practice, a level stays free of modifiers this often
+export function plainChance(level: number): number {
+    return Math.max(0.15, 0.45 - 0.01 * (level - FIRST_INTRO_LEVEL)) * (1 - lateShare(level));
+}
+
+// A surge gets no extra time for its many groups
 export function timeLimitFor(level: number, groupCount: number, intro: boolean): number {
-    const bonus = (intro ? INTRO_BONUS_MS : 0) + EXTRA_GROUP_BONUS_MS * Math.max(0, groupCount - 1);
+    const bonus = isSurgeLevel(level)
+        ? 0
+        : (intro ? INTRO_BONUS_MS : 0) + EXTRA_GROUP_BONUS_MS * Math.max(0, groupCount - 1);
     return Math.round(baseLimit(level) + bonus);
 }
 
 // Animated modifiers (spin, pulse, shake, movement, fade, scramble) speed up as much as the time limit shrinks:
-// normal speed at the first intro level, about twice as fast from level 40 on
+// normal speed at the first intro level, about twice as fast at level 40 and 2.5 times from level 80 on
 export function levelTempo(level: number): number {
     return Math.max(1, baseLimit(FIRST_INTRO_LEVEL) / baseLimit(level));
 }
@@ -76,7 +95,12 @@ export function tempoFor(level: number, introducedOn: number): number {
 }
 
 function baseLimit(level: number): number {
-    return BASE_MIN_MS + BASE_RANGE_MS * BASE_DECAY ** (level - 1);
+    return BASE_MIN_MS - LATE_MIN_DROP_MS * lateShare(level) + BASE_RANGE_MS * BASE_DECAY ** (level - 1);
+}
+
+// How far the late game has progressed: 0 up to LATE_FROM_LEVEL, 1 from LATE_UNTIL_LEVEL on
+function lateShare(level: number): number {
+    return Math.min(1, Math.max(0, (level - LATE_FROM_LEVEL) / (LATE_UNTIL_LEVEL - LATE_FROM_LEVEL)));
 }
 
 // The modifier groups of a level. `previous` are the groups of the level before, never repeated as they were.
@@ -92,6 +116,7 @@ export function pickGroups(
     const known = curriculum.filter((id) => introLevel(curriculum, id) < level);
     const newest = known.at(-1);
     if (!newest) return [];
+    if (isSurgeLevel(level)) return pick(known, SURGE_GROUP_COUNT, level, curriculum, rng, []);
 
     const practice = level === introLevel(curriculum, newest) + 1 && maxGroupCount(level) >= 2;
     for (let attempt = 0; attempt < PICK_ATTEMPTS; attempt++) {
@@ -129,7 +154,9 @@ function pick(
 }
 
 function randomCount(level: number, rng: Rng): number {
-    return weightedIndex(COUNT_WEIGHTS.slice(0, maxGroupCount(level)), rng) + 1;
+    const late = lateShare(level);
+    const weights = COUNT_WEIGHTS.map((weight, i) => weight + (LATE_COUNT_WEIGHTS[i] - weight) * late);
+    return weightedIndex(weights.slice(0, maxGroupCount(level)), rng) + 1;
 }
 
 function weightedIndex(weights: readonly number[], rng: Rng): number {
