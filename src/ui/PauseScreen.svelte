@@ -1,8 +1,27 @@
-<script lang="ts">
-    import TextLine from "./TextLine.svelte";
-</script>
+<div class="pause">
+    <h1 class="title">PAUSED</h1>
+    <div class="hint blink">TAP TO CONTINUE</div>
+</div>
 
-<TextLine y="calc(-3 * var(--unit))" size="calc(8 * var(--unit))" color="#000">Paused</TextLine>
-<TextLine y="calc(5 * var(--unit))" size="max(12px, calc(3 * var(--unit)))" color="#000">
-    (Tap or press Enter to continue)
-</TextLine>
+<style>
+    .pause {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: max(32px, calc(5 * var(--unit)));
+    }
+
+    .title {
+        margin: 0;
+        font-size: max(28px, calc(6 * var(--unit)));
+        font-weight: normal;
+    }
+
+    .hint {
+        font-size: max(12px, calc(2.2 * var(--unit)));
+        color: #ffe14d;
+    }
+</style>

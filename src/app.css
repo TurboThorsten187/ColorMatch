@@ -6,5 +6,22 @@ body {
     overflow: hidden;
     /* No pull-to-refresh or rubber banding on mobile */
     overscroll-behavior: none;
-    background: white;
+    background: #000;
+}
+
+/* Arcade style blinking, e.g. "PRESS START" */
+.blink {
+    animation: blink 1s steps(1) infinite;
+}
+
+@keyframes blink {
+    50% {
+        opacity: 0;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .blink {
+        animation: none;
+    }
 }

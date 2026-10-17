@@ -12,14 +12,14 @@ function luminance(hex: string): number {
     return 0.2126 * r + 0.7152 * g + 0.0722 * b;
 }
 
-function contrastOnWhite(hex: string): number {
-    return 1.05 / (luminance(hex) + 0.05);
+function contrastOnBlack(hex: string): number {
+    return (luminance(hex) + 0.05) / 0.05;
 }
 
 describe("colors", () => {
-    it("are all readable on the white background", () => {
+    it("are all readable on the black background", () => {
         for (const color of COLORS) {
-            expect(contrastOnWhite(COLOR_CSS[color]), color).toBeGreaterThanOrEqual(2);
+            expect(contrastOnBlack(COLOR_CSS[color]), color).toBeGreaterThanOrEqual(4.5);
         }
     });
 

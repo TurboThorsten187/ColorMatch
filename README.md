@@ -2,15 +2,16 @@
 
 Ein schnelles Reaktionsspiel im Browser: Passt das angezeigte Wort zu seiner Schriftfarbe?
 
-| Eingabe                               | Tastatur           | Touch / Maus                   |
-| ------------------------------------- | ------------------ | ------------------------------ |
-| TRUE – Wort und Farbe stimmen überein | **←** Pfeil links  | linke Bildschirmhälfte tippen  |
-| FALSE – Wort und Farbe passen nicht   | **→** Pfeil rechts | rechte Bildschirmhälfte tippen |
-| Starten, Fortsetzen, zurück ins Menü  | **Enter**          | irgendwo tippen                |
+| Eingabe                               | Tastatur            | Touch / Maus                   |
+| ------------------------------------- | ------------------- | ------------------------------ |
+| TRUE – Wort und Farbe stimmen überein | **←** Pfeil links   | linke Bildschirmhälfte tippen  |
+| FALSE – Wort und Farbe passen nicht   | **→** Pfeil rechts  | rechte Bildschirmhälfte tippen |
+| Starten, Fortsetzen                   | **Enter**           | irgendwo tippen                |
+| Nach Game Over: nochmal / Menü        | **Enter** / **Esc** | RETRY / MENU                   |
 
 Wechselt man den Tab oder die App, pausiert das Spiel; danach geht es mit derselben Aufgabe und der Restzeit weiter.
 
-Mit jedem Level wird die Zeit knapper. Ab Level 5 kommen Modifier dazu, die den Text spiegeln, drehen,
+Der Balken oben zeigt die verbleibende Zeit, mit jedem Level wird sie knapper. Ab Level 5 kommen Modifier dazu, die den Text spiegeln, drehen,
 verwischen oder die Regeln ändern:
 
 | Modifier                     | ab Level | Wirkung                                          |

@@ -5,7 +5,8 @@ Browser reaction game (Stroop effect): does the word match its ink color? Deploy
 
 ## Stack
 
-Svelte 5 (runes) + TypeScript, Vite 8, Vitest, ESLint (flat config) + Prettier. No runtime dependencies besides Svelte.
+Svelte 5 (runes) + TypeScript, Vite 8, Vitest, ESLint (flat config) + Prettier. Runtime dependencies besides Svelte:
+self-hosted fonts via `@fontsource` (Press Start 2P for the UI, Orbitron 900 for the color word, latin subsets only).
 
 ## Commands
 
@@ -16,8 +17,10 @@ Svelte 5 (runes) + TypeScript, Vite 8, Vitest, ESLint (flat config) + Prettier. 
 ## Structure
 
 - `src/game/` – pure game logic, no DOM and no Svelte: immutable `GameState` union and transitions
-  `answer`/`confirm`/`tick`/`pause`/`resume` that take `now` (ms) and an injected `Rng`. All gameplay rules live here and are unit tested.
-- `src/ui/` – one Svelte component per screen; modifiers are rendered with CSS transforms and filters.
+  `answer`/`confirm`/`toMenu`/`tick`/`pause`/`resume` that take `now` (ms) and an injected `Rng`. All gameplay rules live here and are unit tested.
+- `src/ui/` – one Svelte component per screen plus `TopBar` (level, timer), `TapHints`, `FeedbackFlash`;
+  modifiers are rendered with CSS transforms and filters. `src/main.ts` awaits `loadFonts()` before mounting because
+  the word size is fitted by measuring the real font.
 - `src/App.svelte` – the only stateful place: rAF loop, keyboard and pointer input (left/right screen half),
   pause on `blur`/`visibilitychange`, highscore persistence.
 
@@ -25,4 +28,7 @@ Svelte 5 (runes) + TypeScript, Vite 8, Vitest, ESLint (flat config) + Prettier. 
 
 - Keep game rules out of components; add them to `src/game/` with a colocated `*.test.ts`.
 - Docs for players and setup are in `README.md` (German); code, comments and this file are English.
+- Look: "Classic Arcade" (black, pixel font, scanlines, hard edges), dark only. Approved design prototypes:
+  https://claude.ai/artifact/VKJWcc8fSgcsMTnLPURYGH (page "2 · Arcade details"). Sizes use `--unit` (1 % of the
+  width, capped) with a px minimum for phones.
 - `vite.config.ts` uses `base: "./"` so the build works under the `/ColorMatch/` Pages path.
