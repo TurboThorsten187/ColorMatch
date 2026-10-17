@@ -51,12 +51,13 @@
     }
 </script>
 
-{#if !blinkedOut}
-    <div
-        class="screen"
-        class:inverted={has("invertColors")}
-        style:background={challenge.background ? COLOR_CSS[challenge.background] : "white"}
-    >
+<div
+    class="screen"
+    class:inverted={has("invertColors")}
+    style:background={challenge.background ? COLOR_CSS[challenge.background] : "white"}
+>
+    <!-- Blink only hides the text, background and inverted colors stay -->
+    {#if !blinkedOut}
         <div
             class="anchor"
             style:transform
@@ -71,8 +72,8 @@
                 <TextLine y="{sizes.main + i * sizes.spacing}px" size="{sizes.sub}px">{text}</TextLine>
             {/each}
         </div>
-    </div>
-{/if}
+    {/if}
+</div>
 
 <style>
     .screen {

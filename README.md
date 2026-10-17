@@ -2,24 +2,28 @@
 
 Ein schnelles Reaktionsspiel im Browser: Passt das angezeigte Wort zu seiner Schriftfarbe?
 
-- **← (Pfeil links)**: TRUE – Wort und Farbe stimmen überein
-- **→ (Pfeil rechts)**: FALSE – Wort und Farbe stimmen nicht überein
-- **Enter**: Spiel starten / nach Game Over zurück ins Menü
+| Eingabe                               | Tastatur           | Touch / Maus                   |
+| ------------------------------------- | ------------------ | ------------------------------ |
+| TRUE – Wort und Farbe stimmen überein | **←** Pfeil links  | linke Bildschirmhälfte tippen  |
+| FALSE – Wort und Farbe passen nicht   | **→** Pfeil rechts | rechte Bildschirmhälfte tippen |
+| Starten, Fortsetzen, zurück ins Menü  | **Enter**          | irgendwo tippen                |
+
+Wechselt man den Tab oder die App, pausiert das Spiel; danach geht es mit derselben Aufgabe und der Restzeit weiter.
 
 Mit jedem Level wird die Zeit knapper. Ab Level 5 kommen Modifier dazu, die den Text spiegeln, drehen,
 verwischen oder die Regeln ändern:
 
-| Modifier                     | ab Level | Wirkung                                   |
-| ---------------------------- | -------- | ----------------------------------------- |
-| Vertical / Horizontal Mirror | 5        | Text wird gespiegelt                      |
-| Background Color             | 5        | farbiger Hintergrund als Ablenkung        |
-| Inverted Input               | 10       | richtige Antwort ist umgedreht            |
-| Don't Click                  | 10       | keine Taste drücken, bis die Zeit abläuft |
-| Blink                        | 10       | Text verschwindet nach 0,5 s              |
-| Blurred                      | 10       | Text ist unscharf                         |
-| Rotation                     | 10       | Text ist gedreht                          |
-| Spam                         | 15       | fünfmal schnell eine Pfeiltaste drücken   |
-| Inverted Colors              | 30       | alle Farben sind invertiert               |
+| Modifier                     | ab Level | Wirkung                                          |
+| ---------------------------- | -------- | ------------------------------------------------ |
+| Vertical / Horizontal Mirror | 5        | Text wird gespiegelt                             |
+| Background Color             | 5        | farbiger Hintergrund als Ablenkung               |
+| Inverted Input               | 10       | richtige Antwort ist umgedreht                   |
+| Don't Click                  | 10       | nichts drücken oder tippen, bis die Zeit abläuft |
+| Blink                        | 10       | Text verschwindet nach 0,5 s, Hintergrund bleibt |
+| Blurred                      | 10       | Text ist unscharf                                |
+| Rotation                     | 10       | Text ist gedreht                                 |
+| Spam                         | 15       | fünfmal schnell drücken oder tippen (egal wo)    |
+| Inverted Colors              | 30       | alle Farben sind invertiert                      |
 
 Der Highscore wird lokal im Browser gespeichert.
 
@@ -30,6 +34,7 @@ Voraussetzung: Node.js 20.19+ oder 22.13+.
 ```bash
 npm ci
 npm run dev        # Dev-Server mit Hot Reload
+npm run dev -- --host  # zusätzlich im WLAN erreichbar, z. B. zum Testen auf dem Handy
 npm run check      # alles, was auch die CI prüft: lint, typecheck, test, build
 npm test           # Unit-Tests (Vitest)
 npm run typecheck  # svelte-check (TypeScript und Svelte)
@@ -44,7 +49,8 @@ Das Spiel ist mit Svelte 5 und TypeScript gebaut (`src/`):
 - `src/game/` – reine Spiellogik ohne DOM: Zustandsautomat (`game.ts`), Aufgaben, Modifier, Farben, Highscore.
   Alle Übergänge sind Funktionen `(Zustand, Eingabe, Zeit, Zufall) → neuer Zustand` und damit direkt testbar.
 - `src/ui/` – Svelte-Komponenten für die einzelnen Screens; Modifier werden per CSS (Transform, Filter) dargestellt.
-- `src/App.svelte` – verbindet beides: Spielschleife (`requestAnimationFrame`), Tastatur, Highscore-Speicher.
+- `src/App.svelte` – verbindet beides: Spielschleife (`requestAnimationFrame`), Tastatur und Touch, Pause beim
+  Verlassen des Tabs, Highscore-Speicher.
 
 ## Deployment
 

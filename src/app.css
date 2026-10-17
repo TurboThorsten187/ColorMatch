@@ -4,5 +4,7 @@ body {
     padding: 0;
     height: 100%;
     overflow: hidden;
+    /* No pull-to-refresh or rubber banding on mobile */
+    overscroll-behavior: none;
     background: white;
 }
