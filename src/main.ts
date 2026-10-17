@@ -1,3 +1,10 @@
-import { gameStart } from "./game/game.ts";
+import { mount } from "svelte";
+import App from "./App.svelte";
+import "./app.css";
 
-gameStart();
+const target = document.getElementById("app");
+if (!target) {
+    throw new Error("Mount point #app not found");
+}
+
+mount(App, { target });

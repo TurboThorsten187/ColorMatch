@@ -1,0 +1,10 @@
+{
+    "tabWidth": 4,
+    "printWidth": 120,
+    "plugins": ["prettier-plugin-svelte"],
+    "overrides": [
+        { "files": "*.svelte", "options": { "parser": "svelte" } },
+        { "files": ["*.yml", "*.yaml", "*.md"], "options": { "tabWidth": 2 } },
+        { "files": "*.html", "options": { "htmlWhitespaceSensitivity": "ignore" } }
+    ]
+}
