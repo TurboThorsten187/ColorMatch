@@ -73,13 +73,6 @@ export const INTROS: readonly ModifierIntro[] = [
         accent: "yellow",
     },
     {
-        id: "invertColors",
-        title: "INVERTED COLORS",
-        example: { text: "RED", color: "red" },
-        lines: ["ALL COLORS ARE FLIPPED", "JUDGE THE *ORIGINAL* COLOR:"],
-        accent: "yellow",
-    },
-    {
         id: "moving",
         title: "MOVING",
         example: { text: "GREEN", color: "green" },

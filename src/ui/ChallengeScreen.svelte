@@ -26,7 +26,6 @@
     const word = $derived(has("spam") ? "SPAM!" : challenge.word.toUpperCase());
     const shownWord = $derived(has("scrambled") ? scramble(word, challenge.seed, elapsed) : word);
     const tags = $derived([
-        ...(has("invertColors") ? ["INVERTED COLORS"] : []),
         ...(has("noClick") ? ["DON'T CLICK"] : []),
         ...(has("invertInput") ? ["INVERTED INPUT"] : []),
     ]);
@@ -54,11 +53,7 @@
     });
 </script>
 
-<div
-    class="screen"
-    class:inverted={has("invertColors")}
-    style:background={challenge.background ? COLOR_CSS[challenge.background] : "#000"}
->
+<div class="screen" style:background={challenge.background ? COLOR_CSS[challenge.background] : "#000"}>
     {#if tags.length > 0}
         <div class="tags" style:top="calc(50% - {fontSize * 0.6}px)">
             {#each tags as tag (tag)}
@@ -67,7 +62,7 @@
         </div>
     {/if}
 
-    <!-- Blink only hides the word, background, tags and inverted colors stay -->
+    <!-- Blink only hides the word, background and tags stay -->
     {#if !blinkedOut}
         <div
             class="anchor"
@@ -118,9 +113,5 @@
         font-weight: 900;
         line-height: 1;
         white-space: nowrap;
-    }
-
-    .inverted {
-        filter: invert(1);
     }
 </style>
