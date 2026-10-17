@@ -9,10 +9,12 @@
         MENU,
         pause,
         type PlayingState,
+        resume,
         tick,
         toMenu,
     } from "./game/game.ts";
     import { browserStorage, clearHighscore, loadHighscore, saveHighscore } from "./game/highscore.ts";
+    import { introById, type IntroId, introsForLevel } from "./game/intros.ts";
     import { clearSettings, DEFAULT_SETTINGS, loadSettings, saveSettings, type Settings } from "./game/settings.ts";
     import {
         clearLevel,
@@ -25,11 +27,26 @@
         type Stats,
         unlockMilestones,
     } from "./game/stats.ts";
+    import {
+        answerPractice,
+        clearTutorialProgress,
+        currentStep,
+        isFinished,
+        loadTutorialProgress,
+        NEW_PLAYER,
+        nextCard,
+        saveTutorialProgress,
+        tickTutorial,
+        TUTORIAL_START,
+        type TutorialProgress,
+        type TutorialState,
+    } from "./game/tutorial.ts";
     import AwardToast from "./ui/AwardToast.svelte";
     import ChallengeScreen from "./ui/ChallengeScreen.svelte";
     import FeedbackFlash, { type FeedbackKind } from "./ui/FeedbackFlash.svelte";
     import GameOverScreen from "./ui/GameOverScreen.svelte";
     import MenuScreen from "./ui/MenuScreen.svelte";
+    import ModifierIntroScreen from "./ui/ModifierIntroScreen.svelte";
     import PauseScreen from "./ui/PauseScreen.svelte";
     import SettingsScreen from "./ui/SettingsScreen.svelte";
     import { configureSound, playSound, unlockAudio } from "./ui/sound.ts";
@@ -38,6 +55,7 @@
     import TapHints from "./ui/TapHints.svelte";
     import { delay, enqueue, type ToastQueue, visible } from "./ui/toastQueue.ts";
     import TopBar from "./ui/TopBar.svelte";
+    import TutorialScreen from "./ui/TutorialScreen.svelte";
 
     const ANSWER_KEYS: Readonly<Record<string, Answer | undefined>> = {
         ArrowLeft: "true",
@@ -49,6 +67,8 @@
     const MISS_SHOW_MS = 700;
     // Every tap of a SPAM! level sounds higher than the one before
     const SPAM_STEP_SEMITONES = 2;
+    // The second half of a double click on a card button must not answer or skip the next card
+    const CARD_INPUT_LOCK_MS = 300;
 
     const storage = browserStorage();
     const rng = Math.random;
@@ -69,6 +89,11 @@
     // Awards of the current game, listed on the game over screen
     let gameAwards = $state.raw<readonly AwardId[]>([]);
     let toasts = $state.raw<ToastQueue<AwardId>>([]);
+    let progress = $state.raw<TutorialProgress>(loadTutorialProgress(storage));
+    // Runs instead of the game while set, the game stays in the menu meanwhile
+    let tutorial = $state.raw<TutorialState | null>(null);
+    // Cards for modifiers seen for the first time, shown while the new level is paused
+    let intros = $state.raw<readonly IntroId[]>([]);
     // Settings and stats screens are reached from the menu and are not part of the game state
     let view = $state<"game" | "settings" | "stats">("game");
     let width = $state(0);
@@ -77,6 +102,7 @@
     // Play time of the current game: the time spent paused does not count
     let gameStartedAt = 0;
     let pausedMs = 0;
+    let inputLockedUntil = 0;
 
     const flash = $derived(lastAnswer && now - lastAnswer.at < FLASH_MS ? lastAnswer.answer : null);
     const showMiss = $derived(
@@ -86,6 +112,14 @@
 
     function update(next: GameState, time: number): void {
         if (next === game) return;
+
+        // A new level with a modifier never seen before waits paused until its cards are read
+        let shown = next;
+        const unseen = introsForLevel(game, next, progress.seenIntros);
+        if (unseen.length > 0) {
+            intros = unseen;
+            shown = pause(next, time);
+        }
 
         if (next.phase === "playing" && (game.phase === "menu" || game.phase === "gameOver")) {
             gameStartedAt = time;
@@ -135,7 +169,69 @@
             stats = finishGame(stats, game.level, time - gameStartedAt - pausedMs);
             saveStats(storage, stats);
         }
-        game = next;
+        game = shown;
+    }
+
+    function changeProgress(next: TutorialProgress): void {
+        progress = next;
+        saveTutorialProgress(storage, next);
+    }
+
+    function startTutorial(): void {
+        tutorial = TUTORIAL_START;
+        view = "game";
+        playSound("click");
+    }
+
+    function changeTutorial(next: TutorialState, time: number): void {
+        if (next === tutorial) return;
+        tutorial = next;
+        if (isFinished(next)) finishTutorial(time);
+    }
+
+    // Skipped or done: the game starts right away
+    function finishTutorial(time: number): void {
+        tutorial = null;
+        if (!progress.done) changeProgress({ ...progress, done: true });
+        update(confirm(game, time, rng), time);
+    }
+
+    function skipTutorial(): void {
+        const time = performance.now();
+        inputLockedUntil = time + CARD_INPUT_LOCK_MS;
+        finishTutorial(time);
+    }
+
+    function tutorialNext(): void {
+        if (!tutorial) return;
+        const next = nextCard(tutorial);
+        if (next === tutorial) return;
+        const time = performance.now();
+        inputLockedUntil = time + CARD_INPUT_LOCK_MS;
+        playSound("click");
+        changeTutorial(next, time);
+    }
+
+    function answerTutorial(input: Answer): void {
+        if (!tutorial) return;
+        const time = performance.now();
+        const next = answerPractice(tutorial, input, time);
+        if (next === tutorial || !next.result) return;
+        lastAnswer = { answer: input, at: time };
+        feedback = { kind: next.result.correct ? "hit" : "miss", at: time };
+        playSound(next.result.correct ? "hit" : "miss");
+        tutorial = next;
+    }
+
+    function gotIt(): void {
+        const time = performance.now();
+        const [current, ...rest] = intros;
+        if (!current || time < inputLockedUntil) return;
+        inputLockedUntil = time + CARD_INPUT_LOCK_MS;
+        changeProgress({ ...progress, seenIntros: [...progress.seenIntros, current] });
+        intros = rest;
+        playSound("click");
+        if (rest.length === 0) update(resume(game, time), time);
     }
 
     // Saved after every level, so progress survives closing the tab in the middle of a game
@@ -155,6 +251,7 @@
         settings = loadSettings(storage);
         configureSound(settings);
         stats = unlockMilestones(loadStats(storage), highscore);
+        progress = loadTutorialProgress(storage);
     }
 
     function changeSettings(next: Settings): void {
@@ -168,9 +265,11 @@
         clearHighscore(storage);
         clearSettings(storage);
         clearStats(storage);
+        clearTutorialProgress(storage);
         highscore = 0;
         settings = DEFAULT_SETTINGS;
         stats = EMPTY_STATS;
+        progress = NEW_PLAYER;
         configureSound(DEFAULT_SETTINGS);
         playSound("click");
     }
@@ -183,6 +282,7 @@
     $effect(() => {
         let frame = requestAnimationFrame(function loop(time) {
             now = time;
+            if (tutorial) changeTutorial(tickTutorial(tutorial, time), time);
             update(tick(game, time, rng), time);
             frame = requestAnimationFrame(loop);
         });
@@ -196,6 +296,11 @@
     }
 
     function goOn(): void {
+        // The very first START shows how to play
+        if (game.phase === "menu" && !progress.done) {
+            startTutorial();
+            return;
+        }
         const time = performance.now();
         update(confirm(game, time, rng), time);
     }
@@ -216,6 +321,15 @@
         }
 
         const input = ANSWER_KEYS[event.key];
+        if (tutorial) {
+            onTutorialKey(event, input, tutorial);
+            return;
+        }
+        if (intros.length > 0) {
+            // Only GOT IT continues, which handles Enter itself while focused
+            if (event.key === "Enter" && !(event.target instanceof HTMLButtonElement)) gotIt();
+            return;
+        }
         if (input && game.phase === "playing") {
             event.preventDefault();
             giveAnswer(input);
@@ -223,20 +337,41 @@
             // A focused button handles Enter itself, e.g. MENU must not retry
             return;
         } else if (event.key === "Enter") {
+            // Otherwise the same Enter also presses TRY IT, which the tutorial focuses right away
+            event.preventDefault();
             goOn();
         } else if (event.key === "Escape") {
             goToMenu();
         }
     }
 
+    function onTutorialKey(event: KeyboardEvent, input: Answer | undefined, state: TutorialState): void {
+        if (input && currentStep(state)?.kind === "try") {
+            event.preventDefault();
+            answerTutorial(input);
+        } else if (event.key === "Escape") {
+            // Also while TRY IT has the focus
+            skipTutorial();
+        } else if (event.target instanceof HTMLButtonElement) {
+            return;
+        } else if (event.key === "Enter") {
+            tutorialNext();
+        }
+    }
+
     // During a level the left half of the screen answers TRUE and the right half FALSE.
-    // Menu and pause continue on any tap; game over, settings and stats have their own buttons.
+    // Menu and pause continue on any tap; game over, settings, stats and modifier cards have their own buttons.
     function onPointerdown(event: PointerEvent): void {
         unlockAudio();
-        if (event.button !== 0 || game.phase === "gameOver" || view !== "game") return;
+        if (event.button !== 0 || game.phase === "gameOver" || view !== "game" || intros.length > 0) return;
         // Buttons handle their own clicks, e.g. SETUP in the menu must not start a game
         if (event.target instanceof Element && event.target.closest("button")) return;
+        if (performance.now() < inputLockedUntil) return;
 
+        if (tutorial) {
+            if (currentStep(tutorial)?.kind === "try") answerTutorial(event.clientX < width / 2 ? "true" : "false");
+            return;
+        }
         if (game.phase === "playing") {
             giveAnswer(event.clientX < width / 2 ? "true" : "false");
         } else {
@@ -270,9 +405,17 @@
 
 <main class="stage" bind:clientWidth={width} bind:clientHeight={height}>
     {#if view === "settings"}
-        <SettingsScreen {settings} onchange={changeSettings} onreset={resetAllData} onback={() => showView("game")} />
+        <SettingsScreen
+            {settings}
+            onchange={changeSettings}
+            onreset={resetAllData}
+            onreplay={startTutorial}
+            onback={() => showView("game")}
+        />
     {:else if view === "stats"}
         <StatsScreen {stats} {highscore} onback={() => showView("game")} />
+    {:else if tutorial}
+        <TutorialScreen {tutorial} {flash} {width} {height} onnext={tutorialNext} onskip={skipTutorial} />
     {:else if game.phase === "menu"}
         <MenuScreen {highscore} onstats={() => showView("stats")} onsetup={() => showView("settings")} />
     {:else if game.phase === "playing"}
@@ -286,6 +429,8 @@
         <TapHints flash={null} />
     {:else if game.phase === "spamPause"}
         <SpamPauseScreen />
+    {:else if game.phase === "paused" && intros.length > 0}
+        <ModifierIntroScreen intro={introById(intros[0])} level={game.resumeTo.level} ongotit={gotIt} />
     {:else if game.phase === "paused"}
         <PauseScreen />
     {:else if game.phase === "gameOver"}

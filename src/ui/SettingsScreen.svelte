@@ -7,10 +7,12 @@
         onchange: (next: Settings) => void;
         // Called once the reset button was held long enough
         onreset: () => void;
+        // Shows the how-to-play cards and the practice again
+        onreplay: () => void;
         onback: () => void;
     }
 
-    let { settings, onchange, onreset, onback }: Props = $props();
+    let { settings, onchange, onreset, onreplay, onback }: Props = $props();
 
     type Switch = "sound" | "scanlines";
 
@@ -132,6 +134,11 @@
             <span id="scanlines-label">SCANLINES</span>
             {@render onOff("scanlines", "scanlines-label")}
         </div>
+
+        <div class="row">
+            <span id="tutorial-label">TUTORIAL</span>
+            <button class="replay" aria-describedby="tutorial-label" onclick={onreplay}>REPLAY</button>
+        </div>
     </div>
 
     <div class="reset">
@@ -168,25 +175,17 @@
         width: min(100%, 460px);
         margin: 0 auto;
         box-sizing: border-box;
+        overflow-y: auto;
+        /* The stage blocks touch gestures, this screen may scroll on short screens */
+        touch-action: pan-y;
+        scrollbar-width: thin;
+        scrollbar-color: #555 #000;
         display: flex;
         flex-direction: column;
         gap: max(32px, calc(4 * var(--unit)));
         padding: calc(env(safe-area-inset-top) + max(40px, calc(5 * var(--unit)))) 24px
             calc(env(safe-area-inset-bottom) + max(40px, calc(5 * var(--unit))));
         font-size: max(11px, calc(1.6 * var(--unit)));
-    }
-
-    /* Phones in landscape: the reset button has to stay on screen */
-    @media (max-height: 520px) {
-        .setup {
-            gap: 16px;
-            padding-top: calc(env(safe-area-inset-top) + 16px);
-            padding-bottom: calc(env(safe-area-inset-bottom) + 16px);
-        }
-
-        .options {
-            gap: 14px;
-        }
     }
 
     .head {
@@ -280,6 +279,11 @@
         color: #000;
     }
 
+    .replay {
+        width: 128px;
+        box-shadow: 4px 4px 0 #4d8dff;
+    }
+
     .reset {
         margin-top: auto;
         display: flex;
@@ -314,5 +318,34 @@
         font-size: 8px;
         color: #999;
         text-align: center;
+    }
+
+    /* Phones in landscape: the reset button has to stay on screen */
+    @media (max-height: 520px) {
+        .setup {
+            gap: 12px;
+            padding-top: calc(env(safe-area-inset-top) + 16px);
+            padding-bottom: calc(env(safe-area-inset-bottom) + 16px);
+        }
+
+        .options {
+            gap: 10px;
+        }
+
+        .volume {
+            gap: 8px;
+        }
+
+        button {
+            height: 38px;
+        }
+
+        .square {
+            width: 38px;
+        }
+
+        .hold {
+            height: 44px;
+        }
     }
 </style>
