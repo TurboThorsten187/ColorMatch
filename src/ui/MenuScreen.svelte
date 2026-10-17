@@ -26,7 +26,7 @@
     </span>
 </TextLine>
 <TextLine y="10%" size="calc(4 * var(--unit))" color="#000">{CONTROLS}</TextLine>
-<TextLine y="18%" size="calc(3 * var(--unit))" color="#333">(Press Enter to start)</TextLine>
+<TextLine y="18%" size="max(12px, calc(3 * var(--unit)))" color="#333">(Tap or press Enter to start)</TextLine>
 
 <style>
     .title {

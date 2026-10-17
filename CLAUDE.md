@@ -16,9 +16,10 @@ Svelte 5 (runes) + TypeScript, Vite 8, Vitest, ESLint (flat config) + Prettier. 
 ## Structure
 
 - `src/game/` – pure game logic, no DOM and no Svelte: immutable `GameState` union and transitions
-  `answer`/`tick`/`startGame` that take `now` (ms) and an injected `Rng`. All gameplay rules live here and are unit tested.
+  `answer`/`confirm`/`tick`/`pause`/`resume` that take `now` (ms) and an injected `Rng`. All gameplay rules live here and are unit tested.
 - `src/ui/` – one Svelte component per screen; modifiers are rendered with CSS transforms and filters.
-- `src/App.svelte` – the only stateful place: rAF loop, keyboard input, highscore persistence.
+- `src/App.svelte` – the only stateful place: rAF loop, keyboard and pointer input (left/right screen half),
+  pause on `blur`/`visibilitychange`, highscore persistence.
 
 ## Conventions
 

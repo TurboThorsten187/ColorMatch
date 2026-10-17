@@ -4,14 +4,15 @@ export const COLORS = ["red", "green", "blue", "yellow", "purple", "cyan"] as co
 
 export type Color = (typeof COLORS)[number];
 
-// The color name is the word shown on screen, this is the CSS value used to paint it
+// The color name is the word shown on screen, this is the CSS value used to paint it.
+// Yellow and cyan are darker than their CSS namesakes, which are barely readable on white.
 export const COLOR_CSS: Readonly<Record<Color, string>> = {
-    red: "red",
-    green: "green",
-    blue: "blue",
-    yellow: "yellow",
-    purple: "purple",
-    cyan: "cyan",
+    red: "#ff0000",
+    green: "#008000",
+    blue: "#0000ff",
+    yellow: "#d4a900",
+    purple: "#800080",
+    cyan: "#00a0b0",
 };
 
 export function randomColor(rng: Rng, exclude?: Color): Color {

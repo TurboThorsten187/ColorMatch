@@ -3,25 +3,30 @@ import type { Rng } from "./random.ts";
 
 export const SPAM_PRESSES_NEEDED = 5;
 export const SPAM_PAUSE_MS = 1000;
+// Taps right after losing must not skip the game over screen
+export const GAME_OVER_LOCK_MS = 1000;
 
 const START_TIME_MS = 3000;
 const MIN_TIME_MS = 1500;
 const TIME_STEP_MS = 50;
 
+export type PlayingState = {
+    readonly phase: "playing";
+    readonly level: number;
+    readonly challenge: Challenge;
+    readonly startedAt: number;
+    readonly timeLimit: number;
+    readonly spamCount: number;
+};
+
+export type SpamPauseState = { readonly phase: "spamPause"; readonly level: number; readonly resumeAt: number };
+
 export type GameState =
     | { readonly phase: "menu" }
-    | {
-          readonly phase: "playing";
-          readonly level: number;
-          readonly challenge: Challenge;
-          readonly startedAt: number;
-          readonly timeLimit: number;
-          readonly spamCount: number;
-      }
-    | { readonly phase: "spamPause"; readonly level: number; readonly resumeAt: number }
-    | { readonly phase: "gameOver"; readonly score: number };
-
-export type PlayingState = Extract<GameState, { phase: "playing" }>;
+    | PlayingState
+    | SpamPauseState
+    | { readonly phase: "paused"; readonly resumeTo: PlayingState | SpamPauseState; readonly pausedAt: number }
+    | { readonly phase: "gameOver"; readonly score: number; readonly endedAt: number };
 
 export const MENU: GameState = { phase: "menu" };
 
@@ -40,7 +45,7 @@ export function answer(state: GameState, input: Answer, now: number, rng: Rng): 
     if (state.phase !== "playing") return state;
 
     const { expected } = state.challenge;
-    if (expected === "none") return gameOver(state.level);
+    if (expected === "none") return gameOver(state.level, now);
 
     if (expected === "spam") {
         const spamCount = state.spamCount + 1;
@@ -49,19 +54,51 @@ export function answer(state: GameState, input: Answer, now: number, rng: Rng): 
             : { ...state, spamCount };
     }
 
-    return input === expected ? playLevel(state.level + 1, now, rng) : gameOver(state.level);
+    return input === expected ? playLevel(state.level + 1, now, rng) : gameOver(state.level, now);
+}
+
+// The "go on" input (Enter or a tap) outside of a running level
+export function confirm(state: GameState, now: number, rng: Rng): GameState {
+    switch (state.phase) {
+        case "menu":
+            return startGame(now, rng);
+        case "paused":
+            return resume(state, now);
+        case "gameOver":
+            return now - state.endedAt >= GAME_OVER_LOCK_MS ? MENU : state;
+        default:
+            return state;
+    }
 }
 
 export function tick(state: GameState, now: number, rng: Rng): GameState {
     switch (state.phase) {
         case "playing":
             if (now - state.startedAt <= state.timeLimit) return state;
-            return state.challenge.expected === "none" ? playLevel(state.level + 1, now, rng) : gameOver(state.level);
+            return state.challenge.expected === "none"
+                ? playLevel(state.level + 1, now, rng)
+                : gameOver(state.level, now);
         case "spamPause":
             return now >= state.resumeAt ? playLevel(state.level + 1, now, rng) : state;
         default:
             return state;
     }
+}
+
+export function pause(state: GameState, now: number): GameState {
+    if (state.phase !== "playing" && state.phase !== "spamPause") return state;
+    return { phase: "paused", resumeTo: state, pausedAt: now };
+}
+
+// Continues where the game was paused: the time spent paused does not count
+export function resume(state: GameState, now: number): GameState {
+    if (state.phase !== "paused") return state;
+
+    const pausedFor = now - state.pausedAt;
+    const previous = state.resumeTo;
+    return previous.phase === "playing"
+        ? { ...previous, startedAt: previous.startedAt + pausedFor }
+        : { ...previous, resumeAt: previous.resumeAt + pausedFor };
 }
 
 function playLevel(level: number, now: number, rng: Rng): PlayingState {
@@ -76,6 +113,6 @@ function playLevel(level: number, now: number, rng: Rng): PlayingState {
 }
 
 // The score is the number of solved levels
-function gameOver(level: number): GameState {
-    return { phase: "gameOver", score: level - 1 };
+function gameOver(level: number, now: number): GameState {
+    return { phase: "gameOver", score: level - 1, endedAt: now };
 }
