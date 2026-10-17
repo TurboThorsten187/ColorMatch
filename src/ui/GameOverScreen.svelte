@@ -1,6 +1,7 @@
 <script lang="ts">
     import { awardById, type AwardId } from "../game/awards.ts";
     import AwardBadge from "./AwardBadge.svelte";
+    import { BUTTONS_APPEAR_MS, POWER_ON_MS } from "./lossAnimation.ts";
 
     interface Props {
         score: number;
@@ -22,7 +23,7 @@
     const listed = $derived(awards.slice(0, MAX_LISTED).map(awardById));
 </script>
 
-<div class="over">
+<div class="over" style:--power-on="{POWER_ON_MS}ms" style:--buttons="{BUTTONS_APPEAR_MS}ms">
     <h1 class="title">GAME<br />OVER</h1>
 
     <dl class="scores">
@@ -95,6 +96,18 @@
         font-weight: normal;
         line-height: 1.4;
         color: #ff3b4e;
+        animation: power-on var(--power-on) step-end both;
+    }
+
+    /* After the title, like a CRT warming up */
+    .scores,
+    .record,
+    .awards {
+        animation: appear 240ms steps(3) var(--power-on) both;
+    }
+
+    .actions {
+        animation: appear 240ms steps(3) var(--buttons) both;
     }
 
     .scores,
@@ -208,5 +221,43 @@
     .menu {
         background: #000;
         color: #fff;
+    }
+
+    /* The title switches on like the CRT that just went off: a bright line opens up and flickers */
+    @keyframes power-on {
+        0% {
+            transform: scaleY(0.05);
+            filter: brightness(3);
+        }
+        25% {
+            transform: scaleY(0.53);
+            filter: brightness(3);
+            opacity: 0.7;
+        }
+        50% {
+            transform: scaleY(1);
+            filter: brightness(3);
+            opacity: 0.4;
+        }
+        75% {
+            filter: brightness(2);
+            opacity: 0.7;
+        }
+    }
+
+    @keyframes appear {
+        from {
+            opacity: 0;
+        }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .title,
+        .scores,
+        .record,
+        .awards,
+        .actions {
+            animation: none;
+        }
     }
 </style>

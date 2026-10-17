@@ -45,6 +45,8 @@
     import ChallengeScreen from "./ui/ChallengeScreen.svelte";
     import FeedbackFlash, { type FeedbackKind } from "./ui/FeedbackFlash.svelte";
     import GameOverScreen from "./ui/GameOverScreen.svelte";
+    import { LOSS_ANIMATION_MS } from "./ui/lossAnimation.ts";
+    import LossScreen from "./ui/LossScreen.svelte";
     import MenuScreen from "./ui/MenuScreen.svelte";
     import ModifierIntroScreen from "./ui/ModifierIntroScreen.svelte";
     import PauseScreen from "./ui/PauseScreen.svelte";
@@ -63,8 +65,6 @@
     };
     const FLASH_MS = 150;
     const FEEDBACK_MS = 700;
-    // The lost level stays on screen this long before the game over screen appears
-    const MISS_SHOW_MS = 700;
     // Every tap of a SPAM! level sounds higher than the one before
     const SPAM_STEP_SEMITONES = 2;
     // The second half of a double click on a card button must not answer or skip the next card
@@ -83,7 +83,7 @@
     let newRecord = $state(false);
     let lastAnswer = $state.raw<{ answer: Answer; at: number } | null>(null);
     let feedback = $state.raw<{ kind: FeedbackKind; at: number } | null>(null);
-    let lostLevel = $state.raw<PlayingState | null>(null);
+    let loss = $state.raw<{ level: PlayingState; kind: Exclude<FeedbackKind, "hit">; at: number } | null>(null);
     let settings = $state.raw<Settings>(initialSettings);
     let stats = $state.raw<Stats>(unlockMilestones(loadStats(storage), initialHighscore));
     // Awards of the current game, listed on the game over screen
@@ -105,9 +105,7 @@
     let inputLockedUntil = 0;
 
     const flash = $derived(lastAnswer && now - lastAnswer.at < FLASH_MS ? lastAnswer.answer : null);
-    const showMiss = $derived(
-        game.phase === "gameOver" && feedback !== null && feedback.kind !== "hit" && now - feedback.at < MISS_SHOW_MS,
-    );
+    const showLoss = $derived(game.phase === "gameOver" && loss !== null && now - loss.at < LOSS_ANIMATION_MS);
     const toast = $derived(visible(toasts, now));
 
     function update(next: GameState, time: number): void {
@@ -156,16 +154,17 @@
         }
         if (game.phase === "playing" && next.phase === "gameOver") {
             const kind = time - game.startedAt > game.timeLimit ? "timeout" : "miss";
-            feedback = { kind, at: time };
-            lostLevel = game;
+            // The loss animation shows the result, a "+1" of the level before must not stay on top of it
+            feedback = null;
+            loss = { level: game, kind, at: time };
             // Re-read first: another tab may have stored a better score meanwhile
             const best = Math.max(highscore, loadHighscore(storage));
             newRecord = next.score > best;
             saveHighscore(storage, next.score);
             highscore = Math.max(best, next.score);
             playSound(kind);
-            // The jingle belongs to the game over screen, which appears after the lost level
-            playSound(newRecord ? "record" : "gameOver", { delayMs: MISS_SHOW_MS });
+            // The jingle belongs to the game over screen, which appears after the loss animation
+            playSound(newRecord ? "record" : "gameOver", { delayMs: LOSS_ANIMATION_MS });
             stats = finishGame(stats, game.level, time - gameStartedAt - pausedMs);
             saveStats(storage, stats);
         }
@@ -430,11 +429,16 @@
         <ChallengeScreen challenge={game.challenge} elapsed={now - game.startedAt} {width} {height} />
         <TopBar level={game.level} {highscore} remaining={remainingShare(game, now)} />
         <TapHints {flash} />
-    {:else if showMiss && lostLevel && feedback}
-        <!-- The lost level, frozen at the moment it was lost -->
-        <ChallengeScreen challenge={lostLevel.challenge} elapsed={feedback.at - lostLevel.startedAt} {width} {height} />
-        <TopBar level={lostLevel.level} {highscore} remaining={remainingShare(lostLevel, feedback.at)} />
-        <TapHints flash={null} />
+    {:else if showLoss && loss}
+        <LossScreen
+            level={loss.level}
+            lostAt={loss.at}
+            kind={loss.kind}
+            elapsed={now - loss.at}
+            {highscore}
+            {width}
+            {height}
+        />
     {:else if game.phase === "spamPause"}
         <SpamPauseScreen />
     {:else if game.phase === "paused" && intros.length > 0}

@@ -11,6 +11,10 @@ Ein schnelles Reaktionsspiel im Browser: Passt das angezeigte Wort zu seiner Sch
 
 Wechselt man den Tab oder die App, pausiert das Spiel; danach geht es mit derselben Aufgabe und der Restzeit weiter.
 
+Ein Fehler oder abgelaufene Zeit beendet das Spiel: Der Bildschirm wackelt, das Wort zerplatzt in Pixel und das Bild
+geht aus wie ein alter Röhrenfernseher. RETRY und MENU (Enter / Esc) reagieren erst nach 2 s, damit hektisches
+Weitertippen das Ergebnis nicht überspringt.
+
 Der Balken oben zeigt die verbleibende Zeit: 3 s in Level 1, mit jedem Level etwas weniger, bis es sich bei gut
 1,2 s einpendelt. Ab Level 5 kommt alle 3 Level ein neuer Modifier dazu, zuerst die leichten, dann die mittleren, dann
 die schweren; innerhalb einer Stufe wird die Reihenfolge jede Runde neu gemischt.
