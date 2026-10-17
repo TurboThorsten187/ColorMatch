@@ -9,8 +9,11 @@ import {
     INTRO_EVERY,
     introducedAt,
     introLevel,
+    levelTempo,
     maxGroupCount,
     pickGroups,
+    TEMPO_CATCH_UP_LEVELS,
+    tempoFor,
     timeLimitFor,
 } from "./progression.ts";
 import type { Rng } from "./random.ts";
@@ -156,5 +159,36 @@ describe("timeLimitFor", () => {
         expect(timeLimitFor(20, 1, true)).toBe(base + INTRO_BONUS_MS);
         expect(timeLimitFor(20, 3, false)).toBe(base + 2 * EXTRA_GROUP_BONUS_MS);
         expect(timeLimitFor(20, 0, false)).toBe(base);
+    });
+});
+
+describe("tempo", () => {
+    it("speeds up with the level as much as the time limit shrinks, up to about twice as fast", () => {
+        expect(levelTempo(FIRST_INTRO_LEVEL)).toBe(1);
+        expect(levelTempo(40)).toBeCloseTo(timeLimitFor(FIRST_INTRO_LEVEL, 0, false) / timeLimitFor(40, 0, false), 2);
+        for (let level = FIRST_INTRO_LEVEL; level < 150; level++) {
+            expect(levelTempo(level + 1)).toBeGreaterThanOrEqual(levelTempo(level));
+            expect(levelTempo(level)).toBeLessThan(2.2);
+        }
+    });
+
+    it("starts every modifier at normal speed", () => {
+        for (const intro of [5, 17, 38]) {
+            expect(tempoFor(intro, intro)).toBe(1);
+        }
+    });
+
+    it("lets a late modifier catch up with the level faster than an early one", () => {
+        expect(tempoFor(39, 35)).toBeGreaterThan(tempoFor(9, 5));
+        expect(tempoFor(35 + TEMPO_CATCH_UP_LEVELS, 35)).toBe(levelTempo(35 + TEMPO_CATCH_UP_LEVELS));
+    });
+
+    it("never runs ahead of the level", () => {
+        for (let intro = 5; intro <= 38; intro += 3) {
+            for (let level = intro; level < 80; level++) {
+                expect(tempoFor(level, intro)).toBeLessThanOrEqual(levelTempo(level));
+                expect(tempoFor(level, intro)).toBeGreaterThanOrEqual(1);
+            }
+        }
     });
 });

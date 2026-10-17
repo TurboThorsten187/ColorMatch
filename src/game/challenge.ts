@@ -8,6 +8,9 @@ export type Answer = "true" | "false";
 // What the player has to do: answer, keep still ("none") or press repeatedly ("spam")
 export type ExpectedInput = Answer | "none" | "spam";
 
+// How many times faster than normal a group's animation plays; groups that are missing play at normal speed
+export type Tempo = Readonly<Partial<Record<ModifierGroupId, number>>>;
+
 export interface Challenge {
     readonly word: Color;
     readonly color: Color;
@@ -19,9 +22,15 @@ export interface Challenge {
     readonly rotationDeg: number;
     // Between 0 and 1, makes moving, shaking, pulsing and scrambling look different on every level
     readonly seed: number;
+    readonly tempo: Tempo;
 }
 
-export function createChallenge(groups: readonly ModifierGroupId[], level: number, rng: Rng): Challenge {
+export function createChallenge(
+    groups: readonly ModifierGroupId[],
+    level: number,
+    rng: Rng,
+    tempo: Tempo = {},
+): Challenge {
     const color = randomColor(rng);
     const matches = rng() >= 0.5;
     const word = matches ? color : randomColor(rng, color);
@@ -46,6 +55,7 @@ export function createChallenge(groups: readonly ModifierGroupId[], level: numbe
             : null,
         rotationDeg: modifiers.has("rotation") ? rotationDeg(level) : 0,
         seed: rng(),
+        tempo,
     };
 }
 

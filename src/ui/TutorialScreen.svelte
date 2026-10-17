@@ -40,6 +40,7 @@
                   background: null,
                   rotationDeg: 0,
                   seed: 0,
+                  tempo: {},
               }
             : null,
     );
