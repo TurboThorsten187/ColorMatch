@@ -1,4 +1,5 @@
 <script lang="ts">
+    import { awardById, type AwardId } from "./game/awards.ts";
     import type { Answer } from "./game/challenge.ts";
     import {
         answer,
@@ -13,6 +14,18 @@
     } from "./game/game.ts";
     import { browserStorage, clearHighscore, loadHighscore, saveHighscore } from "./game/highscore.ts";
     import { clearSettings, DEFAULT_SETTINGS, loadSettings, saveSettings, type Settings } from "./game/settings.ts";
+    import {
+        clearLevel,
+        clearStats,
+        EMPTY_STATS,
+        finishGame,
+        type LevelClear,
+        loadStats,
+        saveStats,
+        type Stats,
+        unlockMilestones,
+    } from "./game/stats.ts";
+    import AwardToast from "./ui/AwardToast.svelte";
     import ChallengeScreen from "./ui/ChallengeScreen.svelte";
     import FeedbackFlash, { type FeedbackKind } from "./ui/FeedbackFlash.svelte";
     import GameOverScreen from "./ui/GameOverScreen.svelte";
@@ -21,7 +34,9 @@
     import SettingsScreen from "./ui/SettingsScreen.svelte";
     import { configureSound, playSound, unlockAudio } from "./ui/sound.ts";
     import SpamPauseScreen from "./ui/SpamPauseScreen.svelte";
+    import StatsScreen from "./ui/StatsScreen.svelte";
     import TapHints from "./ui/TapHints.svelte";
+    import { delay, enqueue, type ToastQueue, visible } from "./ui/toastQueue.ts";
     import TopBar from "./ui/TopBar.svelte";
 
     const ANSWER_KEYS: Readonly<Record<string, Answer | undefined>> = {
@@ -39,35 +54,65 @@
     const rng = Math.random;
     const initialSettings = loadSettings(storage);
     configureSound(initialSettings);
+    const initialHighscore = loadHighscore(storage);
 
     // Game states are immutable, so raw state is enough: reactivity only on reassignment
     let game = $state.raw<GameState>(MENU);
     let now = $state(performance.now());
-    let highscore = $state(loadHighscore(storage));
+    let highscore = $state(initialHighscore);
     let newRecord = $state(false);
     let lastAnswer = $state.raw<{ answer: Answer; at: number } | null>(null);
     let feedback = $state.raw<{ kind: FeedbackKind; at: number } | null>(null);
     let lostLevel = $state.raw<PlayingState | null>(null);
     let settings = $state.raw<Settings>(initialSettings);
-    // The settings screen is reached from the menu and is not part of the game state
-    let view = $state<"game" | "settings">("game");
+    let stats = $state.raw<Stats>(unlockMilestones(loadStats(storage), initialHighscore));
+    // Awards of the current game, listed on the game over screen
+    let gameAwards = $state.raw<readonly AwardId[]>([]);
+    let toasts = $state.raw<ToastQueue<AwardId>>([]);
+    // Settings and stats screens are reached from the menu and are not part of the game state
+    let view = $state<"game" | "settings" | "stats">("game");
     let width = $state(0);
     let height = $state(0);
+
+    // Play time of the current game: the time spent paused does not count
+    let gameStartedAt = 0;
+    let pausedMs = 0;
 
     const flash = $derived(lastAnswer && now - lastAnswer.at < FLASH_MS ? lastAnswer.answer : null);
     const showMiss = $derived(
         game.phase === "gameOver" && feedback !== null && feedback.kind !== "hit" && now - feedback.at < MISS_SHOW_MS,
     );
+    const toast = $derived(visible(toasts, now));
 
     function update(next: GameState, time: number): void {
         if (next === game) return;
 
+        if (next.phase === "playing" && (game.phase === "menu" || game.phase === "gameOver")) {
+            gameStartedAt = time;
+            pausedMs = 0;
+            gameAwards = [];
+            toasts = [];
+        }
+        if (game.phase === "paused" && next.phase !== "paused") {
+            pausedMs += time - game.pausedAt;
+            toasts = delay(toasts, game.pausedAt, time - game.pausedAt);
+        }
+
         const solved =
             (next.phase === "playing" && game.phase === "playing" && next.level > game.level) ||
             (next.phase === "spamPause" && game.phase === "playing");
-        if (solved) {
+        if (game.phase === "playing" && solved) {
             feedback = { kind: "hit", at: time };
             playSound("hit");
+            const { expected } = game.challenge;
+            recordClear(
+                {
+                    level: game.level,
+                    modifiers: game.challenge.modifiers,
+                    reactionMs: expected === "true" || expected === "false" ? time - game.startedAt : null,
+                },
+                time,
+            );
         } else if (next.phase === "playing" && game.phase === "playing" && next.spamCount > game.spamCount) {
             playSound("spamTap", { rate: 2 ** (((next.spamCount - 1) * SPAM_STEP_SEMITONES) / 12) });
         }
@@ -87,8 +132,29 @@
             playSound(kind);
             // The jingle belongs to the game over screen, which appears after the lost level
             playSound(newRecord ? "record" : "gameOver", { delayMs: MISS_SHOW_MS });
+            stats = finishGame(stats, game.level, time - gameStartedAt - pausedMs);
+            saveStats(storage, stats);
         }
         game = next;
+    }
+
+    // Saved after every level, so progress survives closing the tab in the middle of a game
+    function recordClear(clear: LevelClear, time: number): void {
+        const result = clearLevel(stats, clear);
+        stats = result.stats;
+        saveStats(storage, stats);
+        if (result.unlocked.length === 0) return;
+
+        gameAwards = [...gameAwards, ...result.unlocked];
+        toasts = enqueue(toasts, result.unlocked, time);
+    }
+
+    // Another tab of the game saved something: take it over, so this tab does not overwrite it later
+    function onStorage(): void {
+        highscore = loadHighscore(storage);
+        settings = loadSettings(storage);
+        configureSound(settings);
+        stats = unlockMilestones(loadStats(storage), highscore);
     }
 
     function changeSettings(next: Settings): void {
@@ -101,19 +167,16 @@
     function resetAllData(): void {
         clearHighscore(storage);
         clearSettings(storage);
+        clearStats(storage);
         highscore = 0;
         settings = DEFAULT_SETTINGS;
+        stats = EMPTY_STATS;
         configureSound(DEFAULT_SETTINGS);
         playSound("click");
     }
 
-    function openSettings(): void {
-        view = "settings";
-        playSound("click");
-    }
-
-    function closeSettings(): void {
-        view = "game";
+    function showView(next: typeof view): void {
+        view = next;
         playSound("click");
     }
 
@@ -147,8 +210,8 @@
         // Held keys fire keydown repeatedly, that does not count as a new input
         if (event.repeat) return;
 
-        if (view === "settings") {
-            if (event.key === "Escape") closeSettings();
+        if (view !== "game") {
+            if (event.key === "Escape") showView("game");
             return;
         }
 
@@ -167,10 +230,10 @@
     }
 
     // During a level the left half of the screen answers TRUE and the right half FALSE.
-    // Menu and pause continue on any tap; game over and settings have their own buttons.
+    // Menu and pause continue on any tap; game over, settings and stats have their own buttons.
     function onPointerdown(event: PointerEvent): void {
         unlockAudio();
-        if (event.button !== 0 || game.phase === "gameOver" || view === "settings") return;
+        if (event.button !== 0 || game.phase === "gameOver" || view !== "game") return;
         // Buttons handle their own clicks, e.g. SETUP in the menu must not start a game
         if (event.target instanceof Element && event.target.closest("button")) return;
 
@@ -192,7 +255,13 @@
 </script>
 
 <!-- On touch screens only pointerup counts as a gesture that may start audio -->
-<svelte:window onkeydown={onKeydown} onpointerdown={onPointerdown} onpointerup={unlockAudio} onblur={onLeave} />
+<svelte:window
+    onkeydown={onKeydown}
+    onpointerdown={onPointerdown}
+    onpointerup={unlockAudio}
+    onblur={onLeave}
+    onstorage={onStorage}
+/>
 <svelte:document
     onvisibilitychange={() => {
         if (document.hidden) onLeave();
@@ -201,9 +270,11 @@
 
 <main class="stage" bind:clientWidth={width} bind:clientHeight={height}>
     {#if view === "settings"}
-        <SettingsScreen {settings} onchange={changeSettings} onreset={resetAllData} onback={closeSettings} />
+        <SettingsScreen {settings} onchange={changeSettings} onreset={resetAllData} onback={() => showView("game")} />
+    {:else if view === "stats"}
+        <StatsScreen {stats} {highscore} onback={() => showView("game")} />
     {:else if game.phase === "menu"}
-        <MenuScreen {highscore} onsetup={openSettings} />
+        <MenuScreen {highscore} onstats={() => showView("stats")} onsetup={() => showView("settings")} />
     {:else if game.phase === "playing"}
         <ChallengeScreen challenge={game.challenge} elapsed={now - game.startedAt} {width} {height} />
         <TopBar level={game.level} {highscore} remaining={remainingShare(game, now)} />
@@ -222,6 +293,7 @@
             score={game.score}
             {highscore}
             {newRecord}
+            awards={gameAwards}
             locked={isGameOverLocked(game, now)}
             onretry={goOn}
             onmenu={goToMenu}
@@ -231,6 +303,12 @@
     {#if feedback && now - feedback.at < FEEDBACK_MS}
         {#key feedback.at}
             <FeedbackFlash kind={feedback.kind} />
+        {/key}
+    {/if}
+
+    {#if toast && (game.phase === "playing" || game.phase === "spamPause")}
+        {#key toast.at}
+            <AwardToast award={awardById(toast.item)} />
         {/key}
     {/if}
 

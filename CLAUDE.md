@@ -24,8 +24,10 @@ Sounds are Kenney CC0 OGG files in `src/assets/sounds/` (source names in the REA
   the word size is fitted by measuring the real font. `sound.ts` wraps Web Audio: `unlockAudio()` on every input
   (browsers need a gesture; on touch only `pointerup` counts), sounds are decoded once.
 - `src/App.svelte` – the only stateful place: rAF loop, keyboard and pointer input (left/right screen half),
-  pause on `blur`/`visibilitychange`, highscore and settings persistence, sounds for game transitions in `update()`.
-  The settings screen is a `view` in App, not a game phase.
+  pause on `blur`/`visibilitychange`, highscore, settings and stats persistence, sounds and stats for game transitions
+  in `update()`. Settings and stats screens are a `view` in App, not a game phase.
+- Awards are defined in `src/game/awards.ts`; `src/game/stats.ts` counts cleared levels per award, is saved after every
+  cleared level and reports newly unlocked awards (toast in game, list on game over).
 
 ## Conventions
 

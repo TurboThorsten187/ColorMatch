@@ -1,15 +1,25 @@
 <script lang="ts">
+    import { awardById, type AwardId } from "../game/awards.ts";
+    import AwardBadge from "./AwardBadge.svelte";
+
     interface Props {
         score: number;
         highscore: number;
         newRecord: boolean;
+        // Unlocked during this game
+        awards: readonly AwardId[];
         // Buttons stay disabled for a moment so frantic taps cannot skip the result
         locked: boolean;
         onretry: () => void;
         onmenu: () => void;
     }
 
-    let { score, highscore, newRecord, locked, onretry, onmenu }: Props = $props();
+    let { score, highscore, newRecord, awards, locked, onretry, onmenu }: Props = $props();
+
+    // More rows would push the buttons off small screens
+    const MAX_LISTED = 3;
+
+    const listed = $derived(awards.slice(0, MAX_LISTED).map(awardById));
 </script>
 
 <div class="over">
@@ -30,6 +40,18 @@
         {#if newRecord}<span class="blink">NEW HI-SCORE!</span>{/if}
     </div>
 
+    {#if listed.length > 0}
+        <div class="awards">
+            <h2>NEW AWARDS</h2>
+            <ul>
+                {#each listed as award (award.id)}
+                    <li><span class="badge"><AwardBadge {award} /></span>{award.name}</li>
+                {/each}
+            </ul>
+            {#if awards.length > MAX_LISTED}<div class="more">+{awards.length - MAX_LISTED} MORE</div>{/if}
+        </div>
+    {/if}
+
     <div class="actions">
         <div class="continue">CONTINUE?</div>
         <button class="retry" disabled={locked} onclick={onretry}>RETRY</button>
@@ -44,9 +66,26 @@
         display: flex;
         flex-direction: column;
         align-items: center;
-        justify-content: center;
+        /* "safe" keeps the title reachable when the content is taller than the screen, which then scrolls */
+        justify-content: safe center;
         gap: max(28px, calc(4 * var(--unit)));
         padding: env(safe-area-inset-top) 0 env(safe-area-inset-bottom);
+        overflow-y: auto;
+        touch-action: pan-y;
+        scrollbar-width: thin;
+        scrollbar-color: #555 #000;
+    }
+
+    /* Phones in landscape */
+    @media (max-height: 520px) {
+        .over {
+            gap: 12px;
+            padding-block: calc(env(safe-area-inset-top) + 12px) calc(env(safe-area-inset-bottom) + 12px);
+        }
+
+        .over .title {
+            font-size: 22px;
+        }
     }
 
     .title {
@@ -86,6 +125,47 @@
         min-height: 1em;
         font-size: max(12px, calc(2 * var(--unit)));
         color: #ffe14d;
+    }
+
+    .awards {
+        width: min(320px, 84%);
+        box-sizing: border-box;
+        display: grid;
+        gap: 10px;
+        padding: 12px;
+        border: 3px solid #ffe14d;
+        font-size: 9px;
+    }
+
+    h2 {
+        margin: 0;
+        font-size: inherit;
+        font-weight: normal;
+        color: #ffe14d;
+    }
+
+    ul {
+        margin: 0;
+        padding: 0;
+        list-style: none;
+        display: grid;
+        gap: 8px;
+    }
+
+    li {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .badge {
+        width: 32px;
+        flex: none;
+        font-size: 8px;
+    }
+
+    .more {
+        color: #bbb;
     }
 
     .actions {

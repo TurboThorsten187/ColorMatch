@@ -26,9 +26,14 @@ verwischen oder die Regeln ändern:
 | Spam                         | 15       | fünfmal schnell drücken oder tippen (egal wo)    |
 | Inverted Colors              | 30       | alle Farben sind invertiert                      |
 
-Unter **SETUP** im Menü lassen sich Sound (an/aus, Lautstärke in 8 Stufen) und die Scanlines einstellen.
-**HOLD TO RESET** (1,5 s gedrückt halten) löscht Highscore und Einstellungen. Esc führt zurück ins Menü.
-Highscore und Einstellungen werden lokal im Browser gespeichert.
+Unter **STATS** im Menü stehen Spiele, Hi-Score, durchschnittliches Level (auf dem man verloren hat), durchschnittliche
+Reaktionszeit (nur Level mit TRUE/FALSE-Antwort) und Spielzeit ohne Pausen, dazu 13 Awards: Level 10, 25, 50 und 100
+schaffen sowie je 10 Level mit einem Modifier (beide Spiegel zählen zusammen). Badges antippen zeigt Bedingung und
+Fortschritt. Ein neuer Award erscheint sofort kurz unter dem Timer und wird auf dem Game-Over-Screen aufgelistet.
+
+Unter **SETUP** lassen sich Sound (an/aus, Lautstärke in 8 Stufen) und die Scanlines einstellen.
+**HOLD TO RESET** (1,5 s gedrückt halten) löscht Highscore, Stats, Awards und Einstellungen. Esc führt zurück ins
+Menü. Alles wird lokal im Browser gespeichert.
 
 Sounds gibt es für Treffer, Fehler, Zeitablauf, jeden Tipp einer Spam-Aufgabe (wird pro Tipp höher), Buttons sowie
 einen Jingle für Game Over und neuen Rekord. Sie starten erst nach der ersten Eingabe, weil Browser vorher keinen Ton
@@ -54,13 +59,13 @@ npm run preview    # Build lokal ansehen
 Das Spiel ist mit Svelte 5 und TypeScript gebaut (`src/`):
 
 - `src/game/` – reine Spiellogik ohne DOM: Zustandsautomat (`game.ts`), Aufgaben, Modifier, Farben, Highscore,
-  Einstellungen. Alle Übergänge sind Funktionen `(Zustand, Eingabe, Zeit, Zufall) → neuer Zustand` und damit direkt
-  testbar.
+  Einstellungen, Awards (`awards.ts`) und Stats (`stats.ts`). Alle Übergänge sind Funktionen
+  `(Zustand, Eingabe, Zeit, Zufall) → neuer Zustand` und damit direkt testbar.
 - `src/ui/` – Svelte-Komponenten für die einzelnen Screens; Modifier werden per CSS (Transform, Filter) dargestellt.
   `sound.ts` spielt die Sounds über die Web Audio API ab.
 - `src/assets/sounds/` – die Sound-Dateien.
 - `src/App.svelte` – verbindet beides: Spielschleife (`requestAnimationFrame`), Tastatur und Touch, Pause beim
-  Verlassen des Tabs, Highscore und Einstellungen speichern, Sounds zu Spielereignissen.
+  Verlassen des Tabs, Highscore, Einstellungen und Stats speichern, Sounds zu Spielereignissen.
 
 ## Credits
 
