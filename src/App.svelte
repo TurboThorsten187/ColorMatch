@@ -110,6 +110,9 @@
 
     function update(next: GameState, time: number): void {
         if (next === game) return;
+        // Inputs are handled between frames: without this, the screen of the new state would be drawn with the clock
+        // of the last frame, before the state began, and every "time since" would be negative for a frame
+        now = Math.max(now, time);
 
         // A new level with a modifier never seen before waits paused until its cards are read
         let shown = next;
@@ -282,7 +285,8 @@
         let frame = requestAnimationFrame(function loop(time) {
             // Asked for first, so an error in one frame cannot stop the game for good
             frame = requestAnimationFrame(loop);
-            now = time;
+            // A frame may start before an input that was already applied, the clock never runs backwards
+            now = Math.max(now, time);
             if (tutorial) changeTutorial(tickTutorial(tutorial, time), time);
             update(tick(game, time, rng), time);
         });
@@ -426,7 +430,13 @@
     {:else if game.phase === "menu"}
         <MenuScreen {highscore} onstats={() => showView("stats")} onsetup={() => showView("settings")} />
     {:else if game.phase === "playing"}
-        <ChallengeScreen challenge={game.challenge} elapsed={now - game.startedAt} {width} {height} />
+        <ChallengeScreen
+            challenge={game.challenge}
+            elapsed={now - game.startedAt}
+            spamCount={game.spamCount}
+            {width}
+            {height}
+        />
         <TopBar level={game.level} {highscore} remaining={remainingShare(game, now)} />
         <TapHints {flash} />
     {:else if showLoss && loss}

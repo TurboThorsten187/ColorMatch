@@ -55,7 +55,7 @@ export const INTROS: readonly ModifierIntro[] = [
         id: "blink",
         title: "BLINK",
         example: { text: "CYAN", color: "cyan" },
-        lines: ["THE WORD VANISHES", "AFTER 0.5 S", "*REMEMBER IT*"],
+        lines: ["THE WORD FADES AWAY", "IN UNDER A SECOND", "*REMEMBER IT*"],
         accent: "yellow",
     },
     {
@@ -69,7 +69,7 @@ export const INTROS: readonly ModifierIntro[] = [
         id: "rotation",
         title: "ROTATION",
         example: { text: "YELLOW", color: "yellow" },
-        lines: ["THE WORD IS ROTATED", "THE RULES STAY THE SAME"],
+        lines: ["THE WORD *SPINS*", "THE RULES STAY THE SAME"],
         accent: "yellow",
     },
     {

@@ -19,20 +19,20 @@ Der Balken oben zeigt die verbleibende Zeit: 3 s in Level 1, mit jedem Level etw
 1,2 s einpendelt. Ab Level 5 kommt alle 3 Level ein neuer Modifier dazu, zuerst die leichten, dann die mittleren, dann
 die schweren; innerhalb einer Stufe wird die Reihenfolge jede Runde neu gemischt.
 
-| Modifier                     | Stufe  | Wirkung                                          |
-| ---------------------------- | ------ | ------------------------------------------------ |
-| Vertical / Horizontal Mirror | leicht | Text wird gespiegelt                             |
-| Rotation                     | leicht | Text ist gedreht                                 |
-| Pulsing                      | leicht | Text wächst und schrumpft schnell                |
-| Shaky                        | leicht | Text zittert                                     |
-| Background Color             | mittel | farbiger Hintergrund als Ablenkung               |
-| Blurred                      | mittel | Text ist unscharf                                |
-| Moving                       | mittel | kleinerer Text gleitet über den Bildschirm       |
-| Don't Click                  | mittel | nichts drücken oder tippen, bis die Zeit abläuft |
-| Blink                        | mittel | Text verschwindet nach 0,5 s, Hintergrund bleibt |
-| Scrambled                    | schwer | Buchstaben werden laufend neu gemischt           |
-| Inverted Input               | schwer | richtige Antwort ist umgedreht                   |
-| Spam                         | schwer | fünfmal schnell drücken oder tippen (egal wo)    |
+| Modifier         | Stufe  | Wirkung                                                                                            |
+| ---------------- | ------ | -------------------------------------------------------------------------------------------------- |
+| Mirror           | leicht | Text ist senkrecht, waagrecht oder beides gespiegelt (steht dann auf dem Kopf)                     |
+| Rotation         | leicht | Text dreht sich, eine Umdrehung in 2,5 s                                                           |
+| Pulsing          | leicht | Text wächst und schrumpft schnell                                                                  |
+| Shaky            | leicht | Text zittert und kippt dabei leicht                                                                |
+| Background Color | mittel | zufälliger farbiger Hintergrund als Ablenkung                                                      |
+| Blurred          | mittel | Text ist unscharf                                                                                  |
+| Moving           | mittel | kleinerer Text gleitet schnell über den Bildschirm                                                 |
+| Don't Click      | mittel | nichts drücken oder tippen, bis die Zeit abläuft                                                   |
+| Blink            | mittel | Text blendet in 0,9 s aus, Hintergrund bleibt                                                      |
+| Scrambled        | schwer | Buchstaben werden laufend neu gemischt                                                             |
+| Inverted Input   | schwer | richtige Antwort ist umgedreht                                                                     |
+| Spam             | schwer | fünfmal schnell drücken oder tippen (egal wo), jeder Druck lässt ein Zeichen von SPAM! aufleuchten |
 
 Ein neuer Modifier kommt in seinem Einführungslevel allein und mit 1 s Extrazeit. Sonst wird gemischt: bis Level 14
 höchstens ein Modifier gleichzeitig, bis Level 29 zwei, danach drei, und frisch eingeführte kommen häufiger. Ab Level

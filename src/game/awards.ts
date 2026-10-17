@@ -70,7 +70,11 @@ export const AWARDS: readonly Award[] = [
     modifierAward("invertInput", "II", "TURNAROUND", "rule", "INVERTED INPUT", ["invertInput"]),
     modifierAward("noClick", "NC", "HANDS OFF", "rule", "DON'T CLICK", ["noClick"], "SIT OUT"),
     modifierAward("spam", "SP", "SPAM MASTER", "rule", "SPAM", ["spam"]),
-    modifierAward("mirror", "MR", "MIRROR MIND", "look", "MIRRORED", ["mirrorVertical", "mirrorHorizontal"]),
+    modifierAward("mirror", "MR", "MIRROR MIND", "look", "MIRRORED", [
+        "mirrorVertical",
+        "mirrorHorizontal",
+        "mirrorBoth",
+    ]),
     modifierAward("background", "BG", "NO LURE", "look", "BACKGROUND", ["background"]),
     modifierAward("blink", "BK", "BLINK", "look", "BLINK", ["blink"]),
     modifierAward("blur", "BL", "SHARP EYES", "look", "BLURRED", ["blur"]),

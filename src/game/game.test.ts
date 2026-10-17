@@ -11,6 +11,7 @@ import {
     resume,
     SPAM_PAUSE_MS,
     SPAM_PRESSES_NEEDED,
+    SPAM_WORD,
     startGame,
     tick,
     toMenu,
@@ -146,6 +147,10 @@ describe("game", () => {
 
             expect(groupsOf(next.challenge.modifiers)).not.toEqual(["spam"]);
         }
+    });
+
+    it("lights one character of SPAM! per press", () => {
+        expect(SPAM_WORD).toHaveLength(SPAM_PRESSES_NEEDED);
     });
 
     it("ends the game when a spam challenge is not finished in time", () => {

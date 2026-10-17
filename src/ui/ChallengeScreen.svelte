@@ -1,8 +1,9 @@
 <script lang="ts">
     import type { Challenge } from "../game/challenge.ts";
     import { COLOR_CSS } from "../game/colors.ts";
+    import { SPAM_WORD } from "../game/game.ts";
     import type { ModifierId } from "../game/modifiers.ts";
-    import { effectFontScale, scramble, wordMotion } from "./effects.ts";
+    import { effectFontScale, fadeOpacity, scramble, SHAKE_TILT_DEG, spin, wordMotion } from "./effects.ts";
     import { fitScale, textWidth } from "./fitText.ts";
     import { WORD_FONT, WORD_WEIGHT } from "./fonts.ts";
 
@@ -12,22 +13,24 @@
         elapsed: number;
         width: number;
         height: number;
+        // Presses so far in a SPAM! level, each one lights up a character
+        spamCount?: number;
         // The loss animation replaces the word with its falling pixels
         hideWord?: boolean;
         // The point the word is drawn around, with all its transformations
         anchor?: HTMLElement;
     }
 
-    let { challenge, elapsed, width, height, hideWord = false, anchor = $bindable() }: Props = $props();
+    let { challenge, elapsed, width, height, spamCount = 0, hideWord = false, anchor = $bindable() }: Props = $props();
 
-    const BLINK_VISIBLE_MS = 500;
+    const SPAM_DIM = "#3a3a3a";
     // Moving words stay out of the top bar and the TRUE / FALSE labels
     const FREE_HEIGHT_SHARE = 0.62;
 
     const has = (id: ModifierId): boolean => challenge.modifiers.has(id);
 
-    const blinkedOut = $derived(has("blink") && elapsed > BLINK_VISIBLE_MS);
-    const word = $derived(has("spam") ? "SPAM!" : challenge.word.toUpperCase());
+    const opacity = $derived(has("blink") ? fadeOpacity(elapsed) : 1);
+    const word = $derived(has("spam") ? SPAM_WORD : challenge.word.toUpperCase());
     const shownWord = $derived(has("scrambled") ? scramble(word, challenge.seed, elapsed) : word);
     const tags = $derived([
         ...(has("noClick") ? ["DON'T CLICK"] : []),
@@ -42,18 +45,21 @@
         return fitted * effectFontScale(challenge.modifiers);
     });
 
-    // Space the word takes up, a rotated word may point in any direction
+    // Space the word takes up, a rotated word may point in any direction and a shaking one tilts a little
     const extent = $derived.by(() => {
         const wordWidth = textWidth({ text: word, fontSize }, WORD_FONT, WORD_WEIGHT);
-        return has("rotation") ? { width: wordWidth, height: wordWidth } : { width: wordWidth, height: fontSize };
+        if (has("rotation")) return { width: wordWidth, height: wordWidth };
+        const tilt = has("shaky") ? wordWidth * Math.sin((SHAKE_TILT_DEG * Math.PI) / 180) : 0;
+        return { width: wordWidth, height: fontSize + tilt };
     });
 
     const transform = $derived.by(() => {
         const area = { width, height: height * FREE_HEIGHT_SHARE };
-        const { x, y, scale } = wordMotion(challenge.modifiers, challenge.seed, elapsed, area, extent);
-        const mirrorX = has("mirrorHorizontal") ? -1 : 1;
-        const mirrorY = has("mirrorVertical") ? -1 : 1;
-        return `translate(${x}px, ${y}px) rotate(${challenge.rotationDeg}deg) scale(${mirrorX * scale}, ${mirrorY * scale})`;
+        const { x, y, scale, rotation } = wordMotion(challenge.modifiers, challenge.seed, elapsed, area, extent);
+        const turned = rotation + (has("rotation") ? challenge.rotationDeg + spin(challenge.seed, elapsed) : 0);
+        const mirrorX = has("mirrorHorizontal") || has("mirrorBoth") ? -1 : 1;
+        const mirrorY = has("mirrorVertical") || has("mirrorBoth") ? -1 : 1;
+        return `translate(${x}px, ${y}px) rotate(${turned}deg) scale(${mirrorX * scale}, ${mirrorY * scale})`;
     });
 </script>
 
@@ -66,16 +72,25 @@
         </div>
     {/if}
 
-    <!-- Blink only hides the word, background and tags stay -->
-    {#if !blinkedOut && !hideWord}
+    <!-- Blink only fades the word, background and tags stay -->
+    {#if opacity > 0 && !hideWord}
         <div
             bind:this={anchor}
             class="anchor"
             style:transform
             style:filter={has("blur") ? "blur(10px)" : null}
+            style:opacity={opacity < 1 ? opacity : null}
             style:color={COLOR_CSS[challenge.color]}
         >
-            <div class="word" style:font-size="{fontSize}px">{shownWord}</div>
+            <div class="word" style:font-size="{fontSize}px">
+                {#if has("spam")}
+                    {#each [...shownWord] as character, index (index)}
+                        <span style:color={index < spamCount ? null : SPAM_DIM}>{character}</span>
+                    {/each}
+                {:else}
+                    {shownWord}
+                {/if}
+            </div>
         </div>
     {/if}
 </div>
