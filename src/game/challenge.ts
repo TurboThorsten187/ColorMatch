@@ -1,5 +1,5 @@
 import { type Color, COLORS, randomColor } from "./colors.ts";
-import { type ModifierId, pickModifiers } from "./modifiers.ts";
+import { groupById, type ModifierGroupId, type ModifierId } from "./modifiers.ts";
 import type { Rng } from "./random.ts";
 
 // "true": the word names its own ink color, "false": it does not
@@ -17,13 +17,20 @@ export interface Challenge {
     readonly background: Color | null;
     // Only non-zero with the rotation modifier
     readonly rotationDeg: number;
+    // Between 0 and 1, makes moving, shaking, pulsing and scrambling look different on every level
+    readonly seed: number;
 }
 
-export function createChallenge(level: number, rng: Rng): Challenge {
+export function createChallenge(groups: readonly ModifierGroupId[], level: number, rng: Rng): Challenge {
     const color = randomColor(rng);
     const matches = rng() >= 0.5;
     const word = matches ? color : randomColor(rng, color);
-    const modifiers = pickModifiers(level, rng);
+    const modifiers: ReadonlySet<ModifierId> = new Set(
+        groups.map((id) => {
+            const { variants } = groupById(id);
+            return variants[Math.floor(rng() * variants.length)];
+        }),
+    );
     const expected = expectedInput(matches ? "true" : "false", modifiers);
 
     return {
@@ -33,6 +40,7 @@ export function createChallenge(level: number, rng: Rng): Challenge {
         expected,
         background: modifiers.has("background") ? backgroundColor(word, color, expected, modifiers, level) : null,
         rotationDeg: modifiers.has("rotation") ? rotationDeg(level) : 0,
+        seed: rng(),
     };
 }
 

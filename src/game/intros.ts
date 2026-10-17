@@ -1,15 +1,13 @@
 import type { Color } from "./colors.ts";
 import type { GameState } from "./game.ts";
-import type { ModifierId } from "./modifiers.ts";
+import { groupsOf, type ModifierGroupId, type ModifierId } from "./modifiers.ts";
 
-// One card per modifier, both mirrors share one
-export type IntroId =
-    "invertInput" | "noClick" | "spam" | "mirror" | "background" | "blink" | "blur" | "rotation" | "invertColors";
+// One card per modifier group, both mirrors share one
+export type IntroId = ModifierGroupId;
 
 export interface ModifierIntro {
     readonly id: IntroId;
     readonly title: string;
-    readonly modifiers: readonly ModifierId[];
     // Shown on the card with the modifier's effect applied
     readonly example: { readonly text: string; readonly color: Color };
     // Words between * are highlighted in the accent color
@@ -21,7 +19,6 @@ export const INTROS: readonly ModifierIntro[] = [
     {
         id: "invertInput",
         title: "INVERTED INPUT",
-        modifiers: ["invertInput"],
         example: { text: "BLUE", color: "blue" },
         lines: ["IT MATCHES, BUT...", "ANSWER THE *OPPOSITE*", "TAP RIGHT · FALSE"],
         accent: "red",
@@ -29,7 +26,6 @@ export const INTROS: readonly ModifierIntro[] = [
     {
         id: "noClick",
         title: "DON'T CLICK",
-        modifiers: ["noClick"],
         example: { text: "DON'T CLICK", color: "red" },
         lines: ["HANDS *OFF*!", "WAIT UNTIL", "THE TIMER RUNS OUT"],
         accent: "red",
@@ -37,7 +33,6 @@ export const INTROS: readonly ModifierIntro[] = [
     {
         id: "spam",
         title: "SPAM",
-        modifiers: ["spam"],
         example: { text: "SPAM!", color: "yellow" },
         lines: ["TAP *5 TIMES*,", "ANYWHERE, FAST"],
         accent: "yellow",
@@ -45,7 +40,6 @@ export const INTROS: readonly ModifierIntro[] = [
     {
         id: "mirror",
         title: "MIRRORED",
-        modifiers: ["mirrorVertical", "mirrorHorizontal"],
         example: { text: "GREEN", color: "green" },
         lines: ["THE WORD IS MIRRORED", "THE RULES STAY THE SAME"],
         accent: "yellow",
@@ -53,7 +47,6 @@ export const INTROS: readonly ModifierIntro[] = [
     {
         id: "background",
         title: "BACKGROUND",
-        modifiers: ["background"],
         example: { text: "RED", color: "blue" },
         lines: ["THE BACKGROUND", "TRIES TO FOOL YOU", "ONLY THE *TEXT COLOR* COUNTS"],
         accent: "yellow",
@@ -61,7 +54,6 @@ export const INTROS: readonly ModifierIntro[] = [
     {
         id: "blink",
         title: "BLINK",
-        modifiers: ["blink"],
         example: { text: "CYAN", color: "cyan" },
         lines: ["THE WORD VANISHES", "AFTER 0.5 S", "*REMEMBER IT*"],
         accent: "yellow",
@@ -69,7 +61,6 @@ export const INTROS: readonly ModifierIntro[] = [
     {
         id: "blur",
         title: "BLURRED",
-        modifiers: ["blur"],
         example: { text: "PURPLE", color: "purple" },
         lines: ["THE WORD IS BLURRED", "*LOOK CLOSELY*"],
         accent: "yellow",
@@ -77,7 +68,6 @@ export const INTROS: readonly ModifierIntro[] = [
     {
         id: "rotation",
         title: "ROTATION",
-        modifiers: ["rotation"],
         example: { text: "YELLOW", color: "yellow" },
         lines: ["THE WORD IS ROTATED", "THE RULES STAY THE SAME"],
         accent: "yellow",
@@ -85,9 +75,36 @@ export const INTROS: readonly ModifierIntro[] = [
     {
         id: "invertColors",
         title: "INVERTED COLORS",
-        modifiers: ["invertColors"],
         example: { text: "RED", color: "red" },
         lines: ["ALL COLORS ARE FLIPPED", "JUDGE THE *ORIGINAL* COLOR:"],
+        accent: "yellow",
+    },
+    {
+        id: "moving",
+        title: "MOVING",
+        example: { text: "GREEN", color: "green" },
+        lines: ["THE WORD *MOVES AROUND*", "THE RULES STAY THE SAME"],
+        accent: "yellow",
+    },
+    {
+        id: "scrambled",
+        title: "SCRAMBLED",
+        example: { text: "BLUE", color: "blue" },
+        lines: ["THE LETTERS ARE *MIXED UP*", "READ THE WORD ANYWAY"],
+        accent: "yellow",
+    },
+    {
+        id: "shaky",
+        title: "SHAKY",
+        example: { text: "PURPLE", color: "purple" },
+        lines: ["THE WORD *SHAKES*", "THE RULES STAY THE SAME"],
+        accent: "yellow",
+    },
+    {
+        id: "pulsing",
+        title: "PULSING",
+        example: { text: "RED", color: "red" },
+        lines: ["THE WORD *PULSES*", "THE RULES STAY THE SAME"],
         accent: "yellow",
     },
 ];
@@ -100,9 +117,7 @@ export function introById(id: IntroId): ModifierIntro {
 
 // The cards a level needs before it starts, each one only the first time its modifier shows up
 export function newIntros(modifiers: ReadonlySet<ModifierId>, seen: readonly IntroId[]): IntroId[] {
-    return INTROS.filter(
-        (intro) => !seen.includes(intro.id) && intro.modifiers.some((modifier) => modifiers.has(modifier)),
-    ).map((intro) => intro.id);
+    return groupsOf(modifiers).filter((id) => !seen.includes(id));
 }
 
 // Cards are due when a level begins, not when a paused level continues or a SPAM! tap stays on the same level

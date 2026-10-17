@@ -13,11 +13,13 @@ import {
     SPAM_PRESSES_NEEDED,
     startGame,
     tick,
-    timeLimitFor,
     toMenu,
 } from "./game.ts";
+import { groupsOf, MODIFIER_GROUPS } from "./modifiers.ts";
+import { timeLimitFor } from "./progression.ts";
 
 const rng = Math.random;
+const CURRICULUM = MODIFIER_GROUPS.map((group) => group.id);
 
 function playing(expected: ExpectedInput, level = 1): PlayingState {
     return {
@@ -26,14 +28,16 @@ function playing(expected: ExpectedInput, level = 1): PlayingState {
         challenge: {
             word: "red",
             color: "red",
-            modifiers: new Set(),
+            modifiers: new Set(expected === "spam" ? ["spam"] : []),
             expected,
             background: null,
             rotationDeg: 0,
+            seed: 0,
         },
         startedAt: 0,
-        timeLimit: timeLimitFor(level),
+        timeLimit: timeLimitFor(level, 0, false),
         spamCount: 0,
+        curriculum: CURRICULUM,
     };
 }
 
@@ -54,7 +58,20 @@ describe("game", () => {
     });
 
     it("restarts the timer for the next level", () => {
-        expect(answer(playing("true"), "true", 500, rng)).toMatchObject({ startedAt: 500, timeLimit: 2900 });
+        expect(answer(playing("true"), "true", 500, rng)).toMatchObject({
+            startedAt: 500,
+            timeLimit: timeLimitFor(2, 0, false),
+        });
+    });
+
+    it("keeps the order of new modifiers for the whole game", () => {
+        const started = startGame(0, rng);
+        if (started.phase !== "playing") throw new Error("Game did not start");
+        const spam = { ...playing("spam"), curriculum: started.curriculum, spamCount: SPAM_PRESSES_NEEDED - 1 };
+
+        expect(answer(playing("true"), "true", 500, rng)).toMatchObject({ curriculum: CURRICULUM });
+        expect(tick(playing("none"), 1e6, rng)).toMatchObject({ curriculum: CURRICULUM });
+        expect(answer(spam, "true", 0, rng)).toMatchObject({ phase: "spamPause", curriculum: started.curriculum });
     });
 
     it("ends the game on a wrong answer with the solved levels as score", () => {
@@ -91,7 +108,13 @@ describe("game", () => {
         }
 
         state = answer(state, "true", 100, rng);
-        expect(state).toEqual({ phase: "spamPause", level: 1, resumeAt: 100 + SPAM_PAUSE_MS });
+        expect(state).toEqual({
+            phase: "spamPause",
+            level: 1,
+            resumeAt: 100 + SPAM_PAUSE_MS,
+            curriculum: CURRICULUM,
+            groups: ["spam"],
+        });
 
         expect(tick(state, 100 + SPAM_PAUSE_MS - 1, rng)).toBe(state);
         expect(tick(state, 100 + SPAM_PAUSE_MS, rng)).toMatchObject({
@@ -101,10 +124,26 @@ describe("game", () => {
         });
     });
 
+    it("does not repeat the SPAM! level's modifiers right after the spam pause", () => {
+        const spamPause: GameState = {
+            phase: "spamPause",
+            level: 44,
+            resumeAt: 0,
+            curriculum: CURRICULUM,
+            groups: ["spam"],
+        };
+        for (let run = 0; run < 300; run++) {
+            const next = tick(spamPause, 0, rng);
+            if (next.phase !== "playing") throw new Error("Spam pause did not end");
+
+            expect(groupsOf(next.challenge.modifiers)).not.toEqual(["spam"]);
+        }
+    });
+
     it("ends the game when a spam challenge is not finished in time", () => {
         const state = answer(playing("spam"), "true", 100, rng);
 
-        expect(tick(state, timeLimitFor(1) + 1, rng).phase).toBe("gameOver");
+        expect(tick(state, timeLimitFor(1, 0, false) + 1, rng).phase).toBe("gameOver");
     });
 
     it("ignores answers and time outside of a running level", () => {
@@ -114,14 +153,6 @@ describe("game", () => {
         expect(answer(over, "true", 0, rng)).toBe(over);
         expect(tick(MENU, 1e9, rng)).toBe(MENU);
         expect(tick(over, 1e9, rng)).toBe(over);
-    });
-
-    it("shortens the time limit per level down to a minimum", () => {
-        expect(timeLimitFor(1)).toBe(3000);
-        expect(timeLimitFor(2)).toBe(2900);
-        expect(timeLimitFor(10)).toBe(2500);
-        expect(timeLimitFor(30)).toBe(1500);
-        expect(timeLimitFor(100)).toBe(1500);
     });
 });
 
@@ -143,10 +174,10 @@ describe("pause", () => {
     });
 
     it("also delays the end of the spam pause", () => {
-        const state: GameState = { phase: "spamPause", level: 3, resumeAt: 1000 };
+        const state: GameState = { phase: "spamPause", level: 3, resumeAt: 1000, curriculum: CURRICULUM, groups: [] };
         const resumed = resume(pause(state, 500), 10500);
 
-        expect(resumed).toEqual({ phase: "spamPause", level: 3, resumeAt: 11000 });
+        expect(resumed).toEqual({ ...state, resumeAt: 11000 });
     });
 
     it("ignores answers and time while paused", () => {
@@ -185,7 +216,13 @@ describe("confirm", () => {
 
     it("does nothing during a level or the spam pause", () => {
         const state = playing("true");
-        const spamPause: GameState = { phase: "spamPause", level: 1, resumeAt: 100 };
+        const spamPause: GameState = {
+            phase: "spamPause",
+            level: 1,
+            resumeAt: 100,
+            curriculum: CURRICULUM,
+            groups: [],
+        };
 
         expect(confirm(state, 10, rng)).toBe(state);
         expect(confirm(spamPause, 10, rng)).toBe(spamPause);

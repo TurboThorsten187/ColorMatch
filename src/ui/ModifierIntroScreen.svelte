@@ -1,16 +1,43 @@
 <script lang="ts">
     import { COLOR_CSS, COLORS } from "../game/colors.ts";
-    import type { ModifierIntro } from "../game/intros.ts";
+    import type { IntroId, ModifierIntro } from "../game/intros.ts";
+    import { groupById, type ModifierId } from "../game/modifiers.ts";
+    import { scramble, wordMotion } from "./effects.ts";
 
     interface Props {
         intro: ModifierIntro;
         level: number;
+        // Time since the card appeared in ms, drives the animated examples
+        elapsed: number;
         ongotit: () => void;
     }
 
-    let { intro, level, ongotit }: Props = $props();
+    let { intro, level, elapsed, ongotit }: Props = $props();
 
     const TIMER_SEGMENTS = Array.from({ length: 10 }, (_, i) => i);
+    // Their examples are animated with the game's own effect functions
+    const ANIMATED: ReadonlySet<IntroId> = new Set(["moving", "scrambled", "shaky", "pulsing"]);
+    const EXAMPLE_SEED = 0.37;
+
+    let boxWidth = $state(0);
+    let boxHeight = $state(0);
+    let wordWidth = $state(0);
+    let wordHeight = $state(0);
+
+    const effects = $derived<ReadonlySet<ModifierId>>(
+        new Set(ANIMATED.has(intro.id) ? groupById(intro.id).variants : []),
+    );
+    const exampleText = $derived(
+        effects.has("scrambled") ? scramble(intro.example.text, EXAMPLE_SEED, elapsed) : intro.example.text,
+    );
+    const motion = $derived.by(() => {
+        const area = { width: boxWidth, height: boxHeight };
+        const { x, y, scale } = wordMotion(effects, EXAMPLE_SEED, elapsed, area, {
+            width: wordWidth,
+            height: wordHeight,
+        });
+        return `translate(${x}px, ${y}px) scale(${scale})`;
+    });
 
     // What each color looks like with Inverted Colors (CSS invert)
     function inverted(css: string): string {
@@ -40,7 +67,7 @@
     <div class="card" role="dialog" aria-labelledby="intro-title">
         <h1 id="intro-title">{intro.title}</h1>
 
-        <div class="example" aria-hidden="true">
+        <div class="example" aria-hidden="true" bind:clientWidth={boxWidth} bind:clientHeight={boxHeight}>
             {#if intro.id === "noClick"}
                 <span class="tag">{intro.example.text}</span>
             {:else}
@@ -52,7 +79,10 @@
                     class:invert={intro.id === "invertColors"}
                     class:vanish={intro.id === "blink"}
                     class:lure={intro.id === "background"}
-                    style:color={COLOR_CSS[intro.example.color]}>{intro.example.text}</span
+                    style:color={COLOR_CSS[intro.example.color]}
+                    style:transform={effects.size > 0 ? motion : null}
+                    bind:clientWidth={wordWidth}
+                    bind:clientHeight={wordHeight}>{exampleText}</span
                 >
             {/if}
         </div>
@@ -158,6 +188,7 @@
     }
 
     .word {
+        display: inline-block;
         font-family: Orbitron, sans-serif;
         font-weight: 900;
         font-size: max(40px, calc(5 * var(--unit)));

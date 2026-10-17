@@ -11,20 +11,31 @@ Ein schnelles Reaktionsspiel im Browser: Passt das angezeigte Wort zu seiner Sch
 
 Wechselt man den Tab oder die App, pausiert das Spiel; danach geht es mit derselben Aufgabe und der Restzeit weiter.
 
-Der Balken oben zeigt die verbleibende Zeit, mit jedem Level wird sie knapper. Ab Level 5 kommen Modifier dazu, die den Text spiegeln, drehen,
-verwischen oder die Regeln ändern:
+Der Balken oben zeigt die verbleibende Zeit: 3 s in Level 1, mit jedem Level etwas weniger, bis es sich bei gut
+1,2 s einpendelt. Ab Level 5 kommt alle 3 Level ein neuer Modifier dazu, zuerst die leichten, dann die mittleren, dann
+die schweren; innerhalb einer Stufe wird die Reihenfolge jede Runde neu gemischt.
 
-| Modifier                     | ab Level | Wirkung                                          |
-| ---------------------------- | -------- | ------------------------------------------------ |
-| Vertical / Horizontal Mirror | 5        | Text wird gespiegelt                             |
-| Background Color             | 5        | farbiger Hintergrund als Ablenkung               |
-| Inverted Input               | 10       | richtige Antwort ist umgedreht                   |
-| Don't Click                  | 10       | nichts drücken oder tippen, bis die Zeit abläuft |
-| Blink                        | 10       | Text verschwindet nach 0,5 s, Hintergrund bleibt |
-| Blurred                      | 10       | Text ist unscharf                                |
-| Rotation                     | 10       | Text ist gedreht                                 |
-| Spam                         | 15       | fünfmal schnell drücken oder tippen (egal wo)    |
-| Inverted Colors              | 30       | alle Farben sind invertiert                      |
+| Modifier                     | Stufe  | Wirkung                                          |
+| ---------------------------- | ------ | ------------------------------------------------ |
+| Vertical / Horizontal Mirror | leicht | Text wird gespiegelt                             |
+| Rotation                     | leicht | Text ist gedreht                                 |
+| Pulsing                      | leicht | Text wächst und schrumpft schnell                |
+| Shaky                        | leicht | Text zittert                                     |
+| Background Color             | mittel | farbiger Hintergrund als Ablenkung               |
+| Blurred                      | mittel | Text ist unscharf                                |
+| Moving                       | mittel | kleinerer Text gleitet über den Bildschirm       |
+| Don't Click                  | mittel | nichts drücken oder tippen, bis die Zeit abläuft |
+| Blink                        | mittel | Text verschwindet nach 0,5 s, Hintergrund bleibt |
+| Scrambled                    | schwer | Buchstaben werden laufend neu gemischt           |
+| Inverted Input               | schwer | richtige Antwort ist umgedreht                   |
+| Spam                         | schwer | fünfmal schnell drücken oder tippen (egal wo)    |
+| Inverted Colors              | schwer | alle Farben sind invertiert                      |
+
+Ein neuer Modifier kommt in seinem Einführungslevel allein und mit 1 s Extrazeit. Sonst wird gemischt: bis Level 14
+höchstens ein Modifier gleichzeitig, bis Level 29 zwei, danach drei, und frisch eingeführte kommen häufiger. Ab Level
+15 kommt ein neuer Modifier im Level nach seiner Einführung meist gleich noch einmal, zusammen mit einem bekannten.
+Jeder weitere Modifier in einem Level bringt 0,3 s Extrazeit. Höchstens einer pro Level ändert die Regeln (Inverted
+Input, Don't Click, Spam), und dieselbe Kombination kommt nie zweimal hintereinander.
 
 Beim allerersten Start erklärt ein kurzes Tutorial das Spiel: drei Karten, nach jeder wird sofort geübt (vier Wörter
 ohne Zeitdruck, die richtige Seite blinkt, ein falsches Wort kommt nochmal). **SKIP** oder Esc überspringt es, danach
@@ -32,7 +43,7 @@ startet direkt das Spiel. Taucht ein Modifier zum ersten Mal auf, pausiert das L
 erklärt ihn; **GOT IT** (oder Enter) spielt weiter. Jede Karte erscheint nur einmal.
 
 Unter **STATS** im Menü stehen Spiele, Hi-Score, durchschnittliches Level (auf dem man verloren hat), durchschnittliche
-Reaktionszeit (nur Level mit TRUE/FALSE-Antwort) und Spielzeit ohne Pausen, dazu 13 Awards: Level 10, 25, 50 und 100
+Reaktionszeit (nur Level mit TRUE/FALSE-Antwort) und Spielzeit ohne Pausen, dazu 17 Awards: Level 10, 25, 50 und 100
 schaffen sowie je 10 Level mit einem Modifier (beide Spiegel zählen zusammen). Badges antippen zeigt Bedingung und
 Fortschritt. Ein neuer Award erscheint sofort kurz unter dem Timer und wird auf dem Game-Over-Screen aufgelistet.
 
@@ -65,10 +76,11 @@ npm run preview    # Build lokal ansehen
 Das Spiel ist mit Svelte 5 und TypeScript gebaut (`src/`):
 
 - `src/game/` – reine Spiellogik ohne DOM: Zustandsautomat (`game.ts`), Aufgaben, Modifier, Farben, Highscore,
-  Einstellungen, Awards (`awards.ts`), Stats (`stats.ts`), Tutorial (`tutorial.ts`) und Modifier-Karten
-  (`intros.ts`). Alle Übergänge sind Funktionen `(Zustand, Eingabe, Zeit, Zufall) → neuer Zustand` und damit direkt
-  testbar.
-- `src/ui/` – Svelte-Komponenten für die einzelnen Screens; Modifier werden per CSS (Transform, Filter) dargestellt.
+  Einstellungen, Awards (`awards.ts`), Stats (`stats.ts`), Tutorial (`tutorial.ts`), Modifier-Karten
+  (`intros.ts`) und Progression (`progression.ts`: Einführungsreihenfolge, Auswahl pro Level, Zeitlimit). Alle
+  Übergänge sind Funktionen `(Zustand, Eingabe, Zeit, Zufall) → neuer Zustand` und damit direkt testbar.
+- `src/ui/` – Svelte-Komponenten für die einzelnen Screens; Modifier werden per CSS (Transform, Filter) dargestellt,
+  Bewegung, Zittern, Pulsieren und Mischen berechnet `effects.ts` aus der Zeit seit Levelbeginn.
   `sound.ts` spielt die Sounds über die Web Audio API ab.
 - `src/assets/sounds/` – die Sound-Dateien.
 - `src/App.svelte` – verbindet beides: Spielschleife (`requestAnimationFrame`), Tastatur und Touch, Pause beim
