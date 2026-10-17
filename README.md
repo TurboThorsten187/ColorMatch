@@ -37,7 +37,10 @@ die schweren; innerhalb einer Stufe wird die Reihenfolge jede Runde neu gemischt
 Ein neuer Modifier kommt in seinem Einführungslevel allein und mit 1 s Extrazeit. Sonst wird gemischt: bis Level 14
 höchstens ein Modifier gleichzeitig, bis Level 29 zwei, danach drei, und frisch eingeführte kommen häufiger. Ab Level
 15 kommt ein neuer Modifier im Level nach seiner Einführung meist gleich noch einmal, zusammen mit einem bekannten.
-Jeder weitere Modifier in einem Level bringt 0,3 s Extrazeit. Höchstens einer pro Level ändert die Regeln (Inverted
+Jeder weitere Modifier in einem Level bringt 0,3 s Extrazeit. Rotation, Pulsing, Shaky, Moving, Blink und Scrambled
+werden mit dem Level schneller, so wie die Zeit pro Level schrumpft (bis gut doppelt so schnell ab Level 40). Jeder
+startet bei seiner Einführung im normalen Tempo und holt dann innerhalb von 8 Leveln auf; ein spät eingeführter wird
+also schneller schnell als ein früher. Höchstens einer pro Level ändert die Regeln (Inverted
 Input, Don't Click, Spam), und dieselbe Kombination kommt nie zweimal hintereinander.
 
 Beim allerersten Start erklärt ein kurzes Tutorial das Spiel: drei Karten, nach jeder wird sofort geübt (vier Wörter

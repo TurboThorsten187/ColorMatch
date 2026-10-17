@@ -78,6 +78,15 @@ describe("word motion", () => {
         expect(Math.sign(spin(0.2, 100))).not.toBe(Math.sign(spin(0.8, 100)));
     });
 
+    it("moves, shakes and pulses faster with a higher tempo", () => {
+        const modifiers = set("moving", "shaky", "pulsing");
+        const tempo = { moving: 2, shaky: 2, pulsing: 2 };
+
+        expect(wordMotion(modifiers, 0.4, 600, AREA, WORD, tempo)).toEqual(
+            wordMotion(modifiers, 0.4, 1200, AREA, WORD),
+        );
+    });
+
     it("fades a blinking word out within 0.9 s", () => {
         expect(fadeOpacity(0)).toBe(1);
         expect(fadeOpacity(450)).toBeCloseTo(0.5);

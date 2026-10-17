@@ -56,9 +56,27 @@ export function plainChance(level: number): number {
 }
 
 export function timeLimitFor(level: number, groupCount: number, intro: boolean): number {
-    const base = BASE_MIN_MS + BASE_RANGE_MS * BASE_DECAY ** (level - 1);
     const bonus = (intro ? INTRO_BONUS_MS : 0) + EXTRA_GROUP_BONUS_MS * Math.max(0, groupCount - 1);
-    return Math.round(base + bonus);
+    return Math.round(baseLimit(level) + bonus);
+}
+
+// Animated modifiers (spin, pulse, shake, movement, fade, scramble) speed up as much as the time limit shrinks:
+// normal speed at the first intro level, about twice as fast from level 40 on
+export function levelTempo(level: number): number {
+    return Math.max(1, baseLimit(FIRST_INTRO_LEVEL) / baseLimit(level));
+}
+
+export const TEMPO_CATCH_UP_LEVELS = 8;
+
+// Every modifier starts at normal speed on its intro level and reaches the level's tempo within a few levels, so one
+// introduced late speeds up faster than one introduced early
+export function tempoFor(level: number, introducedOn: number): number {
+    const catchUp = Math.min(1, Math.max(0, (level - introducedOn) / TEMPO_CATCH_UP_LEVELS));
+    return 1 - catchUp + catchUp * levelTempo(level);
+}
+
+function baseLimit(level: number): number {
+    return BASE_MIN_MS + BASE_RANGE_MS * BASE_DECAY ** (level - 1);
 }
 
 // The modifier groups of a level. `previous` are the groups of the level before, never repeated as they were.

@@ -2,7 +2,7 @@
     import type { Challenge } from "../game/challenge.ts";
     import { COLOR_CSS } from "../game/colors.ts";
     import { SPAM_WORD } from "../game/game.ts";
-    import type { ModifierId } from "../game/modifiers.ts";
+    import type { ModifierGroupId, ModifierId } from "../game/modifiers.ts";
     import { effectFontScale, fadeOpacity, scramble, SHAKE_TILT_DEG, spin, wordMotion } from "./effects.ts";
     import { fitScale, textWidth } from "./fitText.ts";
     import { WORD_FONT, WORD_WEIGHT } from "./fonts.ts";
@@ -29,9 +29,12 @@
 
     const has = (id: ModifierId): boolean => challenge.modifiers.has(id);
 
-    const opacity = $derived(has("blink") ? fadeOpacity(elapsed) : 1);
+    // Animations play faster in later levels: the time each one has run, at its own tempo
+    const played = (id: ModifierGroupId): number => elapsed * (challenge.tempo[id] ?? 1);
+
+    const opacity = $derived(has("blink") ? fadeOpacity(played("blink")) : 1);
     const word = $derived(has("spam") ? SPAM_WORD : challenge.word.toUpperCase());
-    const shownWord = $derived(has("scrambled") ? scramble(word, challenge.seed, elapsed) : word);
+    const shownWord = $derived(has("scrambled") ? scramble(word, challenge.seed, played("scrambled")) : word);
     const tags = $derived([
         ...(has("noClick") ? ["DON'T CLICK"] : []),
         ...(has("invertInput") ? ["INVERTED INPUT"] : []),
@@ -55,8 +58,16 @@
 
     const transform = $derived.by(() => {
         const area = { width, height: height * FREE_HEIGHT_SHARE };
-        const { x, y, scale, rotation } = wordMotion(challenge.modifiers, challenge.seed, elapsed, area, extent);
-        const turned = rotation + (has("rotation") ? challenge.rotationDeg + spin(challenge.seed, elapsed) : 0);
+        const { x, y, scale, rotation } = wordMotion(
+            challenge.modifiers,
+            challenge.seed,
+            elapsed,
+            area,
+            extent,
+            challenge.tempo,
+        );
+        const turned =
+            rotation + (has("rotation") ? challenge.rotationDeg + spin(challenge.seed, played("rotation")) : 0);
         const mirrorX = has("mirrorHorizontal") || has("mirrorBoth") ? -1 : 1;
         const mirrorY = has("mirrorVertical") || has("mirrorBoth") ? -1 : 1;
         return `translate(${x}px, ${y}px) rotate(${turned}deg) scale(${mirrorX * scale}, ${mirrorY * scale})`;

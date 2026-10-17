@@ -1,3 +1,4 @@
+import type { Tempo } from "../game/challenge.ts";
 import type { ModifierId } from "../game/modifiers.ts";
 
 // Moving, shaking, pulsing, spinning, fading and scrambling only depend on the time since the word appeared and the
@@ -47,13 +48,14 @@ export function effectFontScale(modifiers: ReadonlySet<ModifierId>): number {
 }
 
 // Offset and scale of the word inside `area`, the free rectangle around the screen center. `word` is the space
-// the word takes up at scale 1.
+// the word takes up at scale 1. `tempo` speeds up moving, shaking and pulsing.
 export function wordMotion(
     modifiers: ReadonlySet<ModifierId>,
     seed: number,
     elapsed: number,
     area: Size,
     word: Size,
+    tempo: Tempo = {},
 ): WordMotion {
     const shakeX = modifiers.has("shaky") ? area.width * SHAKE_X : 0;
     const shakeY = modifiers.has("shaky") ? area.height * SHAKE_Y : 0;
@@ -65,16 +67,18 @@ export function wordMotion(
         const grown = modifiers.has("pulsing") ? PULSE_MAX : 1;
         const roomX = Math.max(0, (area.width - word.width * grown) / 2 - MOVING_MARGIN - shakeX);
         const roomY = Math.max(0, (area.height - word.height * grown) / 2 - shakeY);
-        x += roomX * triangle(elapsed / MOVING_PERIOD_X_MS + seed);
-        y += roomY * triangle(elapsed / MOVING_PERIOD_Y_MS + seed * 1.7);
+        const moved = elapsed * (tempo.moving ?? 1);
+        x += roomX * triangle(moved / MOVING_PERIOD_X_MS + seed);
+        y += roomY * triangle(moved / MOVING_PERIOD_Y_MS + seed * 1.7);
     }
     if (modifiers.has("shaky")) {
-        const step = Math.floor(elapsed / SHAKE_STEP_MS);
+        const step = Math.floor((elapsed * (tempo.shaky ?? 1)) / SHAKE_STEP_MS);
         x += shakeX * signedNoise(seed, step, 1);
         y += shakeY * signedNoise(seed, step, 2);
         rotation = SHAKE_TILT_DEG * signedNoise(seed, step, 3);
     }
-    return { x, y, scale: modifiers.has("pulsing") ? pulseScale(seed, elapsed) : 1, rotation };
+    const scale = modifiers.has("pulsing") ? pulseScale(seed, elapsed * (tempo.pulsing ?? 1)) : 1;
+    return { x, y, scale, rotation };
 }
 
 // Degrees a rotated word has turned since it appeared: a full turn every 2.5 s, left or right depending on the seed

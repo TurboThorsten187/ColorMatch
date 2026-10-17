@@ -34,6 +34,7 @@ function playing(level: number, modifiers: ModifierId[]): PlayingState {
             background: null,
             rotationDeg: 0,
             seed: 0,
+            tempo: {},
         },
         startedAt: 0,
         timeLimit: 3000,

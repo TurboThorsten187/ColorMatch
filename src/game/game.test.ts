@@ -17,7 +17,7 @@ import {
     toMenu,
 } from "./game.ts";
 import { groupsOf, MODIFIER_GROUPS } from "./modifiers.ts";
-import { timeLimitFor } from "./progression.ts";
+import { introLevel, tempoFor, timeLimitFor } from "./progression.ts";
 
 const rng = Math.random;
 const CURRICULUM = MODIFIER_GROUPS.map((group) => group.id);
@@ -34,6 +34,7 @@ function playing(expected: ExpectedInput, level = 1): PlayingState {
             background: null,
             rotationDeg: 0,
             seed: 0,
+            tempo: {},
         },
         startedAt: 0,
         timeLimit: timeLimitFor(level, 0, false),
@@ -73,6 +74,17 @@ describe("game", () => {
         expect(answer(playing("true"), "true", 500, rng)).toMatchObject({ curriculum: CURRICULUM });
         expect(tick(playing("none"), 1e6, rng)).toMatchObject({ curriculum: CURRICULUM });
         expect(answer(spam, "true", 0, rng)).toMatchObject({ phase: "spamPause", curriculum: started.curriculum });
+    });
+
+    it("speeds up the animated modifiers with the level, each from its own introduction", () => {
+        for (let run = 0; run < 200; run++) {
+            const next = answer(playing("true", 40), "true", 100, rng);
+            if (next.phase !== "playing") throw new Error("Level 41 did not start");
+
+            for (const id of groupsOf(next.challenge.modifiers)) {
+                expect(next.challenge.tempo[id]).toBe(tempoFor(41, introLevel(CURRICULUM, id)));
+            }
+        }
     });
 
     it("ends the game on a wrong answer with the solved levels as score", () => {

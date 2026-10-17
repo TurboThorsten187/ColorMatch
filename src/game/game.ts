@@ -1,6 +1,14 @@
 import { type Answer, type Challenge, createChallenge } from "./challenge.ts";
 import { groupsOf, type ModifierGroupId } from "./modifiers.ts";
-import { createCurriculum, type Curriculum, introducedAt, pickGroups, timeLimitFor } from "./progression.ts";
+import {
+    createCurriculum,
+    type Curriculum,
+    introducedAt,
+    introLevel,
+    pickGroups,
+    tempoFor,
+    timeLimitFor,
+} from "./progression.ts";
 import type { Rng } from "./random.ts";
 
 export const SPAM_PRESSES_NEEDED = 5;
@@ -138,10 +146,11 @@ function playLevel(
     previous: readonly ModifierGroupId[],
 ): PlayingState {
     const groups = pickGroups(level, curriculum, previous, rng);
+    const tempo = Object.fromEntries(groups.map((id) => [id, tempoFor(level, introLevel(curriculum, id))]));
     return {
         phase: "playing",
         level,
-        challenge: createChallenge(groups, level, rng),
+        challenge: createChallenge(groups, level, rng, tempo),
         startedAt: now,
         timeLimit: timeLimitFor(level, groups.length, introducedAt(curriculum, level) !== null),
         spamCount: 0,
