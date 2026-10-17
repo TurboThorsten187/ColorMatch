@@ -1,5 +1,11 @@
 <script module lang="ts">
     export type FeedbackKind = "hit" | "miss" | "timeout";
+
+    export const FEEDBACK_LABELS: Readonly<Record<FeedbackKind, string>> = {
+        hit: "+1",
+        miss: "MISS!",
+        timeout: "TIME UP!",
+    };
 </script>
 
 <script lang="ts">
@@ -8,12 +14,10 @@
     }
 
     let { kind }: Props = $props();
-
-    const LABELS: Readonly<Record<FeedbackKind, string>> = { hit: "+1", miss: "MISS!", timeout: "TIME UP!" };
 </script>
 
 <div class="frame" class:hit={kind === "hit"} aria-hidden="true"></div>
-<div class="label" class:hit={kind === "hit"} aria-hidden="true">{LABELS[kind]}</div>
+<div class="label" class:hit={kind === "hit"} aria-hidden="true">{FEEDBACK_LABELS[kind]}</div>
 
 <style>
     .frame {

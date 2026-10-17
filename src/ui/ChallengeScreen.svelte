@@ -12,9 +12,13 @@
         elapsed: number;
         width: number;
         height: number;
+        // The loss animation replaces the word with its falling pixels
+        hideWord?: boolean;
+        // The point the word is drawn around, with all its transformations
+        anchor?: HTMLElement;
     }
 
-    let { challenge, elapsed, width, height }: Props = $props();
+    let { challenge, elapsed, width, height, hideWord = false, anchor = $bindable() }: Props = $props();
 
     const BLINK_VISIBLE_MS = 500;
     // Moving words stay out of the top bar and the TRUE / FALSE labels
@@ -63,8 +67,9 @@
     {/if}
 
     <!-- Blink only hides the word, background and tags stay -->
-    {#if !blinkedOut}
+    {#if !blinkedOut && !hideWord}
         <div
+            bind:this={anchor}
             class="anchor"
             style:transform
             style:filter={has("blur") ? "blur(10px)" : null}

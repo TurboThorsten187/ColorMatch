@@ -5,8 +5,9 @@ import type { Rng } from "./random.ts";
 
 export const SPAM_PRESSES_NEEDED = 5;
 export const SPAM_PAUSE_MS = 1000;
-// Frantic presses right after losing must not skip the result: RETRY, MENU and Enter wait this long
-export const GAME_OVER_LOCK_MS = 1000;
+// Frantic presses right after losing must not skip the result: RETRY, MENU and Enter wait this long, through the
+// loss animation until the buttons have appeared
+export const GAME_OVER_LOCK_MS = 2000;
 
 export type PlayingState = {
     readonly phase: "playing";
