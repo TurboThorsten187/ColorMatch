@@ -157,7 +157,7 @@
                 >
             {/if}
         </button>
-        <div class="note">HI-SCORE AND SETTINGS</div>
+        <div class="note">HI-SCORE, STATS, AWARDS AND SETTINGS</div>
     </div>
 </div>
 

@@ -3,10 +3,11 @@
 
     interface Props {
         highscore: number;
+        onstats: () => void;
         onsetup: () => void;
     }
 
-    let { highscore, onsetup }: Props = $props();
+    let { highscore, onstats, onsetup }: Props = $props();
 
     const TITLE_LINES = ["COLOR", "MATCH"];
     const LETTER_COUNT = TITLE_LINES.join("").length;
@@ -43,6 +44,7 @@
     <div class="start blink">PRESS START</div>
 
     <div class="buttons">
+        <button class="stats" onclick={onstats}>STATS</button>
         <button class="setup" onclick={onsetup}>SETUP</button>
     </div>
 </div>
@@ -125,6 +127,10 @@
     button:focus-visible {
         outline: 3px solid #ffe14d;
         outline-offset: 4px;
+    }
+
+    .stats {
+        box-shadow: 4px 4px 0 #4d8dff;
     }
 
     .setup {
