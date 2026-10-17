@@ -53,6 +53,7 @@
     import SettingsScreen from "./ui/SettingsScreen.svelte";
     import { configureSound, playSound, unlockAudio } from "./ui/sound.ts";
     import SpamPauseScreen from "./ui/SpamPauseScreen.svelte";
+    import SurgeBanner from "./ui/SurgeBanner.svelte";
     import StatsScreen from "./ui/StatsScreen.svelte";
     import TapHints from "./ui/TapHints.svelte";
     import { delay, enqueue, type ToastQueue, visible } from "./ui/toastQueue.ts";
@@ -135,7 +136,7 @@
 
         const solved =
             (next.phase === "playing" && game.phase === "playing" && next.level > game.level) ||
-            (next.phase === "spamPause" && game.phase === "playing");
+            ((next.phase === "spamPause" || next.phase === "surgeBanner") && game.phase === "playing");
         if (game.phase === "playing" && solved) {
             feedback = { kind: "hit", at: time };
             playSound("hit");
@@ -451,6 +452,8 @@
         />
     {:else if game.phase === "spamPause"}
         <SpamPauseScreen />
+    {:else if game.phase === "surgeBanner"}
+        <SurgeBanner />
     {:else if game.phase === "paused" && intros.length > 0}
         <ModifierIntroScreen
             intro={introById(intros[0])}
@@ -478,7 +481,7 @@
         {/key}
     {/if}
 
-    {#if toast && (game.phase === "playing" || game.phase === "spamPause")}
+    {#if toast && (game.phase === "playing" || game.phase === "spamPause" || game.phase === "surgeBanner")}
         {#key toast.at}
             <AwardToast award={awardById(toast.item)} />
         {/key}

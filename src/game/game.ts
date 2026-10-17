@@ -5,6 +5,7 @@ import {
     type Curriculum,
     introducedAt,
     introLevel,
+    isSurgeLevel,
     pickGroups,
     tempoFor,
     timeLimitFor,
@@ -15,6 +16,7 @@ export const SPAM_PRESSES_NEEDED = 5;
 // Shown instead of a color word, one character lights up per press
 export const SPAM_WORD = "SPAM!";
 export const SPAM_PAUSE_MS = 1000;
+export const SURGE_BANNER_MS = 900;
 // Frantic presses right after losing must not skip the result: RETRY, MENU and Enter wait this long, through the
 // loss animation until the buttons have appeared
 export const GAME_OVER_LOCK_MS = 2000;
@@ -38,13 +40,26 @@ export type SpamPauseState = {
     readonly groups: readonly ModifierGroupId[];
 };
 
+// The SURGE banner, the surge level starts when it is gone
+export type SurgeBannerState = {
+    readonly phase: "surgeBanner";
+    readonly level: number;
+    readonly resumeAt: number;
+    readonly curriculum: Curriculum;
+};
+
 export type GameOverState = { readonly phase: "gameOver"; readonly score: number; readonly endedAt: number };
 
 export type GameState =
     | { readonly phase: "menu" }
     | PlayingState
     | SpamPauseState
-    | { readonly phase: "paused"; readonly resumeTo: PlayingState | SpamPauseState; readonly pausedAt: number }
+    | SurgeBannerState
+    | {
+          readonly phase: "paused";
+          readonly resumeTo: PlayingState | SpamPauseState | SurgeBannerState;
+          readonly pausedAt: number;
+      }
     | GameOverState;
 
 export const MENU: GameState = { phase: "menu" };
@@ -107,7 +122,12 @@ export function tick(state: GameState, now: number, rng: Rng): GameState {
         case "playing":
             return now - state.startedAt <= state.timeLimit ? state : timeUp(state, now, rng);
         case "spamPause":
-            return now >= state.resumeAt ? playLevel(state.level + 1, now, rng, state.curriculum, state.groups) : state;
+            return now >= state.resumeAt
+                ? enterLevel(state.level + 1, now, rng, state.curriculum, state.groups)
+                : state;
+        case "surgeBanner":
+            // The surge stacks more groups than any level before, it cannot repeat the one before
+            return now >= state.resumeAt ? playLevel(state.level, now, rng, state.curriculum, []) : state;
         default:
             return state;
     }
@@ -119,7 +139,7 @@ function timeUp(state: PlayingState, now: number, rng: Rng): GameState {
 }
 
 export function pause(state: GameState, now: number): GameState {
-    if (state.phase !== "playing" && state.phase !== "spamPause") return state;
+    if (state.phase !== "playing" && state.phase !== "spamPause" && state.phase !== "surgeBanner") return state;
     return { phase: "paused", resumeTo: state, pausedAt: now };
 }
 
@@ -134,8 +154,21 @@ export function resume(state: GameState, now: number): GameState {
         : { ...previous, resumeAt: previous.resumeAt + pausedFor };
 }
 
-function nextLevel(state: PlayingState, now: number, rng: Rng): PlayingState {
-    return playLevel(state.level + 1, now, rng, state.curriculum, groupsOf(state.challenge.modifiers));
+function nextLevel(state: PlayingState, now: number, rng: Rng): GameState {
+    return enterLevel(state.level + 1, now, rng, state.curriculum, groupsOf(state.challenge.modifiers));
+}
+
+// A surge level shows its banner first
+function enterLevel(
+    level: number,
+    now: number,
+    rng: Rng,
+    curriculum: Curriculum,
+    previous: readonly ModifierGroupId[],
+): GameState {
+    return isSurgeLevel(level)
+        ? { phase: "surgeBanner", level, resumeAt: now + SURGE_BANNER_MS, curriculum }
+        : playLevel(level, now, rng, curriculum, previous);
 }
 
 function playLevel(

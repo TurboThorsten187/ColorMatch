@@ -5,6 +5,7 @@ export type AwardId =
     | "level25"
     | "level50"
     | "level100"
+    | "surge"
     | "invertInput"
     | "noClick"
     | "spam"
@@ -19,7 +20,7 @@ export type AwardId =
     | "pulsing";
 
 // "rule" awards belong to modifiers that change the correct input, "look" awards to the visual ones
-export type AwardKind = "milestone" | "rule" | "look";
+export type AwardKind = "milestone" | "surge" | "rule" | "look";
 
 interface AwardBase {
     readonly id: AwardId;
@@ -41,9 +42,14 @@ export interface ModifierAward extends AwardBase {
     readonly modifiers: readonly ModifierId[];
 }
 
-export type Award = MilestoneAward | ModifierAward;
+// Clearing a surge level counts once
+export interface SurgeAward extends AwardBase {
+    readonly kind: "surge";
+}
 
-// Levels with a modifier that have to be cleared, summed up over all games
+export type Award = MilestoneAward | SurgeAward | ModifierAward;
+
+// Levels with a modifier, or surge levels, that have to be cleared, summed up over all games
 export const MODIFIER_CLEARS_NEEDED = 10;
 
 function milestone(id: AwardId, level: number): MilestoneAward {
@@ -67,6 +73,13 @@ export const AWARDS: readonly Award[] = [
     milestone("level25", 25),
     milestone("level50", 50),
     milestone("level100", 100),
+    {
+        id: "surge",
+        code: "SG",
+        name: "SURGE",
+        rule: `BEAT ${MODIFIER_CLEARS_NEEDED} SURGE LEVELS`,
+        kind: "surge",
+    },
     modifierAward("invertInput", "II", "TURNAROUND", "rule", "INVERTED INPUT", ["invertInput"]),
     modifierAward("noClick", "NC", "HANDS OFF", "rule", "DON'T CLICK", ["noClick"], "SIT OUT"),
     modifierAward("spam", "SP", "SPAM MASTER", "rule", "SPAM", ["spam"]),
