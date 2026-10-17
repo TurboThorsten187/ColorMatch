@@ -1,8 +1,9 @@
 <script lang="ts">
     import { COLOR_CSS } from "../game/colors.ts";
+    import { SPAM_WORD } from "../game/game.ts";
     import type { IntroId, ModifierIntro } from "../game/intros.ts";
     import { groupById, type ModifierId } from "../game/modifiers.ts";
-    import { scramble, wordMotion } from "./effects.ts";
+    import { fadeOpacity, scramble, spin, wordMotion } from "./effects.ts";
 
     interface Props {
         intro: ModifierIntro;
@@ -18,6 +19,18 @@
     // Their examples are animated with the game's own effect functions
     const ANIMATED: ReadonlySet<IntroId> = new Set(["moving", "scrambled", "shaky", "pulsing"]);
     const EXAMPLE_SEED = 0.37;
+    const ROTATION_START_DEG = -24;
+    // The mirror example takes turns with all three mirrors
+    const MIRRORS: readonly (readonly [number, number])[] = [
+        [-1, 1],
+        [1, -1],
+        [-1, -1],
+    ];
+    const MIRROR_STEP_MS = 1000;
+    // The blink example fades out, stays away for a moment and comes back
+    const FADE_LOOP_MS = 1800;
+    const SPAM_STEP_MS = 300;
+    const SPAM_DIM = "#3a3a3a";
 
     let boxWidth = $state(0);
     let boxHeight = $state(0);
@@ -30,14 +43,20 @@
     const exampleText = $derived(
         effects.has("scrambled") ? scramble(intro.example.text, EXAMPLE_SEED, elapsed) : intro.example.text,
     );
-    const motion = $derived.by(() => {
+    const transform = $derived.by(() => {
         const area = { width: boxWidth, height: boxHeight };
-        const { x, y, scale } = wordMotion(effects, EXAMPLE_SEED, elapsed, area, {
+        const { x, y, scale, rotation } = wordMotion(effects, EXAMPLE_SEED, elapsed, area, {
             width: wordWidth,
             height: wordHeight,
         });
-        return `translate(${x}px, ${y}px) scale(${scale})`;
+        const turned = rotation + (intro.id === "rotation" ? ROTATION_START_DEG + spin(EXAMPLE_SEED, elapsed) : 0);
+        const [mirrorX, mirrorY] =
+            intro.id === "mirror" ? MIRRORS[Math.floor(elapsed / MIRROR_STEP_MS) % MIRRORS.length] : [1, 1];
+        return `translate(${x}px, ${y}px) rotate(${turned}deg) scale(${mirrorX * scale}, ${mirrorY * scale})`;
     });
+    const opacity = $derived(intro.id === "blink" ? fadeOpacity(elapsed % FADE_LOOP_MS) : 1);
+    // All characters lit stays for two steps before it starts over
+    const spamLit = $derived(Math.floor(elapsed / SPAM_STEP_MS) % (SPAM_WORD.length + 2));
 
     // "ANSWER THE *OPPOSITE*" → plain and highlighted parts
     function parts(line: string): { text: string; marked: boolean }[] {
@@ -67,16 +86,22 @@
             {:else}
                 <span
                     class="word"
-                    class:mirror={intro.id === "mirror"}
                     class:blur={intro.id === "blur"}
-                    class:rotate={intro.id === "rotation"}
-                    class:vanish={intro.id === "blink"}
                     class:lure={intro.id === "background"}
                     style:color={COLOR_CSS[intro.example.color]}
-                    style:transform={effects.size > 0 ? motion : null}
+                    style:transform
+                    style:opacity={opacity < 1 ? opacity : null}
                     bind:clientWidth={wordWidth}
-                    bind:clientHeight={wordHeight}>{exampleText}</span
+                    bind:clientHeight={wordHeight}
                 >
+                    {#if intro.id === "spam"}
+                        {#each [...exampleText] as character, index (index)}
+                            <span style:color={index < spamLit ? null : SPAM_DIM}>{character}</span>
+                        {/each}
+                    {:else}
+                        {exampleText}
+                    {/if}
+                </span>
             {/if}
         </div>
 
@@ -183,20 +208,8 @@
         color: #000;
     }
 
-    .mirror {
-        transform: scaleX(-1);
-    }
-
     .blur {
         filter: blur(4px);
-    }
-
-    .rotate {
-        transform: rotate(-24deg);
-    }
-
-    .vanish {
-        animation: blink 1s steps(1) infinite;
     }
 
     .lure {
@@ -257,18 +270,6 @@
 
         .gotit {
             height: 44px;
-        }
-    }
-
-    @keyframes blink {
-        50% {
-            opacity: 0;
-        }
-    }
-
-    @media (prefers-reduced-motion: reduce) {
-        .vanish {
-            animation: none;
         }
     }
 </style>

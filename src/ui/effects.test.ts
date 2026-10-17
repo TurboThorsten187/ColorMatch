@@ -1,6 +1,15 @@
 import { describe, expect, it } from "vitest";
 import type { ModifierId } from "../game/modifiers.ts";
-import { effectFontScale, letterOrder, pulseScale, scramble, wordMotion } from "./effects.ts";
+import {
+    effectFontScale,
+    fadeOpacity,
+    letterOrder,
+    pulseScale,
+    SHAKE_TILT_DEG,
+    scramble,
+    spin,
+    wordMotion,
+} from "./effects.ts";
 
 const AREA = { width: 400, height: 500 };
 const WORD = { width: 160, height: 40 };
@@ -51,14 +60,29 @@ describe("word motion", () => {
         expect(Math.max(...xs) - Math.min(...xs)).toBeGreaterThan(AREA.width - WORD.width - 40);
     });
 
-    it("shakes in small steps around the center", () => {
-        const offsets = Array.from({ length: 50 }, (_, i) => wordMotion(set("shaky"), 0.7, i * 45, AREA, WORD));
+    it("shakes and tilts in small steps around the center", () => {
+        const offsets = Array.from({ length: 50 }, (_, i) => wordMotion(set("shaky"), 0.7, i * 60, AREA, WORD));
 
         expect(new Set(offsets.map((offset) => offset.x)).size).toBeGreaterThan(40);
-        for (const { x, y } of offsets) {
-            expect(Math.abs(x)).toBeLessThanOrEqual(AREA.width * 0.035);
-            expect(Math.abs(y)).toBeLessThanOrEqual(AREA.height * 0.1);
+        expect(new Set(offsets.map((offset) => offset.rotation)).size).toBeGreaterThan(40);
+        for (const { x, y, rotation } of offsets) {
+            expect(Math.abs(x)).toBeLessThanOrEqual(AREA.width * 0.02);
+            expect(Math.abs(y)).toBeLessThanOrEqual(AREA.height * 0.05);
+            expect(Math.abs(rotation)).toBeLessThanOrEqual(SHAKE_TILT_DEG);
         }
+    });
+
+    it("spins a full turn in 2.5 s, the direction depends on the level", () => {
+        expect(spin(0.2, 0)).toBe(0);
+        expect(Math.abs(spin(0.2, 2500))).toBe(360);
+        expect(Math.sign(spin(0.2, 100))).not.toBe(Math.sign(spin(0.8, 100)));
+    });
+
+    it("fades a blinking word out within 0.9 s", () => {
+        expect(fadeOpacity(0)).toBe(1);
+        expect(fadeOpacity(450)).toBeCloseTo(0.5);
+        expect(fadeOpacity(900)).toBe(0);
+        expect(fadeOpacity(5000)).toBe(0);
     });
 
     it("pulses between 70 % and 114 %", () => {
@@ -70,7 +94,12 @@ describe("word motion", () => {
     });
 
     it("leaves the word alone without these modifiers", () => {
-        expect(wordMotion(set("blur", "rotation"), 0.5, 1234, AREA, WORD)).toEqual({ x: 0, y: 0, scale: 1 });
+        expect(wordMotion(set("blur", "rotation"), 0.5, 1234, AREA, WORD)).toEqual({
+            x: 0,
+            y: 0,
+            scale: 1,
+            rotation: 0,
+        });
         expect(effectFontScale(set("blur"))).toBe(1);
         expect(effectFontScale(set("moving", "pulsing"))).toBeLessThan(effectFontScale(set("moving")));
     });

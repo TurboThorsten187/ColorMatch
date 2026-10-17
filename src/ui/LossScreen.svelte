@@ -111,6 +111,7 @@
     <ChallengeScreen
         challenge={level.challenge}
         elapsed={frozen}
+        spamCount={level.spamCount}
         {width}
         {height}
         hideWord={frame.shattered}

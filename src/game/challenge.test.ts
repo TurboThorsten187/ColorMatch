@@ -36,9 +36,10 @@ describe("createChallenge", () => {
             const challenge = createChallenge(["mirror", "blur", "spam"], 20, Math.random);
 
             expect(challenge.modifiers.size).toBe(3);
-            expect(challenge.modifiers.has("mirrorVertical") !== challenge.modifiers.has("mirrorHorizontal")).toBe(
-                true,
+            const mirrors = (["mirrorVertical", "mirrorHorizontal", "mirrorBoth"] as const).filter((id) =>
+                challenge.modifiers.has(id),
             );
+            expect(mirrors).toHaveLength(1);
             expect(challenge.expected).toBe("spam");
             expect(challenge.seed).toBeGreaterThanOrEqual(0);
             expect(challenge.seed).toBeLessThan(1);
@@ -63,5 +64,21 @@ describe("createChallenge", () => {
             }
             expect(Math.abs(challenge.rotationDeg)).toBeLessThanOrEqual(90);
         }
+    });
+
+    it("does not give the answer away with the background", () => {
+        let falses = 0;
+        let lures = 0;
+        for (let run = 0; run < 3000; run++) {
+            const challenge = createChallenge(["background"], 20, Math.random);
+            if (challenge.expected === "false") {
+                falses++;
+                if (challenge.background === challenge.word) lures++;
+            }
+        }
+
+        // A background in the named color must not mean FALSE every time
+        expect(lures).toBeGreaterThan(0);
+        expect(lures / falses).toBeLessThan(0.4);
     });
 });

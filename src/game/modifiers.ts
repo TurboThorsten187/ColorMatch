@@ -6,6 +6,8 @@ export type ModifierId =
     // Only change how the challenge looks
     | "mirrorVertical"
     | "mirrorHorizontal"
+    // Both mirrors at once: the word stands on its head
+    | "mirrorBoth"
     | "background"
     | "blink"
     | "blur"
@@ -55,7 +57,7 @@ function group(
 }
 
 export const MODIFIER_GROUPS: readonly ModifierGroup[] = [
-    group("mirror", "easy", ["mirrorVertical", "mirrorHorizontal"]),
+    group("mirror", "easy", ["mirrorVertical", "mirrorHorizontal", "mirrorBoth"]),
     group("rotation", "easy", ["rotation"]),
     group("pulsing", "easy", ["pulsing"]),
     group("shaky", "easy", ["shaky"]),

@@ -1,7 +1,7 @@
 import type { ModifierId } from "../game/modifiers.ts";
 
-// Moving, shaking, pulsing and scrambling only depend on the time since the word appeared and the level's seed,
-// so they stand still while the game is paused and look the same after resuming.
+// Moving, shaking, pulsing, spinning, fading and scrambling only depend on the time since the word appeared and the
+// level's seed, so they stand still while the game is paused and look the same after resuming.
 
 export interface Size {
     readonly width: number;
@@ -12,24 +12,30 @@ export interface WordMotion {
     readonly x: number;
     readonly y: number;
     readonly scale: number;
+    // Degrees, from shaking
+    readonly rotation: number;
 }
 
 const MOVING_FONT_SCALE = 0.62;
-const MOVING_PERIOD_X_MS = 2600;
-const MOVING_PERIOD_Y_MS = 1900;
+const MOVING_PERIOD_X_MS = 1500;
+const MOVING_PERIOD_Y_MS = 1100;
 const MOVING_MARGIN = 10;
 
-const SHAKE_STEP_MS = 45;
+const SHAKE_STEP_MS = 60;
 const SHAKE_FONT_SCALE = 0.94;
-// Share of the free area the word jumps around in
-const SHAKE_X = 0.035;
-const SHAKE_Y = 0.1;
+// Share of the free area the word jumps around in, and how far it tilts with every jump
+const SHAKE_X = 0.02;
+const SHAKE_Y = 0.05;
+export const SHAKE_TILT_DEG = 7;
 
 const PULSE_PERIOD_MS = 350;
 const PULSE_MIN = 0.7;
 const PULSE_MAX = 1.14;
 
 const SCRAMBLE_STEP_MS = 380;
+
+const SPIN_MS = 2500;
+const FADE_MS = 900;
 
 // Font size factor that keeps the moved, shaken or grown word on screen
 export function effectFontScale(modifiers: ReadonlySet<ModifierId>): number {
@@ -53,6 +59,7 @@ export function wordMotion(
     const shakeY = modifiers.has("shaky") ? area.height * SHAKE_Y : 0;
     let x = 0;
     let y = 0;
+    let rotation = 0;
     if (modifiers.has("moving")) {
         // A shaking word needs the shake's amplitude as extra margin, or it leaves the screen at the turning points
         const grown = modifiers.has("pulsing") ? PULSE_MAX : 1;
@@ -65,8 +72,20 @@ export function wordMotion(
         const step = Math.floor(elapsed / SHAKE_STEP_MS);
         x += shakeX * signedNoise(seed, step, 1);
         y += shakeY * signedNoise(seed, step, 2);
+        rotation = SHAKE_TILT_DEG * signedNoise(seed, step, 3);
     }
-    return { x, y, scale: modifiers.has("pulsing") ? pulseScale(seed, elapsed) : 1 };
+    return { x, y, scale: modifiers.has("pulsing") ? pulseScale(seed, elapsed) : 1, rotation };
+}
+
+// Degrees a rotated word has turned since it appeared: a full turn every 2.5 s, left or right depending on the seed
+export function spin(seed: number, elapsed: number): number {
+    const turns = elapsed / SPIN_MS;
+    return 360 * (seed < 0.5 ? turns : -turns);
+}
+
+// A blinking word fades away instead of vanishing at once
+export function fadeOpacity(elapsed: number): number {
+    return Math.max(0, 1 - elapsed / FADE_MS);
 }
 
 export function pulseScale(seed: number, elapsed: number): number {
