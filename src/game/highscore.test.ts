@@ -1,22 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { type KeyValueStore, loadHighscore, saveHighscore } from "./highscore.ts";
-
-function memoryStorage(): KeyValueStore {
-    const data = new Map<string, string>();
-    return {
-        getItem: (key) => data.get(key) ?? null,
-        setItem: (key, value) => void data.set(key, value),
-    };
-}
-
-const blockedStorage: KeyValueStore = {
-    getItem: () => {
-        throw new Error("blocked");
-    },
-    setItem: () => {
-        throw new Error("blocked");
-    },
-};
+import { clearHighscore, loadHighscore, saveHighscore } from "./highscore.ts";
+import { blockedStorage, memoryStorage } from "./testStorage.ts";
 
 describe("highscore", () => {
     it("only saves higher scores", () => {
@@ -36,10 +20,21 @@ describe("highscore", () => {
         expect(loadHighscore(storage)).toBe(0);
     });
 
+    it("can be cleared", () => {
+        const storage = memoryStorage();
+        saveHighscore(storage, 7);
+
+        clearHighscore(storage);
+
+        expect(loadHighscore(storage)).toBe(0);
+    });
+
     it("keeps working when storage is blocked or missing", () => {
         expect(loadHighscore(blockedStorage)).toBe(0);
         expect(() => saveHighscore(blockedStorage, 5)).not.toThrow();
+        expect(() => clearHighscore(blockedStorage)).not.toThrow();
         expect(loadHighscore(null)).toBe(0);
         expect(() => saveHighscore(null, 5)).not.toThrow();
+        expect(() => clearHighscore(null)).not.toThrow();
     });
 });

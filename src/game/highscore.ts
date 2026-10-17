@@ -1,6 +1,6 @@
 const HIGHSCORE_KEY = "colormatch_highscore";
 
-export type KeyValueStore = Pick<Storage, "getItem" | "setItem">;
+export type KeyValueStore = Pick<Storage, "getItem" | "setItem" | "removeItem">;
 
 // Storage can be unavailable or throw (private mode, blocked cookies). The game must keep
 // running in that case, the highscore is then simply not persisted.
@@ -29,5 +29,13 @@ export function saveHighscore(storage: KeyValueStore | null, score: number): voi
         storage?.setItem(HIGHSCORE_KEY, String(score));
     } catch {
         // See above: not persisting is acceptable
+    }
+}
+
+export function clearHighscore(storage: KeyValueStore | null): void {
+    try {
+        storage?.removeItem(HIGHSCORE_KEY);
+    } catch {
+        // See above: storage that cannot be written holds no highscore either
     }
 }
