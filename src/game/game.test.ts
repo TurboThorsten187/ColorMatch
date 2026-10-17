@@ -89,6 +89,14 @@ describe("game", () => {
         });
     });
 
+    it("does not accept an answer that comes after the time ran out", () => {
+        const late = playing("true").timeLimit + 1;
+
+        expect(answer(playing("true"), "true", late, rng)).toEqual({ phase: "gameOver", score: 0, endedAt: late });
+        expect(levelOf(answer(playing("none"), "true", late, rng))).toBe(2);
+        expect(answer(playing("spam"), "true", late, rng).phase).toBe("gameOver");
+    });
+
     it("advances when nothing is pressed during a no-click challenge", () => {
         const state = playing("none");
 

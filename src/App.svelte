@@ -281,18 +281,26 @@
 
     $effect(() => {
         let frame = requestAnimationFrame(function loop(time) {
+            // Asked for first, so an error in one frame cannot stop the game for good
+            frame = requestAnimationFrame(loop);
             now = time;
             if (tutorial) changeTutorial(tickTutorial(tutorial, time), time);
             update(tick(game, time, rng), time);
-            frame = requestAnimationFrame(loop);
         });
         return () => cancelAnimationFrame(frame);
     });
 
-    function giveAnswer(input: Answer): void {
-        const time = performance.now();
+    function giveAnswer(input: Answer, event: Event): void {
+        const time = pressTime(event);
         lastAnswer = { answer: input, at: time };
         update(answer(game, input, time, rng), time);
+    }
+
+    // When the key or finger went down, not when the handler runs a moment later. Falls back to now for
+    // events without a usable time stamp.
+    function pressTime(event: Event): number {
+        const now = performance.now();
+        return event.timeStamp > 0 && event.timeStamp <= now ? event.timeStamp : now;
     }
 
     function goOn(): void {
@@ -332,7 +340,7 @@
         }
         if (input && game.phase === "playing") {
             event.preventDefault();
-            giveAnswer(input);
+            giveAnswer(input, event);
         } else if (event.target instanceof HTMLButtonElement) {
             // A focused button handles Enter itself, e.g. MENU must not retry
             return;
@@ -373,7 +381,7 @@
             return;
         }
         if (game.phase === "playing") {
-            giveAnswer(event.clientX < width / 2 ? "true" : "false");
+            giveAnswer(event.clientX < width / 2 ? "true" : "false", event);
         } else {
             goOn();
         }
