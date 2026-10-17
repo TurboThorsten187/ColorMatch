@@ -14,6 +14,7 @@ import {
     startGame,
     tick,
     timeLimitFor,
+    toMenu,
 } from "./game.ts";
 
 const rng = Math.random;
@@ -175,11 +176,11 @@ describe("confirm", () => {
         expect(confirm(pause(playing("true"), 100), 400, rng)).toMatchObject({ phase: "playing", startedAt: 300 });
     });
 
-    it("returns to the menu after game over, but not right away", () => {
+    it("retries after game over, but not right away", () => {
         const over: GameState = { phase: "gameOver", score: 4, endedAt: 1000 };
 
         expect(confirm(over, 1000 + GAME_OVER_LOCK_MS - 1, rng)).toBe(over);
-        expect(confirm(over, 1000 + GAME_OVER_LOCK_MS, rng)).toBe(MENU);
+        expect(confirm(over, 1000 + GAME_OVER_LOCK_MS, rng)).toMatchObject({ phase: "playing", level: 1 });
     });
 
     it("does nothing during a level or the spam pause", () => {
@@ -188,5 +189,21 @@ describe("confirm", () => {
 
         expect(confirm(state, 10, rng)).toBe(state);
         expect(confirm(spamPause, 10, rng)).toBe(spamPause);
+    });
+});
+
+describe("toMenu", () => {
+    it("leaves the game over screen for the menu, but not right away", () => {
+        const over: GameState = { phase: "gameOver", score: 4, endedAt: 1000 };
+
+        expect(toMenu(over, 1000 + GAME_OVER_LOCK_MS - 1)).toBe(over);
+        expect(toMenu(over, 1000 + GAME_OVER_LOCK_MS)).toBe(MENU);
+    });
+
+    it("does nothing outside of game over", () => {
+        const state = playing("true");
+
+        expect(toMenu(state, 1e9)).toBe(state);
+        expect(toMenu(MENU, 1e9)).toBe(MENU);
     });
 });

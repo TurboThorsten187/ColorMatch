@@ -3,7 +3,7 @@ import type { Rng } from "./random.ts";
 
 export const SPAM_PRESSES_NEEDED = 5;
 export const SPAM_PAUSE_MS = 1000;
-// Taps right after losing must not skip the game over screen
+// Frantic presses right after losing must not skip the result: RETRY, MENU and Enter wait this long
 export const GAME_OVER_LOCK_MS = 1000;
 
 const START_TIME_MS = 3000;
@@ -21,12 +21,14 @@ export type PlayingState = {
 
 export type SpamPauseState = { readonly phase: "spamPause"; readonly level: number; readonly resumeAt: number };
 
+export type GameOverState = { readonly phase: "gameOver"; readonly score: number; readonly endedAt: number };
+
 export type GameState =
     | { readonly phase: "menu" }
     | PlayingState
     | SpamPauseState
     | { readonly phase: "paused"; readonly resumeTo: PlayingState | SpamPauseState; readonly pausedAt: number }
-    | { readonly phase: "gameOver"; readonly score: number; readonly endedAt: number };
+    | GameOverState;
 
 export const MENU: GameState = { phase: "menu" };
 
@@ -57,7 +59,7 @@ export function answer(state: GameState, input: Answer, now: number, rng: Rng): 
     return input === expected ? playLevel(state.level + 1, now, rng) : gameOver(state.level, now);
 }
 
-// The "go on" input (Enter or a tap) outside of a running level
+// The "go on" input outside of a running level: start, continue, or retry after game over
 export function confirm(state: GameState, now: number, rng: Rng): GameState {
     switch (state.phase) {
         case "menu":
@@ -65,10 +67,18 @@ export function confirm(state: GameState, now: number, rng: Rng): GameState {
         case "paused":
             return resume(state, now);
         case "gameOver":
-            return now - state.endedAt >= GAME_OVER_LOCK_MS ? MENU : state;
+            return isGameOverLocked(state, now) ? state : startGame(now, rng);
         default:
             return state;
     }
+}
+
+export function toMenu(state: GameState, now: number): GameState {
+    return state.phase === "gameOver" && !isGameOverLocked(state, now) ? MENU : state;
+}
+
+export function isGameOverLocked(state: GameOverState, now: number): boolean {
+    return now - state.endedAt < GAME_OVER_LOCK_MS;
 }
 
 export function tick(state: GameState, now: number, rng: Rng): GameState {
