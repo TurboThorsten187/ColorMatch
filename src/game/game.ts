@@ -47,6 +47,8 @@ export function startGame(now: number, rng: Rng): GameState {
 
 export function answer(state: GameState, input: Answer, now: number, rng: Rng): GameState {
     if (state.phase !== "playing") return state;
+    // The press came after the time ran out, only the next frame's tick had not noticed it yet
+    if (now - state.startedAt > state.timeLimit) return timeUp(state, now, rng);
 
     const { expected } = state.challenge;
     if (expected === "none") return gameOver(state.level, now);
@@ -92,13 +94,17 @@ export function isGameOverLocked(state: GameOverState, now: number): boolean {
 export function tick(state: GameState, now: number, rng: Rng): GameState {
     switch (state.phase) {
         case "playing":
-            if (now - state.startedAt <= state.timeLimit) return state;
-            return state.challenge.expected === "none" ? nextLevel(state, now, rng) : gameOver(state.level, now);
+            return now - state.startedAt <= state.timeLimit ? state : timeUp(state, now, rng);
         case "spamPause":
             return now >= state.resumeAt ? playLevel(state.level + 1, now, rng, state.curriculum, state.groups) : state;
         default:
             return state;
     }
+}
+
+// Waiting out a DON'T CLICK level solves it, every other level is lost
+function timeUp(state: PlayingState, now: number, rng: Rng): GameState {
+    return state.challenge.expected === "none" ? nextLevel(state, now, rng) : gameOver(state.level, now);
 }
 
 export function pause(state: GameState, now: number): GameState {
