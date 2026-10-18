@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+    <!-- The six game colors as pixel blocks, inside the central 80 % that maskable icons keep -->
+    <defs>
+        <pattern id="scanlines" width="6" height="6" patternUnits="userSpaceOnUse">
+            <rect width="6" height="2" fill="#fff" fill-opacity="0.06" />
+        </pattern>
+    </defs>
+    <rect width="512" height="512" fill="#000" />
+    <rect x="106" y="158" width="92" height="92" fill="#ff3b4e" />
+    <rect x="210" y="158" width="92" height="92" fill="#3dff7a" />
+    <rect x="314" y="158" width="92" height="92" fill="#4d8dff" />
+    <rect x="106" y="262" width="92" height="92" fill="#ffe14d" />
+    <rect x="210" y="262" width="92" height="92" fill="#c45cff" />
+    <rect x="314" y="262" width="92" height="92" fill="#22e4ff" />
+    <rect width="512" height="512" fill="url(#scanlines)" />
+</svg>

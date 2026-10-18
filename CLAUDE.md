@@ -30,6 +30,11 @@ files.
   highlight only shows while `keyboardMode` puts the `keys` class on the stage),
   pause on `blur`/`visibilitychange`, highscore, settings and stats persistence, sounds and stats for game transitions
   in `update()`. Settings and stats screens are a `view` in App, not a game phase.
+- `public/` – PWA files copied as-is: `manifest.webmanifest`, icons (the PNGs and `favicon.ico` are renders of
+  `favicon.svg`, re-render them when it changes) and `sw.js`, a plain JS service worker (network first for the page,
+  cache first for files). `main.ts` registers it in production builds only and reports the loaded files, so the cache
+  holds exactly the current version. `src/ui/install.svelte.ts` keeps the browser's install offer for the menu's
+  INSTALL button.
 - The tutorial (`src/game/tutorial.ts`) runs beside the game state, which stays in the menu meanwhile. A level with a
   modifier never seen before is stored paused in `update()` until its intro cards (`src/game/intros.ts`) are confirmed.
 - Awards are defined in `src/game/awards.ts`; `src/game/stats.ts` counts cleared levels per award, is saved after every
