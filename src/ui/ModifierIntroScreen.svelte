@@ -136,7 +136,7 @@
         touch-action: pan-y;
         scrollbar-width: thin;
         scrollbar-color: #555 #000;
-        font-size: max(10px, calc(1.3 * var(--unit)));
+        font-size: max(11px, calc(1.3 * var(--unit)));
     }
 
     .top {

@@ -155,7 +155,7 @@
         gap: 10px;
         padding: 12px;
         border: 3px solid #ffe14d;
-        font-size: 9px;
+        font-size: 10px;
     }
 
     h2 {
@@ -180,9 +180,9 @@
     }
 
     .badge {
-        width: 32px;
+        width: 38px;
         flex: none;
-        font-size: 8px;
+        font-size: 10px;
     }
 
     .more {

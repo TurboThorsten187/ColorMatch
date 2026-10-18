@@ -135,7 +135,7 @@
         border: 4px solid #fff;
         background: #000;
         box-shadow: 6px 6px 0 #4d8dff;
-        font-size: max(10px, calc(1.3 * var(--unit)));
+        font-size: max(11px, calc(1.3 * var(--unit)));
     }
 
     .card-head {
@@ -233,7 +233,7 @@
         border: 3px solid #fff;
         background: #fff;
         color: #000;
-        font-size: 10px;
+        font-size: 11px;
     }
 
     .skip {
@@ -245,7 +245,7 @@
         border: none;
         background: none;
         color: #bbb;
-        font-size: 9px;
+        font-size: 10px;
     }
 
     .half {
@@ -277,7 +277,7 @@
         left: 0;
         right: 0;
         text-align: center;
-        font-size: max(10px, calc(1.4 * var(--unit)));
+        font-size: max(11px, calc(1.4 * var(--unit)));
         color: #ffe14d;
     }
 
@@ -287,7 +287,7 @@
         left: 24px;
         right: 24px;
         text-align: center;
-        font-size: max(10px, calc(1.4 * var(--unit)));
+        font-size: max(11px, calc(1.4 * var(--unit)));
         line-height: 2.1;
         color: #ddd;
     }
