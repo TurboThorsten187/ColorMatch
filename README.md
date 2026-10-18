@@ -77,6 +77,12 @@ das Abschalten des Bildschirms nach einem Fehler sowie einen Jingle für Game Ov
 Chiptune-Sounds, die der Browser beim Abspielen aus Oszillatoren erzeugt, also ohne Sound-Dateien. Sie starten erst
 nach der ersten Eingabe, weil Browser vorher keinen Ton erlauben.
 
+## Als App installieren
+
+ColorMatch lässt sich als App installieren (PWA). In Chrome, Edge und auf Android erscheint dafür oben rechts im Menü
+**INSTALL**; sonst geht es über das Browsermenü (Safari auf dem iPhone: Teilen → Zum Home-Bildschirm). Die App startet
+im Vollbild und läuft nach dem ersten Besuch auch offline. Mit Internet lädt sie immer die neueste Version.
+
 ## Entwicklung
 
 Voraussetzung: Node.js 20.19+ oder 22.13+.
@@ -105,6 +111,10 @@ Das Spiel ist mit Svelte 5 und TypeScript gebaut (`src/`):
   `sound.ts` spielt die Sounds über die Web Audio API ab, `synth.ts` beschreibt, wie jeder Sound erzeugt wird.
 - `src/App.svelte` – verbindet beides: Spielschleife (`requestAnimationFrame`), Tastatur und Touch, Pause beim
   Verlassen des Tabs, Highscore, Einstellungen, Stats und Tutorial-Fortschritt speichern, Sounds zu Spielereignissen.
+- `public/` – wird unverändert mitgeliefert: Web-App-Manifest, Icons und der Service Worker `sw.js` für den
+  Offline-Betrieb. Der Service Worker läuft nur im Produktions-Build, zum Testen also `npm run build` und
+  `npm run preview`. Die PNG-Icons und `favicon.ico` sind aus `favicon.svg` gerendert und müssen bei Änderungen neu
+  exportiert werden.
 
 ## Deployment
 

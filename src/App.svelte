@@ -45,6 +45,7 @@
     import ChallengeScreen from "./ui/ChallengeScreen.svelte";
     import FeedbackFlash, { type FeedbackKind } from "./ui/FeedbackFlash.svelte";
     import GameOverScreen from "./ui/GameOverScreen.svelte";
+    import { canInstall, install } from "./ui/install.svelte.ts";
     import { LOSS_ANIMATION_MS, SQUASH_AT_MS } from "./ui/lossAnimation.ts";
     import LossScreen from "./ui/LossScreen.svelte";
     import MenuScreen from "./ui/MenuScreen.svelte";
@@ -320,6 +321,13 @@
         playSound("click");
     }
 
+    function installGame(): void {
+        playSound("click");
+        install().catch((error: unknown) => {
+            console.error("Install prompt failed", error);
+        });
+    }
+
     $effect(() => {
         let frame = requestAnimationFrame(function loop(time) {
             // Asked for first, so an error in one frame cannot stop the game for good
@@ -521,7 +529,13 @@
     {:else if tutorial}
         <TutorialScreen {tutorial} {flash} {width} {height} onnext={tutorialNext} onskip={skipTutorial} />
     {:else if game.phase === "menu"}
-        <MenuScreen {highscore} onstart={goOn} onstats={() => showView("stats")} onsetup={() => showView("settings")} />
+        <MenuScreen
+            {highscore}
+            onstart={goOn}
+            onstats={() => showView("stats")}
+            onsetup={() => showView("settings")}
+            oninstall={canInstall() ? installGame : undefined}
+        />
     {:else if game.phase === "playing"}
         <ChallengeScreen
             challenge={game.challenge}

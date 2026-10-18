@@ -1,6 +1,7 @@
 import { mount } from "svelte";
 import App from "./App.svelte";
 import { loadFonts } from "./ui/fonts.ts";
+import { listenForInstallOffer } from "./ui/install.svelte.ts";
 import "./app.css";
 
 const target = document.getElementById("app");
@@ -8,5 +9,20 @@ if (!target) {
     throw new Error("Mount point #app not found");
 }
 
+listenForInstallOffer();
 await loadFonts();
 mount(App, { target });
+
+// Offline support (public/sw.js): the worker keeps exactly the files this page loaded
+if (import.meta.env.PROD && "serviceWorker" in navigator) {
+    navigator.serviceWorker
+        .register("./sw.js")
+        .then(() => navigator.serviceWorker.ready)
+        .then((registration) => {
+            const loaded = performance.getEntriesByType("resource").map((entry) => entry.name);
+            registration.active?.postMessage({ loaded });
+        })
+        .catch((error: unknown) => {
+            console.error("Service worker registration failed", error);
+        });
+}

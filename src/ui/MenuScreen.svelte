@@ -6,9 +6,11 @@
         onstart: () => void;
         onstats: () => void;
         onsetup: () => void;
+        // Only while the browser offers to install the game
+        oninstall?: () => void;
     }
 
-    let { highscore, onstart, onstats, onsetup }: Props = $props();
+    let { highscore, onstart, onstats, onsetup, oninstall }: Props = $props();
 
     const TITLE_LINES = ["COLOR", "MATCH"];
     const LETTER_COUNT = TITLE_LINES.join("").length;
@@ -26,6 +28,10 @@
 </script>
 
 <div class="menu">
+    {#if oninstall}
+        <button class="install" onclick={oninstall}>INSTALL</button>
+    {/if}
+
     <div class="hiscore">
         <div class="label">HI-SCORE</div>
         <div>{String(highscore).padStart(6, "0")}</div>
@@ -142,5 +148,16 @@
 
     .setup {
         box-shadow: 4px 4px 0 #ff3b4e;
+    }
+
+    /* Small and out of the way, it stays clear of the hi-score down to 320 px wide screens */
+    .install {
+        position: absolute;
+        top: calc(env(safe-area-inset-top) + 16px);
+        right: calc(env(safe-area-inset-right) + 16px);
+        height: 40px;
+        padding: 0 8px;
+        border: 3px solid #3dff7a;
+        color: #3dff7a;
     }
 </style>
