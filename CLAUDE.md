@@ -48,5 +48,6 @@ files.
 - Docs for players and setup are in `README.md` (German); code, comments and this file are English.
 - Look: "Classic Arcade" (black, pixel font, scanlines, hard edges), dark only. Approved design prototypes:
   https://claude.ai/artifact/VKJWcc8fSgcsMTnLPURYGH (page "2 · Arcade details"). Sizes use `--unit` (1 % of the
-  width, capped) with a px minimum for phones.
+  width, capped) with a px minimum for phones. No text below 10 px, card and button text at least 11 px; text that
+  may wrap needs a `line-height` (the pixel font's default is too tight).
 - `vite.config.ts` uses `base: "./"` so the build works under the `/ColorMatch/` Pages path.

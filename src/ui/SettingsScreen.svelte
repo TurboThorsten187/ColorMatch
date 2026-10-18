@@ -269,7 +269,7 @@
         background: #000;
         color: #fff;
         font-family: inherit;
-        font-size: 10px;
+        font-size: 11px;
         cursor: pointer;
     }
 
@@ -336,7 +336,8 @@
     }
 
     .note {
-        font-size: 8px;
+        font-size: 10px;
+        line-height: 1.8;
         color: #999;
         text-align: center;
     }

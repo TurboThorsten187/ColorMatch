@@ -184,7 +184,7 @@
 
     .detail {
         margin-top: 16px;
-        font-size: 9px;
+        font-size: 10px;
         line-height: 1.8;
         color: #bbb;
     }

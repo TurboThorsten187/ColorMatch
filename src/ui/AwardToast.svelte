@@ -39,9 +39,9 @@
     }
 
     .badge {
-        width: 40px;
+        width: 44px;
         flex: none;
-        font-size: 10px;
+        font-size: 11px;
     }
 
     .text {
@@ -50,7 +50,7 @@
     }
 
     small {
-        font-size: 8px;
+        font-size: 10px;
         color: #ffe14d;
     }
 
