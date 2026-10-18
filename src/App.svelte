@@ -45,7 +45,7 @@
     import ChallengeScreen from "./ui/ChallengeScreen.svelte";
     import FeedbackFlash, { type FeedbackKind } from "./ui/FeedbackFlash.svelte";
     import GameOverScreen from "./ui/GameOverScreen.svelte";
-    import { LOSS_ANIMATION_MS } from "./ui/lossAnimation.ts";
+    import { LOSS_ANIMATION_MS, SQUASH_AT_MS } from "./ui/lossAnimation.ts";
     import LossScreen from "./ui/LossScreen.svelte";
     import MenuScreen from "./ui/MenuScreen.svelte";
     import ModifierIntroScreen from "./ui/ModifierIntroScreen.svelte";
@@ -57,7 +57,7 @@
     import StatsScreen from "./ui/StatsScreen.svelte";
     import TapHints from "./ui/TapHints.svelte";
     import { delay, enqueue, type ToastQueue, visible } from "./ui/toastQueue.ts";
-    import TopBar from "./ui/TopBar.svelte";
+    import TopBar, { LOW_TIME_SHARE } from "./ui/TopBar.svelte";
     import TutorialScreen from "./ui/TutorialScreen.svelte";
 
     const ANSWER_KEYS: Readonly<Record<string, Answer | undefined>> = {
@@ -70,6 +70,8 @@
     const SPAM_STEP_SEMITONES = 2;
     // The second half of a double click on a card button must not answer or skip the next card
     const CARD_INPUT_LOCK_MS = 300;
+    // Sounds that start together with the hit of the level before wait until it is over
+    const AFTER_HIT_MS = 120;
 
     const storage = browserStorage();
     const rng = Math.random;
@@ -104,10 +106,16 @@
     let gameStartedAt = 0;
     let pausedMs = 0;
     let inputLockedUntil = 0;
+    // The last level that beeped for low time, and the last award whose toast sounded
+    let warnedLevel = 0;
+    let announcedAward: AwardId | null = null;
 
     const flash = $derived(lastAnswer && now - lastAnswer.at < FLASH_MS ? lastAnswer.answer : null);
     const showLoss = $derived(game.phase === "gameOver" && loss !== null && now - loss.at < LOSS_ANIMATION_MS);
-    const toast = $derived(visible(toasts, now));
+    const toast = $derived.by(() => {
+        const shown = game.phase === "playing" || game.phase === "spamPause" || game.phase === "surgeBanner";
+        return shown ? visible(toasts, now) : null;
+    });
 
     function update(next: GameState, time: number): void {
         if (next === game) return;
@@ -121,6 +129,7 @@
         if (unseen.length > 0) {
             intros = unseen;
             shown = pause(next, time);
+            playSound("intro", { delayMs: AFTER_HIT_MS });
         }
 
         if (next.phase === "playing" && (game.phase === "menu" || game.phase === "gameOver")) {
@@ -128,6 +137,7 @@
             pausedMs = 0;
             gameAwards = [];
             toasts = [];
+            warnedLevel = 0;
         }
         if (game.phase === "paused" && next.phase !== "paused") {
             pausedMs += time - game.pausedAt;
@@ -150,8 +160,9 @@
                 time,
             );
         } else if (next.phase === "playing" && game.phase === "playing" && next.spamCount > game.spamCount) {
-            playSound("spamTap", { rate: 2 ** (((next.spamCount - 1) * SPAM_STEP_SEMITONES) / 12) });
+            playSound("spamTap", { semitones: (next.spamCount - 1) * SPAM_STEP_SEMITONES });
         }
+        if (next.phase === "surgeBanner" && game.phase !== "paused") playSound("surge", { delayMs: AFTER_HIT_MS });
         if (game.phase === "menu" || game.phase === "gameOver") {
             // START, RETRY and MENU
             playSound("click");
@@ -167,6 +178,7 @@
             saveHighscore(storage, next.score);
             highscore = Math.max(best, next.score);
             playSound(kind);
+            playSound("crt", { delayMs: SQUASH_AT_MS });
             // The jingle belongs to the game over screen, which appears after the loss animation
             playSound(newRecord ? "record" : "gameOver", { delayMs: LOSS_ANIMATION_MS });
             stats = finishGame(stats, game.level, time - gameStartedAt - pausedMs);
@@ -290,9 +302,22 @@
             now = Math.max(now, time);
             if (tutorial) changeTutorial(tickTutorial(tutorial, time), time);
             update(tick(game, time, rng), time);
+            soundTimedEvents();
         });
         return () => cancelAnimationFrame(frame);
     });
+
+    // Once per level when the timer turns red, and once per award toast when it appears
+    function soundTimedEvents(): void {
+        if (game.phase === "playing" && game.level !== warnedLevel && remainingShare(game, now) <= LOW_TIME_SHARE) {
+            warnedLevel = game.level;
+            playSound("lowTime");
+        }
+        if (toast && toast.item !== announcedAward) {
+            announcedAward = toast.item;
+            playSound("award");
+        }
+    }
 
     function giveAnswer(input: Answer, event: Event): void {
         const time = pressTime(event);
@@ -481,7 +506,7 @@
         {/key}
     {/if}
 
-    {#if toast && (game.phase === "playing" || game.phase === "spamPause" || game.phase === "surgeBanner")}
+    {#if toast}
         {#key toast.at}
             <AwardToast award={awardById(toast.item)} />
         {/key}

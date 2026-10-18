@@ -1,3 +1,8 @@
+<script module lang="ts">
+    // From here on the timer is red
+    export const LOW_TIME_SHARE = 0.25;
+</script>
+
 <script lang="ts">
     import { COLOR_CSS } from "../game/colors.ts";
 
@@ -16,7 +21,7 @@
     const share = $derived(Math.min(1, Math.max(0, remaining)));
     // The segments go out in pairs from both ends towards the middle
     const litPairs = $derived(Math.ceil((share * SEGMENTS.length) / 2));
-    const color = $derived(share > 0.5 ? COLOR_CSS.green : share > 0.25 ? COLOR_CSS.yellow : COLOR_CSS.red);
+    const color = $derived(share > 0.5 ? COLOR_CSS.green : share > LOW_TIME_SHARE ? COLOR_CSS.yellow : COLOR_CSS.red);
 </script>
 
 <div class="bar">
