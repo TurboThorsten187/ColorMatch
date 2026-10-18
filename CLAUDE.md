@@ -25,7 +25,9 @@ files.
   `lossAnimation.ts`, driven by the time since the loss) before `GameOverScreen` switches on. `src/main.ts` awaits `loadFonts()` before mounting because
   the word size is fitted by measuring the real font. `sound.ts` wraps Web Audio: `unlockAudio()` on every input
   (browsers need a gesture; on touch only `pointerup` counts), each sound is built from oscillators when it plays.
-- `src/App.svelte` – the only stateful place: rAF loop, keyboard and pointer input (left/right screen half),
+- `src/App.svelte` – the only stateful place: rAF loop, keyboard and pointer input (left/right screen half; outside
+  of a level arrow keys and WASD move the focus between buttons by position, `src/ui/spatialNav.ts`; the yellow
+  highlight only shows while `keyboardMode` puts the `keys` class on the stage),
   pause on `blur`/`visibilitychange`, highscore, settings and stats persistence, sounds and stats for game transitions
   in `update()`. Settings and stats screens are a `view` in App, not a game phase.
 - The tutorial (`src/game/tutorial.ts`) runs beside the game state, which stays in the menu meanwhile. A level with a

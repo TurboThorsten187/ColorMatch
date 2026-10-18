@@ -20,6 +20,15 @@
     const HOLD_MS = 1500;
     const CLEARED_MS = 1500;
     const STEPS = Array.from({ length: VOLUME_STEPS }, (_, i) => i + 1);
+    // The volume bar changes with left and right while selected
+    const VOLUME_KEYS: Readonly<Record<string, number | undefined>> = {
+        ArrowLeft: -1,
+        a: -1,
+        A: -1,
+        ArrowRight: 1,
+        d: 1,
+        D: 1,
+    };
 
     let holdStart = $state<number | null>(null);
     let holdShare = $state(0);
@@ -31,6 +40,15 @@
 
     function toggle(key: Switch, value: boolean): void {
         if (settings[key] !== value) onchange({ ...settings, [key]: value });
+    }
+
+    function onVolumeKey(event: KeyboardEvent): void {
+        const delta = VOLUME_KEYS[event.key];
+        if (delta === undefined) return;
+        // Tells the arrow navigation in App that the key is used up
+        event.preventDefault();
+        const next = changeVolume(settings, delta);
+        if (next !== settings) onchange(next);
     }
 
     function startHold(): void {
@@ -103,19 +121,23 @@
         <div class="volume">
             <span id="volume-label">VOLUME</span>
             <div class="volume-row">
+                <!-- For mouse and touch, the keyboard uses the bar itself -->
                 <button
                     class="square"
                     aria-label="Quieter"
+                    tabindex="-1"
                     disabled={settings.volume <= 1}
                     onclick={() => onchange(changeVolume(settings, -1))}>-</button
                 >
                 <div
                     class="steps"
-                    role="meter"
+                    role="slider"
+                    tabindex="0"
                     aria-labelledby="volume-label"
                     aria-valuemin={1}
                     aria-valuemax={VOLUME_STEPS}
                     aria-valuenow={settings.volume}
+                    onkeydown={onVolumeKey}
                 >
                     {#each STEPS as step (step)}
                         <div class="step" style:background={step <= settings.volume ? stepColor(step) : null}></div>
@@ -124,6 +146,7 @@
                 <button
                     class="square"
                     aria-label="Louder"
+                    tabindex="-1"
                     disabled={settings.volume >= VOLUME_STEPS}
                     onclick={() => onchange(changeVolume(settings, 1))}>+</button
                 >
@@ -224,11 +247,14 @@
         gap: 10px;
     }
 
+    /* The border shows the keyboard selection */
     .steps {
         flex: 1;
         display: grid;
         grid-template-columns: repeat(8, minmax(0, 1fr));
         gap: 4px;
+        padding: 3px;
+        border: 3px solid transparent;
     }
 
     .step {
@@ -250,11 +276,6 @@
     button:disabled {
         opacity: 0.4;
         cursor: default;
-    }
-
-    button:focus-visible {
-        outline: 3px solid #ffe14d;
-        outline-offset: 4px;
     }
 
     .square {

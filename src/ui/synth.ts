@@ -13,7 +13,8 @@ export type SoundId =
     | "surge"
     | "award"
     | "intro"
-    | "lowTime";
+    | "lowTime"
+    | "move";
 
 export interface Voice {
     readonly context: BaseAudioContext;
@@ -96,4 +97,5 @@ export const SOUNDS: Readonly<Record<SoundId, Recipe>> = {
     award: (voice, at) => notes(voice, at, [84, 88, 91, 96], 0.045, { wave: "triangle", gain: 0.2, last: 0.25 }),
     intro: (voice, at) => notes(voice, at, [72, 79], 0.1, { gain: 0.07, last: 0.14 }),
     lowTime: (voice, at) => tone(voice, at, { from: 1760, seconds: 0.06, gain: 0.035 }),
+    move: (voice, at) => tone(voice, at, { wave: "triangle", from: 660, seconds: 0.035, gain: 0.14 }),
 };

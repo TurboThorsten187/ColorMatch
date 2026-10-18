@@ -55,6 +55,7 @@
                 aria-pressed={award.id === selectedId}
                 aria-label="{award.name}{unlocked.has(award.id) ? '' : ', locked'}"
                 onclick={() => (selectedId = award.id)}
+                onfocus={() => (selectedId = award.id)}
             >
                 <AwardBadge {award} locked={!unlocked.has(award.id)} />
             </button>
@@ -112,11 +113,6 @@
         font-family: inherit;
         font-size: 12px;
         cursor: pointer;
-    }
-
-    button:focus-visible {
-        outline: 3px solid #ffe14d;
-        outline-offset: 4px;
     }
 
     .numbers {
@@ -178,6 +174,12 @@
     .badge-button.selected {
         outline: 2px solid #fff;
         outline-offset: 3px;
+    }
+
+    /* On the yellow of the keyboard selection the badge turns black */
+    :global(.keys) .badge-button:focus :global(.badge) {
+        border-color: #000;
+        color: #000;
     }
 
     .detail {

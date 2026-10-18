@@ -2,12 +2,19 @@
 
 Ein schnelles Reaktionsspiel im Browser: Passt das angezeigte Wort zu seiner Schriftfarbe?
 
-| Eingabe                               | Tastatur            | Touch / Maus                   |
-| ------------------------------------- | ------------------- | ------------------------------ |
-| TRUE – Wort und Farbe stimmen überein | **←** Pfeil links   | linke Bildschirmhälfte tippen  |
-| FALSE – Wort und Farbe passen nicht   | **→** Pfeil rechts  | rechte Bildschirmhälfte tippen |
-| Starten, Fortsetzen                   | **Enter**           | irgendwo tippen                |
-| Nach Game Over: nochmal / Menü        | **Enter** / **Esc** | RETRY / MENU                   |
+| Eingabe                               | Tastatur                     | Touch / Maus                   |
+| ------------------------------------- | ---------------------------- | ------------------------------ |
+| TRUE – Wort und Farbe stimmen überein | **←** oder **A**             | linke Bildschirmhälfte tippen  |
+| FALSE – Wort und Farbe passen nicht   | **→** oder **D**             | rechte Bildschirmhälfte tippen |
+| In Menüs einen Button auswählen       | Pfeiltasten oder **WASD**    | –                              |
+| Ausgewählten Button drücken           | **Enter** oder **Leertaste** | Button antippen                |
+| Starten, Fortsetzen                   | **Enter**                    | irgendwo tippen                |
+| Zurück zum Menü                       | **Esc** oder **Backspace**   | ◄ / MENU                       |
+
+Alle Menüs lassen sich nur mit der Tastatur bedienen: Der ausgewählte Button ist gelb gefüllt, bewegt wird er mit den
+Pfeiltasten oder WASD zum nächsten Button in der Richtung (mit einem leisen Blip). Die Hervorhebung erscheint nur beim
+Spielen mit der Tastatur; der erste Tastendruck zeigt, wo die Auswahl steht. Im Menü ist PRESS START ausgewählt, nach
+Game Over RETRY, sobald es reagiert. In SETUP ändern ← und → die Lautstärke, wenn die Lautstärke-Leiste ausgewählt ist.
 
 Wechselt man den Tab oder die App, pausiert das Spiel; danach geht es mit derselben Aufgabe und der Restzeit weiter.
 

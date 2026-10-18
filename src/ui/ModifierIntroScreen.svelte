@@ -238,11 +238,6 @@
         cursor: pointer;
     }
 
-    .gotit:focus-visible {
-        outline: 3px solid #ffe14d;
-        outline-offset: 6px;
-    }
-
     /* Phones in landscape: the card and GOT IT have to fit without scrolling, the dim timer is left out */
     @media (max-height: 520px) {
         .intro {

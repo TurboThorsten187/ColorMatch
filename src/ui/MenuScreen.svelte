@@ -3,11 +3,12 @@
 
     interface Props {
         highscore: number;
+        onstart: () => void;
         onstats: () => void;
         onsetup: () => void;
     }
 
-    let { highscore, onstats, onsetup }: Props = $props();
+    let { highscore, onstart, onstats, onsetup }: Props = $props();
 
     const TITLE_LINES = ["COLOR", "MATCH"];
     const LETTER_COUNT = TITLE_LINES.join("").length;
@@ -41,7 +42,8 @@
     </h1>
 
     <div class="controls"><span>◄ TRUE</span><span>FALSE ►</span></div>
-    <div class="start blink">PRESS START</div>
+    <!-- Selected from the start, so Enter and the arrow keys begin here -->
+    <button class="start blink" onclick={onstart} {@attach (node) => node.focus()}>PRESS START</button>
 
     <div class="buttons">
         <button class="stats" onclick={onstats}>STATS</button>
@@ -100,8 +102,18 @@
     }
 
     .start {
+        flex: none;
+        height: auto;
+        padding: 10px 14px;
+        border-color: transparent;
+        background: none;
         font-size: max(13px, calc(2.4 * var(--unit)));
         color: #ffe14d;
+    }
+
+    /* A selected PRESS START stays visible */
+    :global(.keys) .start:focus {
+        animation: none;
     }
 
     .buttons {
@@ -122,11 +134,6 @@
         font-family: inherit;
         font-size: 11px;
         cursor: pointer;
-    }
-
-    button:focus-visible {
-        outline: 3px solid #ffe14d;
-        outline-offset: 4px;
     }
 
     .stats {

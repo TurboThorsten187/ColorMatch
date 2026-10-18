@@ -57,13 +57,36 @@
     import StatsScreen from "./ui/StatsScreen.svelte";
     import TapHints from "./ui/TapHints.svelte";
     import { delay, enqueue, type ToastQueue, visible } from "./ui/toastQueue.ts";
+    import { type Direction, neighbor } from "./ui/spatialNav.ts";
     import TopBar, { LOW_TIME_SHARE } from "./ui/TopBar.svelte";
     import TutorialScreen from "./ui/TutorialScreen.svelte";
 
     const ANSWER_KEYS: Readonly<Record<string, Answer | undefined>> = {
         ArrowLeft: "true",
         ArrowRight: "false",
+        a: "true",
+        A: "true",
+        d: "false",
+        D: "false",
     };
+    // Outside of a level, arrow keys and WASD move the selection between the buttons of a screen
+    const NAV_KEYS: Readonly<Record<string, Direction | undefined>> = {
+        ArrowUp: "up",
+        w: "up",
+        W: "up",
+        ArrowDown: "down",
+        s: "down",
+        S: "down",
+        ArrowLeft: "left",
+        a: "left",
+        A: "left",
+        ArrowRight: "right",
+        d: "right",
+        D: "right",
+    };
+    const BACK_KEYS: ReadonlySet<string> = new Set(["Escape", "Backspace"]);
+    // What the selection can land on; the volume buttons are left out because the volume bar takes left and right
+    const NAVIGABLE = 'button:not(:disabled):not([tabindex="-1"]), [role="slider"]';
     const FLASH_MS = 150;
     const FEEDBACK_MS = 700;
     // Every tap of a SPAM! level sounds higher than the one before
@@ -101,6 +124,9 @@
     let view = $state<"game" | "settings" | "stats">("game");
     let width = $state(0);
     let height = $state(0);
+    let stage = $state<HTMLElement>();
+    // The selected button is highlighted only while playing with the keyboard
+    let keyboardMode = $state(false);
 
     // Play time of the current game: the time spent paused does not count
     let gameStartedAt = 0;
@@ -349,11 +375,18 @@
 
     function onKeydown(event: KeyboardEvent): void {
         unlockAudio();
+        handleKey(event);
+        // Afterwards, so the first arrow key only shows the selection
+        keyboardMode = true;
+    }
+
+    function handleKey(event: KeyboardEvent): void {
         // Held keys fire keydown repeatedly, that does not count as a new input
         if (event.repeat) return;
 
         if (view !== "game") {
-            if (event.key === "Escape") showView("game");
+            if (BACK_KEYS.has(event.key)) showView("game");
+            else navigate(event);
             return;
         }
 
@@ -370,6 +403,10 @@
         if (input && game.phase === "playing") {
             event.preventDefault();
             giveAnswer(input, event);
+        } else if (navigate(event)) {
+            return;
+        } else if (BACK_KEYS.has(event.key)) {
+            goToMenu();
         } else if (event.target instanceof HTMLButtonElement) {
             // A focused button handles Enter itself, e.g. MENU must not retry
             return;
@@ -377,18 +414,47 @@
             // Otherwise the same Enter also presses TRY IT, which the tutorial focuses right away
             event.preventDefault();
             goOn();
-        } else if (event.key === "Escape") {
-            goToMenu();
         }
+    }
+
+    // Moves the focus to the nearest button in the pressed direction; returns whether the key was a direction
+    function navigate(event: KeyboardEvent): boolean {
+        const direction = NAV_KEYS[event.key];
+        if (!direction) return false;
+        // The volume bar used left or right itself
+        if (event.defaultPrevented) return true;
+        event.preventDefault();
+
+        const items = stage
+            ? [...stage.querySelectorAll<HTMLElement>(NAVIGABLE)].filter((item) => item.getClientRects().length > 0)
+            : [];
+        const current = items.findIndex((item) => item === document.activeElement);
+        // The selection was hidden while playing with mouse or touch: the first key only shows it
+        if (current >= 0 && !keyboardMode) return true;
+        const next =
+            current < 0
+                ? 0
+                : neighbor(
+                      items.map((item) => item.getBoundingClientRect()),
+                      current,
+                      direction,
+                  );
+        const target = next === null ? undefined : items[next];
+        if (!target) return true;
+        target.focus();
+        playSound("move");
+        return true;
     }
 
     function onTutorialKey(event: KeyboardEvent, input: Answer | undefined, state: TutorialState): void {
         if (input && currentStep(state)?.kind === "try") {
             event.preventDefault();
             answerTutorial(input);
-        } else if (event.key === "Escape") {
+        } else if (BACK_KEYS.has(event.key)) {
             // Also while TRY IT has the focus
             skipTutorial();
+        } else if (navigate(event)) {
+            return;
         } else if (event.target instanceof HTMLButtonElement) {
             return;
         } else if (event.key === "Enter") {
@@ -400,6 +466,7 @@
     // Menu and pause continue on any tap; game over, settings, stats and modifier cards have their own buttons.
     function onPointerdown(event: PointerEvent): void {
         unlockAudio();
+        keyboardMode = false;
         if (event.button !== 0 || game.phase === "gameOver" || view !== "game" || intros.length > 0) return;
         // Buttons handle their own clicks, e.g. SETUP in the menu must not start a game
         if (event.target instanceof Element && event.target.closest("button")) return;
@@ -440,7 +507,7 @@
     }}
 />
 
-<main class="stage" bind:clientWidth={width} bind:clientHeight={height}>
+<main class="stage" class:keys={keyboardMode} bind:this={stage} bind:clientWidth={width} bind:clientHeight={height}>
     {#if view === "settings"}
         <SettingsScreen
             {settings}
@@ -454,7 +521,7 @@
     {:else if tutorial}
         <TutorialScreen {tutorial} {flash} {width} {height} onnext={tutorialNext} onskip={skipTutorial} />
     {:else if game.phase === "menu"}
-        <MenuScreen {highscore} onstats={() => showView("stats")} onsetup={() => showView("settings")} />
+        <MenuScreen {highscore} onstart={goOn} onstats={() => showView("stats")} onsetup={() => showView("settings")} />
     {:else if game.phase === "playing"}
         <ChallengeScreen
             challenge={game.challenge}
@@ -534,6 +601,19 @@
         -webkit-tap-highlight-color: transparent;
         /* Size unit: 1 % of the width, capped by the height and on large screens */
         --unit: min(1vw, 1.8dvh, 10px);
+    }
+
+    /* The keyboard selection, moved with the arrow keys, WASD or Tab */
+    .stage.keys :global(:is(button, [role="slider"]):focus) {
+        outline: none;
+        border-color: #ffe14d;
+        background: #ffe14d;
+        color: #000;
+    }
+
+    /* The volume bar keeps its steps visible and only gets the yellow border */
+    .stage.keys :global([role="slider"]:focus) {
+        background: none;
     }
 
     /* CRT look */

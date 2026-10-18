@@ -227,11 +227,6 @@
         cursor: pointer;
     }
 
-    button:focus-visible {
-        outline: 3px solid #ffe14d;
-        outline-offset: 4px;
-    }
-
     .next {
         height: 44px;
         padding: 0 16px;
