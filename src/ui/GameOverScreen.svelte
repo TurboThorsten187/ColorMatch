@@ -55,7 +55,15 @@
 
     <div class="actions">
         <div class="continue">CONTINUE?</div>
-        <button class="retry" disabled={locked} onclick={onretry}>RETRY</button>
+        <button
+            class="retry"
+            disabled={locked}
+            onclick={onretry}
+            {@attach (node) => {
+                // Selected as soon as it can be pressed
+                if (!locked) node.focus();
+            }}>RETRY</button
+        >
         <button class="menu" disabled={locked} onclick={onmenu}>MENU</button>
     </div>
 </div>
@@ -205,11 +213,6 @@
     button:disabled {
         opacity: 0.4;
         cursor: default;
-    }
-
-    button:focus-visible {
-        outline: 3px solid #ffe14d;
-        outline-offset: 4px;
     }
 
     .retry {
