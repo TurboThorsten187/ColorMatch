@@ -64,9 +64,11 @@ das Tutorial nochmal (die Modifier-Karten bleiben dabei gesehen). **HOLD TO RESE
 Highscore, Stats, Awards, Einstellungen und den Tutorial-Fortschritt. Esc führt zurück ins Menü. Alles wird lokal im
 Browser gespeichert.
 
-Sounds gibt es für Treffer, Fehler, Zeitablauf, jeden Tipp einer Spam-Aufgabe (wird pro Tipp höher), Buttons sowie
-einen Jingle für Game Over und neuen Rekord. Sie starten erst nach der ersten Eingabe, weil Browser vorher keinen Ton
-erlauben. Die Dateien sind OGG Vorbis; Safari und iOS spielen sie ab Version 18.4 ab.
+Sounds gibt es für Treffer, Fehler, Zeitablauf, jeden Tipp einer Spam-Aufgabe (wird pro Tipp höher), Buttons, das
+Surge-Banner, neue Awards, die Karte eines neuen Modifiers, den Moment, in dem der Timer rot wird (einmal pro Level),
+das Abschalten des Bildschirms nach einem Fehler sowie einen Jingle für Game Over und neuen Rekord. Es sind
+Chiptune-Sounds, die der Browser beim Abspielen aus Oszillatoren erzeugt, also ohne Sound-Dateien. Sie starten erst
+nach der ersten Eingabe, weil Browser vorher keinen Ton erlauben.
 
 ## Entwicklung
 
@@ -93,16 +95,9 @@ Das Spiel ist mit Svelte 5 und TypeScript gebaut (`src/`):
   Übergänge sind Funktionen `(Zustand, Eingabe, Zeit, Zufall) → neuer Zustand` und damit direkt testbar.
 - `src/ui/` – Svelte-Komponenten für die einzelnen Screens; Modifier werden per CSS (Transform, Filter) dargestellt,
   Bewegung, Zittern, Pulsieren und Mischen berechnet `effects.ts` aus der Zeit seit Levelbeginn.
-  `sound.ts` spielt die Sounds über die Web Audio API ab.
-- `src/assets/sounds/` – die Sound-Dateien.
+  `sound.ts` spielt die Sounds über die Web Audio API ab, `synth.ts` beschreibt, wie jeder Sound erzeugt wird.
 - `src/App.svelte` – verbindet beides: Spielschleife (`requestAnimationFrame`), Tastatur und Touch, Pause beim
   Verlassen des Tabs, Highscore, Einstellungen, Stats und Tutorial-Fortschritt speichern, Sounds zu Spielereignissen.
-
-## Credits
-
-Sounds: [Kenney](https://kenney.nl) (Digital Audio, Interface Sounds), Lizenz CC0. Verwendet und umbenannt:
-`powerUp2` → `hit`, `error_008` → `miss`, `error_006` → `timeout`, `tick_001` → `spam-tap`, `click_003` → `click`,
-`zapThreeToneDown` → `game-over`, `zapThreeToneUp` → `record`.
 
 ## Deployment
 

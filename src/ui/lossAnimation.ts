@@ -9,7 +9,8 @@ const SHAKE_STEPS = 8;
 export const SHATTER_AT_MS = 120;
 const LABEL_POP_MS = 300;
 const FALL_MS = 750;
-const SQUASH_AT_MS = SHATTER_AT_MS + FALL_MS;
+// The picture starts to shut off
+export const SQUASH_AT_MS = SHATTER_AT_MS + FALL_MS;
 const SQUASH_MS = 200;
 const SHRINK_MS = 160;
 const FADE_MS = 180;

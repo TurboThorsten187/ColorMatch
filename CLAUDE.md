@@ -7,7 +7,8 @@ Browser reaction game (Stroop effect): does the word match its ink color? Deploy
 
 Svelte 5 (runes) + TypeScript, Vite 8, Vitest, ESLint (flat config) + Prettier. Runtime dependencies besides Svelte:
 self-hosted fonts via `@fontsource` (Press Start 2P for the UI, Orbitron 900 for the color word, latin subsets only).
-Sounds are Kenney CC0 OGG files in `src/assets/sounds/` (source names in the README credits), imported as Vite assets.
+Sounds are chiptune sounds synthesized with Web Audio oscillators (recipes in `src/ui/synth.ts`), there are no audio
+files.
 
 ## Commands
 
@@ -23,7 +24,7 @@ Sounds are Kenney CC0 OGG files in `src/assets/sounds/` (source names in the REA
   modifiers are rendered with CSS transforms and filters. `LossScreen` plays the loss animation (timeline in
   `lossAnimation.ts`, driven by the time since the loss) before `GameOverScreen` switches on. `src/main.ts` awaits `loadFonts()` before mounting because
   the word size is fitted by measuring the real font. `sound.ts` wraps Web Audio: `unlockAudio()` on every input
-  (browsers need a gesture; on touch only `pointerup` counts), sounds are decoded once.
+  (browsers need a gesture; on touch only `pointerup` counts), each sound is built from oscillators when it plays.
 - `src/App.svelte` – the only stateful place: rAF loop, keyboard and pointer input (left/right screen half),
   pause on `blur`/`visibilitychange`, highscore, settings and stats persistence, sounds and stats for game transitions
   in `update()`. Settings and stats screens are a `view` in App, not a game phase.
