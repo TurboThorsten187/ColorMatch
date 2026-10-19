@@ -20,7 +20,7 @@ files.
 
 - `src/game/` – pure game logic, no DOM and no Svelte: immutable `GameState` union and transitions
   `answer`/`confirm`/`toMenu`/`tick`/`pause`/`resume` that take `now` (ms) and an injected `Rng`. All gameplay rules live here and are unit tested.
-- `src/ui/` – one Svelte component per screen plus `TopBar` (level, timer), `TapHints`, `FeedbackFlash`;
+- `src/ui/` – one Svelte component per screen plus `TopBar` (level, timer; the modifier cards reuse it `inline` and `paused`), `TapHints`, `FeedbackFlash`;
   modifiers are rendered with CSS transforms and filters. `LossScreen` plays the loss animation (timeline in
   `lossAnimation.ts`, driven by the time since the loss) before `GameOverScreen` switches on. `src/main.ts` awaits `loadFonts()` before mounting because
   the word size is fitted by measuring the real font. `sound.ts` wraps Web Audio: `unlockAudio()` on every input

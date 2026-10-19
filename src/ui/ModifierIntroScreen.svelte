@@ -4,6 +4,7 @@
     import type { IntroId, ModifierIntro } from "../game/intros.ts";
     import { groupById, type ModifierId } from "../game/modifiers.ts";
     import { fadeOpacity, scramble, spin, wordMotion } from "./effects.ts";
+    import TopBar from "./TopBar.svelte";
 
     interface Props {
         intro: ModifierIntro;
@@ -15,7 +16,6 @@
 
     let { intro, level, elapsed, ongotit }: Props = $props();
 
-    const TIMER_SEGMENTS = Array.from({ length: 10 }, (_, i) => i);
     // Their examples are animated with the game's own effect functions
     const ANIMATED: ReadonlySet<IntroId> = new Set(["moving", "scrambled", "shaky", "pulsing"]);
     const EXAMPLE_SEED = 0.37;
@@ -65,15 +65,8 @@
 </script>
 
 <div class="intro">
-    <div class="top">
-        <span>LV {level}</span>
-        <span class="paused">PAUSED</span>
-    </div>
-    <div class="timer" aria-hidden="true">
-        {#each TIMER_SEGMENTS as i (i)}
-            <span></span>
-        {/each}
-    </div>
+    <!-- The level waits with its full time -->
+    <TopBar {level} remaining={1} paused inline />
 
     <div class="headline blink">NEW MODIFIER!</div>
 
@@ -137,30 +130,6 @@
         scrollbar-width: thin;
         scrollbar-color: #555 #000;
         font-size: max(11px, calc(1.3 * var(--unit)));
-    }
-
-    .top {
-        width: 100%;
-        display: flex;
-        justify-content: space-between;
-        font-size: max(11px, calc(1.6 * var(--unit)));
-    }
-
-    .paused {
-        color: #ffe14d;
-    }
-
-    .timer {
-        width: 100%;
-        display: grid;
-        grid-template-columns: repeat(10, minmax(0, 1fr));
-        gap: 4px;
-        opacity: 0.4;
-    }
-
-    .timer span {
-        height: max(14px, calc(1.6 * var(--unit)));
-        background: #3dff7a;
     }
 
     .headline {
@@ -238,16 +207,12 @@
         cursor: pointer;
     }
 
-    /* Phones in landscape: the card and GOT IT have to fit without scrolling, the dim timer is left out */
+    /* Phones in landscape: the card and GOT IT have to fit without scrolling */
     @media (max-height: 520px) {
         .intro {
             gap: 8px;
             padding-top: calc(env(safe-area-inset-top) + 10px);
             padding-bottom: calc(env(safe-area-inset-bottom) + 12px);
-        }
-
-        .timer {
-            display: none;
         }
 
         .card {
