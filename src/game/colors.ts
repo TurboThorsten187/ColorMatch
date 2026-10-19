@@ -9,7 +9,7 @@ export type Color = (typeof COLORS)[number];
 export const COLOR_CSS: Readonly<Record<Color, string>> = {
     red: "#ff3b4e",
     green: "#3dff7a",
-    blue: "#4d8dff",
+    blue: "#244cfb",
     yellow: "#ffe14d",
     purple: "#c45cff",
     cyan: "#22e4ff",
