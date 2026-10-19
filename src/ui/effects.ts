@@ -34,6 +34,8 @@ const PULSE_MIN = 0.7;
 const PULSE_MAX = 1.14;
 
 const SCRAMBLE_STEP_MS = 380;
+// Shifts the seed for every word of a rule text, so it is not mixed in step with the color word
+const WORD_SEED_STEP = 0.37;
 
 const SPIN_MS = 2500;
 const FADE_MS = 900;
@@ -118,6 +120,14 @@ export function scramble(word: string, seed: number, elapsed: number): string {
         if (scrambled !== word) return scrambled;
     }
     return word;
+}
+
+// A rule text like DON'T CLICK is mixed word by word, each word in its own order, so it still reads as two words
+export function scrambleWords(text: string, seed: number, elapsed: number): string {
+    return text
+        .split(" ")
+        .map((word, index) => scramble(word, (seed + WORD_SEED_STEP * (index + 1)) % 1, elapsed))
+        .join(" ");
 }
 
 // -1 at the start, 1 halfway, -1 again after a full period: straight lines that bounce off both sides

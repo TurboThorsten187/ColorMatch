@@ -50,7 +50,9 @@ werden mit dem Level schneller, so wie die Zeit pro Level schrumpft (gut doppelt
 ab Level 80). Jeder
 startet bei seiner Einführung im normalen Tempo und holt dann innerhalb von 8 Leveln auf; ein spät eingeführter wird
 also schneller schnell als ein früher. Höchstens einer pro Level ändert die Regeln (Inverted
-Input, Don't Click, Spam), und dieselbe Kombination kommt nie zweimal hintereinander.
+Input, Don't Click, Spam), und dieselbe Kombination kommt nie zweimal hintereinander. Die Hinweise DON'T CLICK und
+INVERTED INPUT hängen am Wort und bekommen jeden Modifier mit: Sie werden mit ihm gespiegelt (stehen dann auch mal
+darunter), gedreht, bewegt und unscharf, blenden mit aus und ihre Buchstaben werden gemischt.
 
 Nach der letzten Einführung (Level 38) wird es weiter härter: Von Level 40 bis 80 werden Level ohne Modifier immer
 seltener und verschwinden dann ganz, und zwei oder drei Modifier auf einmal werden häufiger. Ab Level 50 ist jedes

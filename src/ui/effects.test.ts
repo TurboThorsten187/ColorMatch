@@ -7,6 +7,7 @@ import {
     pulseScale,
     SHAKE_TILT_DEG,
     scramble,
+    scrambleWords,
     spin,
     wordMotion,
 } from "./effects.ts";
@@ -32,6 +33,21 @@ describe("scrambled letters", () => {
 
         expect(orders.size).toBeGreaterThan(5);
         expect(letterOrder(6, 0.1, 0)).toEqual(letterOrder(6, 0.1, 379));
+    });
+
+    it("mix a rule text word by word and keep its words apart", () => {
+        for (const text of ["DON'T CLICK", "INVERTED INPUT"]) {
+            const words = text.split(" ");
+            for (let elapsed = 0; elapsed < 20000; elapsed += 97) {
+                const scrambled = scrambleWords(text, 0.42, elapsed).split(" ");
+
+                expect(scrambled).toHaveLength(words.length);
+                scrambled.forEach((word, index) => {
+                    expect(word).not.toBe(words[index]);
+                    expect([...word].sort()).toEqual([...words[index]].sort());
+                });
+            }
+        }
     });
 });
 
