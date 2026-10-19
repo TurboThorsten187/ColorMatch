@@ -617,9 +617,14 @@
         --unit: min(1vw, 1.8dvh, 10px);
     }
 
+    /* Screens focus a button on their own so Enter works at once; the browser's focus ring would show that before
+       any key is pressed, the selection only appears as the yellow fill below */
+    .stage :global(:is(button, [role="slider"]):focus) {
+        outline: none;
+    }
+
     /* The keyboard selection, moved with the arrow keys, WASD or Tab */
     .stage.keys :global(:is(button, [role="slider"]):focus) {
-        outline: none;
         border-color: #ffe14d;
         background: #ffe14d;
         color: #000;
