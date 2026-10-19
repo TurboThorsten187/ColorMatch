@@ -236,10 +236,12 @@ describe("surge", () => {
 
         const surge = tick(banner, banner.resumeAt, rng);
         if (surge.phase !== "playing") throw new Error("Surge did not start");
+        // One of the stacked groups may be Don't Click, which shortens the base time like on any other level
+        const baseTime = timeLimitFor(SURGE_FIRST_LEVEL, 0, false);
         expect(surge).toMatchObject({
             level: SURGE_FIRST_LEVEL,
             startedAt: banner.resumeAt,
-            timeLimit: timeLimitFor(SURGE_FIRST_LEVEL, 0, false),
+            timeLimit: surge.challenge.expected === "none" ? Math.round(baseTime * NO_CLICK_TIME_SHARE) : baseTime,
         });
         expect(groupsOf(surge.challenge.modifiers)).toHaveLength(SURGE_GROUP_COUNT);
     });

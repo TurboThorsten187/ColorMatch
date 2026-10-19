@@ -302,7 +302,7 @@
 
     .replay {
         width: 128px;
-        box-shadow: 4px 4px 0 #244cfb;
+        box-shadow: 4px 4px 0 #1765fb;
     }
 
     .reset {

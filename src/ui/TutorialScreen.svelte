@@ -134,7 +134,7 @@
         padding: 22px;
         border: 4px solid #fff;
         background: #000;
-        box-shadow: 6px 6px 0 #244cfb;
+        box-shadow: 6px 6px 0 #1765fb;
         font-size: max(11px, calc(1.3 * var(--unit)));
     }
 
