@@ -17,7 +17,7 @@ describe("settings", () => {
 
     it("load what was saved", () => {
         const storage = memoryStorage();
-        const settings: Settings = { sound: false, volume: 2, scanlines: false };
+        const settings: Settings = { sound: false, volume: 2, scanlines: false, colorblind: true };
 
         saveSettings(storage, settings);
 
@@ -26,7 +26,10 @@ describe("settings", () => {
 
     it("replace each invalid field with its default", () => {
         const storage = memoryStorage();
-        storage.setItem("colormatch_settings", JSON.stringify({ sound: "yes", volume: 99, scanlines: false }));
+        storage.setItem(
+            "colormatch_settings",
+            JSON.stringify({ sound: "yes", volume: 99, scanlines: false, colorblind: "on" }),
+        );
 
         expect(loadSettings(storage)).toEqual({ ...DEFAULT_SETTINGS, scanlines: false });
     });
@@ -41,7 +44,7 @@ describe("settings", () => {
 
     it("go back to the defaults when cleared", () => {
         const storage = memoryStorage();
-        saveSettings(storage, { sound: false, volume: 1, scanlines: false });
+        saveSettings(storage, { sound: false, volume: 1, scanlines: false, colorblind: true });
 
         clearSettings(storage);
 

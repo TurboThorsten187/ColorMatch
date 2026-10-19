@@ -26,9 +26,10 @@
         highscore: number;
         width: number;
         height: number;
+        colorblind: boolean;
     }
 
-    let { level, lostAt, kind, elapsed, highscore, width, height }: Props = $props();
+    let { level, lostAt, kind, elapsed, highscore, width, height, colorblind }: Props = $props();
 
     const SHAKE_PX = 7;
 
@@ -116,6 +117,7 @@
         {height}
         hideWord={frame.shattered}
         bind:anchor
+        {colorblind}
     />
     <TopBar level={level.level} {highscore} remaining={1 - frozen / level.timeLimit} />
     <TapHints flash={null} />

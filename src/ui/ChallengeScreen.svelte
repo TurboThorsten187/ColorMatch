@@ -1,6 +1,6 @@
 <script lang="ts">
     import type { Challenge } from "../game/challenge.ts";
-    import { COLOR_CSS } from "../game/colors.ts";
+    import { wordFor } from "../game/colors.ts";
     import { SPAM_WORD } from "../game/game.ts";
     import type { ModifierGroupId, ModifierId } from "../game/modifiers.ts";
     import {
@@ -14,6 +14,7 @@
     } from "./effects.ts";
     import { fitScale, textWidth } from "./fitText.ts";
     import { WORD_FONT, WORD_WEIGHT } from "./fonts.ts";
+    import { backgroundStyle, inkStyle } from "./shapes.ts";
 
     interface Props {
         challenge: Challenge;
@@ -27,9 +28,20 @@
         hideWord?: boolean;
         // The point the word is drawn around, with all its transformations
         anchor?: HTMLElement;
+        // Shapes instead of colors: shape words, letters filled with shapes
+        colorblind?: boolean;
     }
 
-    let { challenge, elapsed, width, height, spamCount = 0, hideWord = false, anchor = $bindable() }: Props = $props();
+    let {
+        challenge,
+        elapsed,
+        width,
+        height,
+        spamCount = 0,
+        hideWord = false,
+        anchor = $bindable(),
+        colorblind = false,
+    }: Props = $props();
 
     const SPAM_DIM = "#3a3a3a";
     // Moving words stay out of the top bar and the TRUE / FALSE labels
@@ -45,7 +57,7 @@
     const played = (id: ModifierGroupId): number => elapsed * (challenge.tempo[id] ?? 1);
 
     const opacity = $derived(has("blink") ? fadeOpacity(played("blink")) : 1);
-    const word = $derived(has("spam") ? SPAM_WORD : challenge.word.toUpperCase());
+    const word = $derived(has("spam") ? SPAM_WORD : wordFor(challenge.word, colorblind));
     const shownWord = $derived(has("scrambled") ? scramble(word, challenge.seed, played("scrambled")) : word);
     const tags = $derived(
         [...(has("noClick") ? ["DON'T CLICK"] : []), ...(has("invertInput") ? ["INVERTED INPUT"] : [])].map((tag) =>
@@ -98,19 +110,22 @@
     });
 </script>
 
-<div class="screen" style:background={challenge.background ? COLOR_CSS[challenge.background] : "#000"}>
+<div
+    class="screen"
+    style:background={challenge.background ? backgroundStyle(challenge.background, colorblind) : "#000"}
+>
     <!-- Blink only fades the word and its rule tags, the background stays. The tags get every effect of the word. -->
     {#if opacity > 0}
-        <div
-            bind:this={anchor}
-            class="anchor"
-            style:transform
-            style:opacity={opacity < 1 ? opacity : null}
-            style:color={COLOR_CSS[challenge.color]}
-        >
+        <div bind:this={anchor} class="anchor" style:transform style:opacity={opacity < 1 ? opacity : null}>
             <!-- The word comes first: the loss animation reads it as the anchor's first child -->
             {#if !hideWord}
-                <div class="word" style:font-size="{fontSize}px" style:filter={has("blur") ? "blur(10px)" : null}>
+                <!-- SPAM! is not about the color, its characters light up in plain ink -->
+                <div
+                    class="word"
+                    style={inkStyle(challenge.color, colorblind && !has("spam"))}
+                    style:font-size="{fontSize}px"
+                    style:filter={has("blur") ? "blur(10px)" : null}
+                >
                     {#if has("spam")}
                         {#each [...shownWord] as character, index (index)}
                             <span style:color={index < spamCount ? null : SPAM_DIM}>{character}</span>

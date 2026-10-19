@@ -527,7 +527,15 @@
     {:else if view === "stats"}
         <StatsScreen {stats} {highscore} onback={() => showView("game")} />
     {:else if tutorial}
-        <TutorialScreen {tutorial} {flash} {width} {height} onnext={tutorialNext} onskip={skipTutorial} />
+        <TutorialScreen
+            {tutorial}
+            {flash}
+            {width}
+            {height}
+            colorblind={settings.colorblind}
+            onnext={tutorialNext}
+            onskip={skipTutorial}
+        />
     {:else if game.phase === "menu"}
         <MenuScreen
             {highscore}
@@ -543,6 +551,7 @@
             spamCount={game.spamCount}
             {width}
             {height}
+            colorblind={settings.colorblind}
         />
         <TopBar level={game.level} {highscore} remaining={remainingShare(game, now)} />
         <TapHints {flash} />
@@ -555,6 +564,7 @@
             {highscore}
             {width}
             {height}
+            colorblind={settings.colorblind}
         />
     {:else if game.phase === "spamPause"}
         <SpamPauseScreen />
@@ -565,6 +575,7 @@
             intro={introById(intros[0])}
             level={game.resumeTo.level}
             elapsed={now - game.pausedAt}
+            colorblind={settings.colorblind}
             ongotit={gotIt}
         />
     {:else if game.phase === "paused"}
