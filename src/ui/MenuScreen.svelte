@@ -143,7 +143,7 @@
     }
 
     .stats {
-        box-shadow: 4px 4px 0 #4d8dff;
+        box-shadow: 4px 4px 0 #244cfb;
     }
 
     .setup {
