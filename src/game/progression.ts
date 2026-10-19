@@ -16,6 +16,8 @@ const BASE_RANGE_MS = 1800;
 const BASE_DECAY = 0.93;
 export const INTRO_BONUS_MS = 1000;
 export const EXTRA_GROUP_BONUS_MS = 300;
+// A Don't Click level is only sat out, the full time would just be waiting
+export const NO_CLICK_TIME_SHARE = 0.6;
 
 // Freshly introduced groups are picked more often; the advantage fades over about ten levels
 const FRESH_BOOST = 2;

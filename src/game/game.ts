@@ -6,6 +6,7 @@ import {
     introducedAt,
     introLevel,
     isSurgeLevel,
+    NO_CLICK_TIME_SHARE,
     pickGroups,
     tempoFor,
     timeLimitFor,
@@ -180,12 +181,14 @@ function playLevel(
 ): PlayingState {
     const groups = pickGroups(level, curriculum, previous, rng);
     const tempo = Object.fromEntries(groups.map((id) => [id, tempoFor(level, introLevel(curriculum, id))]));
+    const challenge = createChallenge(groups, level, rng, tempo);
+    const timeLimit = timeLimitFor(level, groups.length, introducedAt(curriculum, level) !== null);
     return {
         phase: "playing",
         level,
-        challenge: createChallenge(groups, level, rng, tempo),
+        challenge,
         startedAt: now,
-        timeLimit: timeLimitFor(level, groups.length, introducedAt(curriculum, level) !== null),
+        timeLimit: challenge.expected === "none" ? Math.round(timeLimit * NO_CLICK_TIME_SHARE) : timeLimit,
         spamCount: 0,
         curriculum,
     };

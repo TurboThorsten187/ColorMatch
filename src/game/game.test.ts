@@ -19,7 +19,14 @@ import {
     toMenu,
 } from "./game.ts";
 import { groupsOf, MODIFIER_GROUPS } from "./modifiers.ts";
-import { introLevel, SURGE_FIRST_LEVEL, SURGE_GROUP_COUNT, tempoFor, timeLimitFor } from "./progression.ts";
+import {
+    introLevel,
+    NO_CLICK_TIME_SHARE,
+    SURGE_FIRST_LEVEL,
+    SURGE_GROUP_COUNT,
+    tempoFor,
+    timeLimitFor,
+} from "./progression.ts";
 
 const rng = Math.random;
 const CURRICULUM = MODIFIER_GROUPS.map((group) => group.id);
@@ -116,6 +123,23 @@ describe("game", () => {
         const state = playing("none");
 
         expect(levelOf(tick(state, state.timeLimit + 1, rng))).toBe(2);
+    });
+
+    it("gives a no-click level only part of the time limit", () => {
+        let noClickLevels = 0;
+        for (let run = 0; run < 300; run++) {
+            const next = answer(playing("true", 40), "true", 100, rng);
+            if (next.phase !== "playing") throw new Error("Level 41 did not start");
+
+            const limit = timeLimitFor(41, groupsOf(next.challenge.modifiers).length, false);
+            if (next.challenge.expected === "none") {
+                noClickLevels++;
+                expect(next.timeLimit).toBe(Math.round(limit * NO_CLICK_TIME_SHARE));
+            } else {
+                expect(next.timeLimit).toBe(limit);
+            }
+        }
+        expect(noClickLevels).toBeGreaterThan(0);
     });
 
     it("ends the game when anything is pressed during a no-click challenge", () => {
