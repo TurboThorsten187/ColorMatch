@@ -18,7 +18,7 @@ function contrastOnBlack(hex: string): number {
 
 describe("colors", () => {
     // WCAG AA for large text: the colors are mostly the big color word, and blue was darkened on purpose to keep it
-    // apart from cyan (3.5:1), at the cost of its small uses such as award codes
+    // apart from cyan (4.3:1), at the cost of its small uses such as award codes
     it("are all readable on the black background", () => {
         for (const color of COLORS) {
             expect(contrastOnBlack(COLOR_CSS[color]), color).toBeGreaterThanOrEqual(3);
