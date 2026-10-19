@@ -15,6 +15,20 @@ export const COLOR_CSS: Readonly<Record<Color, string>> = {
     cyan: "#22e4ff",
 };
 
+// The colorblind mode shows every color as a shape: the word names a shape, the letters are filled with shapes
+export const SHAPE_WORDS: Readonly<Record<Color, string>> = {
+    red: "HEART",
+    green: "TRIANGLE",
+    blue: "SQUARE",
+    yellow: "STAR",
+    purple: "PLUS",
+    cyan: "CIRCLE",
+};
+
+export function wordFor(color: Color, colorblind: boolean): string {
+    return colorblind ? SHAPE_WORDS[color] : color.toUpperCase();
+}
+
 export function randomColor(rng: Rng, exclude?: Color): Color {
     return pick(
         rng,

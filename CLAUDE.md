@@ -22,7 +22,10 @@ files.
   `answer`/`confirm`/`toMenu`/`tick`/`pause`/`resume` that take `now` (ms) and an injected `Rng`. All gameplay rules live here and are unit tested.
 - `src/ui/` – one Svelte component per screen plus `TopBar` (level, timer; the modifier cards reuse it `inline` and `paused`), `TapHints`, `FeedbackFlash`;
   modifiers are rendered with CSS transforms and filters; the rule tags (DON'T CLICK, INVERTED INPUT) sit in the
-  word's anchor and get every effect too. `LossScreen` plays the loss animation (timeline in
+  word's anchor and get every effect too. The colorblind setting keeps the six colors internally but shows each as a
+  shape: `SHAPE_WORDS`/`wordFor` in `src/game/colors.ts` give the words, `src/ui/shapes.ts` fills the letters
+  (`inkStyle`) and the background modifier (`backgroundStyle`) with SVG shape tiles; every screen that shows a color
+  word takes a `colorblind` prop. `LossScreen` plays the loss animation (timeline in
   `lossAnimation.ts`, driven by the time since the loss) before `GameOverScreen` switches on. `src/main.ts` awaits `loadFonts()` before mounting because
   the word size is fitted by measuring the real font. `sound.ts` wraps Web Audio: `unlockAudio()` on every input
   (browsers need a gesture; on touch only `pointerup` counts), each sound is built from oscillators when it plays.

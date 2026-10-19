@@ -9,9 +9,11 @@ export interface Settings {
     // 1 (quietest) to VOLUME_STEPS (loudest)
     readonly volume: number;
     readonly scanlines: boolean;
+    // Shapes instead of colors, see SHAPE_WORDS
+    readonly colorblind: boolean;
 }
 
-export const DEFAULT_SETTINGS: Settings = { sound: true, volume: 5, scanlines: true };
+export const DEFAULT_SETTINGS: Settings = { sound: true, volume: 5, scanlines: true, colorblind: false };
 
 function isVolume(value: unknown): value is number {
     return typeof value === "number" && Number.isInteger(value) && value >= 1 && value <= VOLUME_STEPS;
@@ -31,10 +33,12 @@ export function loadSettings(storage: KeyValueStore | null): Settings {
     const sound = "sound" in stored ? stored.sound : undefined;
     const volume = "volume" in stored ? stored.volume : undefined;
     const scanlines = "scanlines" in stored ? stored.scanlines : undefined;
+    const colorblind = "colorblind" in stored ? stored.colorblind : undefined;
     return {
         sound: typeof sound === "boolean" ? sound : DEFAULT_SETTINGS.sound,
         volume: isVolume(volume) ? volume : DEFAULT_SETTINGS.volume,
         scanlines: typeof scanlines === "boolean" ? scanlines : DEFAULT_SETTINGS.scanlines,
+        colorblind: typeof colorblind === "boolean" ? colorblind : DEFAULT_SETTINGS.colorblind,
     };
 }
 

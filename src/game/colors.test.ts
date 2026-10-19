@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { COLOR_CSS, COLORS } from "./colors.ts";
+import { COLOR_CSS, COLORS, SHAPE_WORDS, wordFor } from "./colors.ts";
 
 // WCAG relative luminance of a #rrggbb color
 function luminance(hex: string): number {
@@ -27,5 +27,11 @@ describe("colors", () => {
 
     it("are all distinct", () => {
         expect(new Set(Object.values(COLOR_CSS)).size).toBe(COLORS.length);
+    });
+
+    it("each name their own shape in the colorblind mode", () => {
+        expect(new Set(COLORS.map((color) => wordFor(color, true))).size).toBe(COLORS.length);
+        expect(wordFor("red", true)).toBe(SHAPE_WORDS.red);
+        expect(wordFor("red", false)).toBe("RED");
     });
 });

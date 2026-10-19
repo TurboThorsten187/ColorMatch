@@ -1,9 +1,12 @@
 <script lang="ts">
-    import { COLOR_CSS } from "../game/colors.ts";
+    import { type Color, COLOR_CSS, wordFor } from "../game/colors.ts";
     import { SPAM_WORD } from "../game/game.ts";
     import type { IntroId, ModifierIntro } from "../game/intros.ts";
     import { groupById, type ModifierId } from "../game/modifiers.ts";
     import { fadeOpacity, scramble, spin, wordMotion } from "./effects.ts";
+    import { textWidth } from "./fitText.ts";
+    import { WORD_FONT, WORD_WEIGHT } from "./fonts.ts";
+    import { backgroundStyle, inkStyle } from "./shapes.ts";
     import TopBar from "./TopBar.svelte";
 
     interface Props {
@@ -11,10 +14,12 @@
         level: number;
         // Time since the card appeared in ms, drives the animated examples
         elapsed: number;
+        // Shapes instead of colors
+        colorblind: boolean;
         ongotit: () => void;
     }
 
-    let { intro, level, elapsed, ongotit }: Props = $props();
+    let { intro, level, elapsed, colorblind, ongotit }: Props = $props();
 
     // Their examples are animated with the game's own effect functions
     const ANIMATED: ReadonlySet<IntroId> = new Set(["moving", "scrambled", "shaky", "pulsing"]);
@@ -31,6 +36,11 @@
     const FADE_LOOP_MS = 1800;
     const SPAM_STEP_MS = 300;
     const SPAM_DIM = "#3a3a3a";
+    // The background example shows what the word says, to fool the player
+    const LURE: Color = "red";
+    // Share of the example box the word may take up: long shape words like TRIANGLE shrink on narrow phones
+    const FIT_SHARE = 0.95;
+    const MEASURE_PX = 100;
 
     let boxWidth = $state(0);
     let boxHeight = $state(0);
@@ -40,8 +50,15 @@
     const effects = $derived<ReadonlySet<ModifierId>>(
         new Set(ANIMATED.has(intro.id) ? groupById(intro.id).variants : []),
     );
-    const exampleText = $derived(
-        effects.has("scrambled") ? scramble(intro.example.text, EXAMPLE_SEED, elapsed) : intro.example.text,
+    const baseText = $derived("word" in intro.example ? wordFor(intro.example.word, colorblind) : intro.example.text);
+    const exampleText = $derived(effects.has("scrambled") ? scramble(baseText, EXAMPLE_SEED, elapsed) : baseText);
+    const lines = $derived(colorblind && intro.colorblindLines ? intro.colorblindLines : intro.lines);
+    // The largest font size at which the word still fits its box, unset until the box is measured
+    const fitFont = $derived(
+        boxWidth > 0
+            ? (boxWidth * FIT_SHARE * MEASURE_PX) /
+                  textWidth({ text: baseText, fontSize: MEASURE_PX }, WORD_FONT, WORD_WEIGHT)
+            : null,
     );
     const transform = $derived.by(() => {
         const area = { width: boxWidth, height: boxHeight };
@@ -64,6 +81,28 @@
     }
 </script>
 
+{#snippet exampleWord()}
+    <!-- SPAM! is not about the color, its characters light up in plain ink -->
+    <span
+        class="word"
+        class:blur={intro.id === "blur"}
+        style={inkStyle(intro.example.color, colorblind && intro.id !== "spam")}
+        style:--fit={fitFont === null ? null : `${fitFont}px`}
+        style:transform
+        style:opacity={opacity < 1 ? opacity : null}
+        bind:clientWidth={wordWidth}
+        bind:clientHeight={wordHeight}
+    >
+        {#if intro.id === "spam"}
+            {#each [...exampleText] as character, index (index)}
+                <span style:color={index < spamLit ? null : SPAM_DIM}>{character}</span>
+            {/each}
+        {:else}
+            {exampleText}
+        {/if}
+    </span>
+{/snippet}
+
 <div class="intro">
     <!-- The level waits with its full time -->
     <TopBar {level} remaining={1} paused inline />
@@ -75,31 +114,19 @@
 
         <div class="example" aria-hidden="true" bind:clientWidth={boxWidth} bind:clientHeight={boxHeight}>
             {#if intro.id === "noClick"}
-                <span class="tag">{intro.example.text}</span>
-            {:else}
-                <span
-                    class="word"
-                    class:blur={intro.id === "blur"}
-                    class:lure={intro.id === "background"}
-                    style:color={COLOR_CSS[intro.example.color]}
-                    style:transform
-                    style:opacity={opacity < 1 ? opacity : null}
-                    bind:clientWidth={wordWidth}
-                    bind:clientHeight={wordHeight}
+                <span class="tag">{baseText}</span>
+            {:else if intro.id === "background"}
+                <!-- The lure behind the word: its color, or its shapes in the colorblind mode -->
+                <span class="lure" style:background={backgroundStyle(LURE, colorblind, true)}
+                    >{@render exampleWord()}</span
                 >
-                    {#if intro.id === "spam"}
-                        {#each [...exampleText] as character, index (index)}
-                            <span style:color={index < spamLit ? null : SPAM_DIM}>{character}</span>
-                        {/each}
-                    {:else}
-                        {exampleText}
-                    {/if}
-                </span>
+            {:else}
+                {@render exampleWord()}
             {/if}
         </div>
 
         <p class="lines">
-            {#each intro.lines as line, row (row)}
+            {#each lines as line, row (row)}
                 {#each parts(line) as part, index (index)}
                     {#if part.marked}
                         <span style:color={COLOR_CSS[intro.accent]}>{part.text}</span>
@@ -107,7 +134,7 @@
                         {part.text}
                     {/if}
                 {/each}
-                {#if row < intro.lines.length - 1}<br />{/if}
+                {#if row < lines.length - 1}<br />{/if}
             {/each}
         </p>
     </div>
@@ -167,7 +194,7 @@
         display: inline-block;
         font-family: Orbitron, sans-serif;
         font-weight: 900;
-        font-size: max(40px, calc(5 * var(--unit)));
+        font-size: min(max(40px, calc(5 * var(--unit))), var(--fit, 100vw));
         line-height: 1;
     }
 
@@ -183,7 +210,6 @@
 
     .lure {
         padding: 10px 16px;
-        background: #ff3b4e;
     }
 
     .lines {

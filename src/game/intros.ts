@@ -8,10 +8,14 @@ export type IntroId = ModifierGroupId;
 export interface ModifierIntro {
     readonly id: IntroId;
     readonly title: string;
-    // Shown on the card with the modifier's effect applied
-    readonly example: { readonly text: string; readonly color: Color };
+    // Shown on the card with the modifier's effect applied: a color word, which the colorblind mode shows as a shape
+    // word, or a fixed text
+    readonly example:
+        { readonly word: Color; readonly color: Color } | { readonly text: string; readonly color: Color };
     // Words between * are highlighted in the accent color
     readonly lines: readonly string[];
+    // Replaces `lines` in the colorblind mode where they talk about colors
+    readonly colorblindLines?: readonly string[];
     readonly accent: Color;
 }
 
@@ -19,7 +23,7 @@ export const INTROS: readonly ModifierIntro[] = [
     {
         id: "invertInput",
         title: "INVERTED INPUT",
-        example: { text: "BLUE", color: "blue" },
+        example: { word: "blue", color: "blue" },
         lines: ["IT MATCHES, BUT...", "ANSWER THE *OPPOSITE*", "TAP RIGHT · FALSE"],
         accent: "red",
     },
@@ -40,63 +44,64 @@ export const INTROS: readonly ModifierIntro[] = [
     {
         id: "mirror",
         title: "MIRRORED",
-        example: { text: "GREEN", color: "green" },
+        example: { word: "green", color: "green" },
         lines: ["THE WORD IS MIRRORED", "THE RULES STAY THE SAME"],
         accent: "yellow",
     },
     {
         id: "background",
         title: "BACKGROUND",
-        example: { text: "RED", color: "blue" },
+        example: { word: "red", color: "blue" },
         lines: ["THE BACKGROUND", "TRIES TO FOOL YOU", "ONLY THE *TEXT COLOR* COUNTS"],
+        colorblindLines: ["THE BACKGROUND", "TRIES TO FOOL YOU", "ONLY THE *TEXT SHAPES* COUNT"],
         accent: "yellow",
     },
     {
         id: "blink",
         title: "BLINK",
-        example: { text: "CYAN", color: "cyan" },
+        example: { word: "cyan", color: "cyan" },
         lines: ["THE WORD FADES AWAY", "IN UNDER A SECOND", "*REMEMBER IT*"],
         accent: "yellow",
     },
     {
         id: "blur",
         title: "BLURRED",
-        example: { text: "PURPLE", color: "purple" },
+        example: { word: "purple", color: "purple" },
         lines: ["THE WORD IS BLURRED", "*LOOK CLOSELY*"],
         accent: "yellow",
     },
     {
         id: "rotation",
         title: "ROTATION",
-        example: { text: "YELLOW", color: "yellow" },
+        example: { word: "yellow", color: "yellow" },
         lines: ["THE WORD *SPINS*", "THE RULES STAY THE SAME"],
         accent: "yellow",
     },
     {
         id: "moving",
         title: "MOVING",
-        example: { text: "GREEN", color: "green" },
+        example: { word: "green", color: "green" },
         lines: ["THE WORD *MOVES AROUND*", "THE RULES STAY THE SAME"],
         accent: "yellow",
     },
     {
         id: "scrambled",
         title: "SCRAMBLED",
-        example: { text: "BLUE", color: "blue" },
+        example: { word: "blue", color: "blue" },
         lines: ["THE LETTERS ARE *MIXED UP*", "READ THE WORD ANYWAY"],
         accent: "yellow",
     },
     {
         id: "shaky",
         title: "SHAKY",
-        example: { text: "PURPLE", color: "purple" },
+        example: { word: "purple", color: "purple" },
         lines: ["THE WORD *SHAKES*", "THE RULES STAY THE SAME"],
         accent: "yellow",
     },
     {
         id: "pulsing",
         title: "PULSING",
-        example: { text: "RED", color: "red" },
+        example: { word: "red", color: "red" },
         lines: ["THE WORD *PULSES*", "THE RULES STAY THE SAME"],
         accent: "yellow",
     },

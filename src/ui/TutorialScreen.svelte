@@ -1,6 +1,6 @@
 <script lang="ts">
     import type { Answer, Challenge } from "../game/challenge.ts";
-    import { type Color, COLOR_CSS } from "../game/colors.ts";
+    import { type Color, COLOR_CSS, wordFor } from "../game/colors.ts";
     import {
         currentStep,
         expectedAnswer,
@@ -9,6 +9,7 @@
         type TutorialState,
     } from "../game/tutorial.ts";
     import ChallengeScreen from "./ChallengeScreen.svelte";
+    import { inkStyle } from "./shapes.ts";
     import TapHints from "./TapHints.svelte";
 
     interface Props {
@@ -17,11 +18,13 @@
         flash: Answer | null;
         width: number;
         height: number;
+        // Shapes instead of colors
+        colorblind: boolean;
         onnext: () => void;
         onskip: () => void;
     }
 
-    let { tutorial, flash, width, height, onnext, onskip }: Props = $props();
+    let { tutorial, flash, width, height, colorblind, onnext, onskip }: Props = $props();
 
     const CARD_DOTS = Array.from({ length: TUTORIAL_CARDS }, (_, i) => i);
     const TIMER_SEGMENTS = Array.from({ length: 10 }, (_, i) => i);
@@ -47,11 +50,11 @@
 </script>
 
 {#snippet colorName(color: Color)}
-    <span style:color={COLOR_CSS[color]}>{color.toUpperCase()}</span>
+    <span style:color={COLOR_CSS[color]}>{wordFor(color, colorblind)}</span>
 {/snippet}
 
 {#if step?.kind === "card"}
-    <div class="dimmed" aria-hidden="true">RED</div>
+    <div class="dimmed" aria-hidden="true">{wordFor("red", colorblind)}</div>
     <div class="shade"></div>
     <div class="card" role="dialog" aria-labelledby="tutorial-title">
         <div class="card-head">
@@ -60,12 +63,12 @@
         </div>
 
         {#if step.card === 0}
-            <p class="text">DOES THE <em>WORD</em><br />MATCH ITS <em>COLOR</em>?</p>
-            <div class="example" style:color={COLOR_CSS.red}>RED</div>
+            <p class="text">DOES THE <em>WORD</em><br />MATCH ITS <em>{colorblind ? "SHAPES" : "COLOR"}</em>?</p>
+            <div class="example" style={inkStyle("red", colorblind)}>{wordFor("red", colorblind)}</div>
             <p class="hint"><span class="yes">YES</span> → TAP LEFT · TRUE<br />OR PRESS ←</p>
         {:else if step.card === 1}
             <p class="text">IF THEY<br /><em>DON'T MATCH</em>...</p>
-            <div class="example" style:color={COLOR_CSS.green}>BLUE</div>
+            <div class="example" style={inkStyle("green", colorblind)}>{wordFor("blue", colorblind)}</div>
             <p class="hint"><span class="no">NO</span> → TAP RIGHT · FALSE<br />OR PRESS →</p>
         {:else}
             <p class="text">BEAT THE <em>TIMER</em></p>
@@ -88,13 +91,15 @@
     </div>
     <button class="skip" onclick={onskip}>SKIP</button>
 {:else if step?.kind === "try" && practice && challenge && expected}
-    <ChallengeScreen {challenge} elapsed={0} {width} {height} />
+    <ChallengeScreen {challenge} elapsed={0} {width} {height} {colorblind} />
     <div class="half" class:right={expected === "false"} aria-hidden="true"></div>
     <div class="divider" aria-hidden="true"></div>
     <div class="practice-top">TRY IT · {step.practice + 1}/{PRACTICE_WORDS.length}</div>
     <!-- Hidden while +1 or MISS! is shown, which sits at the same height -->
     <p class="explain" class:hidden={tutorial.result !== null}>
-        WORD: {@render colorName(practice.word)} · COLOR: {@render colorName(practice.color)}<br />
+        WORD: {@render colorName(practice.word)} · {colorblind ? "SHAPE" : "COLOR"}: {@render colorName(
+            practice.color,
+        )}<br />
         {expected === "true" ? "THEY MATCH" : "THEY DON'T MATCH"}
     </p>
     <div class="nudge" class:right={expected === "false"} aria-hidden="true">{expected === "true" ? "◄" : "►"}</div>

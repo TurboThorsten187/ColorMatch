@@ -69,7 +69,12 @@ Reaktionszeit (nur Level mit TRUE/FALSE-Antwort) und Spielzeit ohne Pausen, dazu
 schaffen, 10 Surges und je 10 Level mit einem Modifier (alle Spiegel zählen zusammen), jeweils über alle Spiele. Badges antippen zeigt Bedingung und
 Fortschritt. Ein neuer Award erscheint sofort kurz unter dem Timer und wird auf dem Game-Over-Screen aufgelistet.
 
-Unter **SETUP** lassen sich Sound (an/aus, Lautstärke in 8 Stufen) und die Scanlines einstellen; **REPLAY** zeigt
+Unter **SETUP** lassen sich Sound (an/aus, Lautstärke in 8 Stufen), die Scanlines und **COLORBLIND** einstellen. Im
+Farbenblind-Modus steht jede Farbe für eine Form (Rot = HEART, Grün = TRIANGLE, Blau = SQUARE, Gelb = STAR, Lila =
+PLUS, Cyan = CIRCLE): Die Wörter nennen Formen, und die Buchstaben sind mit den Formen ihrer Farbe gefüllt. Gefragt
+ist dasselbe, nur passt jetzt das Wort zu den Formen in seinen Buchstaben oder nicht. Der Background-Modifier zeigt
+dann große, gedämpfte Formen statt einer Farbe; SPAM! bleibt einfarbig. Tutorial und Modifier-Karten zeigen im
+Modus ebenfalls Formen. **REPLAY** zeigt
 das Tutorial nochmal (die Modifier-Karten bleiben dabei gesehen). **HOLD TO RESET** (1,5 s gedrückt halten) löscht
 Highscore, Stats, Awards, Einstellungen und den Tutorial-Fortschritt. Esc führt zurück ins Menü. Alles wird lokal im
 Browser gespeichert.
