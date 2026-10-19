@@ -42,7 +42,7 @@ files.
 - Modifiers belong to groups (`MODIFIER_GROUPS` in `src/game/modifiers.ts`, all mirrors are one group) with a tier.
   `src/game/progression.ts` holds the per-game curriculum (`PlayingState.curriculum`: a new group every 3 levels from
   level 5, alone on its intro level), the per-level pick, the late game ramp from level 40, surge levels (`isSurgeLevel`,
-  announced by the `surgeBanner` phase), the time limit and the tempo of animated modifiers
+  announced by the `surgeBanner` phase), the time limit (Don't Click levels get `NO_CLICK_TIME_SHARE` of it) and the tempo of animated modifiers
   (`tempoFor`, stored in `Challenge.tempo`, applied in `ChallengeScreen` and `effects.ts`). A new modifier needs a
   group, an intro card, an award and, if animated, a function in `src/ui/effects.ts` driven by the level's `seed`, the
   elapsed time and its tempo.

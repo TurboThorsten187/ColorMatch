@@ -44,7 +44,8 @@ die schweren; innerhalb einer Stufe wird die Reihenfolge jede Runde neu gemischt
 Ein neuer Modifier kommt in seinem Einführungslevel allein und mit 1 s Extrazeit. Sonst wird gemischt: bis Level 14
 höchstens ein Modifier gleichzeitig, bis Level 29 zwei, danach drei, und frisch eingeführte kommen häufiger. Ab Level
 15 kommt ein neuer Modifier im Level nach seiner Einführung meist gleich noch einmal, zusammen mit einem bekannten.
-Jeder weitere Modifier in einem Level bringt 0,3 s Extrazeit. Rotation, Pulsing, Shaky, Moving, Blink und Scrambled
+Jeder weitere Modifier in einem Level bringt 0,3 s Extrazeit. Bei Don't Click läuft nur 60 % der Zeit, damit man
+nicht so lange warten muss. Rotation, Pulsing, Shaky, Moving, Blink und Scrambled
 werden mit dem Level schneller, so wie die Zeit pro Level schrumpft (gut doppelt so schnell bei Level 40, 2,5-mal
 ab Level 80). Jeder
 startet bei seiner Einführung im normalen Tempo und holt dann innerhalb von 8 Leveln auf; ein spät eingeführter wird
