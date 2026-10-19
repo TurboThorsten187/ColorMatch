@@ -16,7 +16,7 @@ import type { Rng } from "./random.ts";
 export const SPAM_PRESSES_NEEDED = 5;
 // Shown instead of a color word, one character lights up per press
 export const SPAM_WORD = "SPAM!";
-export const SPAM_PAUSE_MS = 1000;
+export const SPAM_PAUSE_MS = 500;
 export const SURGE_BANNER_MS = 900;
 // Frantic presses right after losing must not skip the result: RETRY, MENU and Enter wait this long, through the
 // loss animation until the buttons have appeared
