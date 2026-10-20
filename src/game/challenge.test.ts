@@ -123,4 +123,9 @@ describe("createChallenge", () => {
         expect(createChallenge(["mirror"], 20, Math.random, {}, 0.2).size).toBe(1);
         expect(createChallenge([], 20, Math.random).size).toBe(1);
     });
+
+    it("keeps the strength of its groups", () => {
+        expect(createChallenge(["blur"], 20, Math.random, {}, 1, { blur: 0.5 }).strength).toEqual({ blur: 0.5 });
+        expect(createChallenge(["blur"], 20, Math.random).strength).toEqual({});
+    });
 });

@@ -111,6 +111,14 @@ export function tempoFor(level: number, introducedOn: number): number {
     return 1 - catchUp + catchUp * levelTempo(level);
 }
 
+// Growing modifiers get stronger along with the tempo: 0 on their intro level, 1 once the tempo is at its level 80
+// value
+const FULL_STRENGTH_TEMPO = levelTempo(LATE_UNTIL_LEVEL);
+
+export function strengthFor(level: number, introducedOn: number): number {
+    return Math.min(1, (tempoFor(level, introducedOn) - 1) / (FULL_STRENGTH_TEMPO - 1));
+}
+
 export function zoomSizeFor(level: number, introducedOn: number): number {
     const shrink = 1 - ZOOM_SHRINK_PER_LEVEL * Math.max(0, level - introducedOn);
     return Math.max(ZOOM_MIN_SIZE, ZOOM_SIZE * shrink);

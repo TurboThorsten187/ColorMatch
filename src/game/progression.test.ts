@@ -15,6 +15,7 @@ import {
     pickGroups,
     plainChance,
     SURGE_FIRST_LEVEL,
+    strengthFor,
     SURGE_TIME_MS,
     surgeGroupCount,
     TEMPO_CATCH_UP_LEVELS,
@@ -274,6 +275,21 @@ describe("timeLimitFor", () => {
         expect(timeLimitFor(20, 1, false)).toBe(base + EXTRA_GROUP_BONUS_MS);
         expect(timeLimitFor(20, 1, true)).toBe(base + INTRO_BONUS_MS + EXTRA_GROUP_BONUS_MS);
         expect(timeLimitFor(20, 3, false)).toBe(base + 3 * EXTRA_GROUP_BONUS_MS);
+    });
+});
+
+describe("strength", () => {
+    it("grows along with the tempo, from 0 on the intro level to 1 from level 80 on", () => {
+        expect(strengthFor(20, 20)).toBe(0);
+        expect(strengthFor(FIRST_INTRO_LEVEL, FIRST_INTRO_LEVEL)).toBe(0);
+        expect(strengthFor(80, FIRST_INTRO_LEVEL)).toBe(1);
+        expect(strengthFor(200, 60)).toBe(1);
+        const middle = strengthFor(40, FIRST_INTRO_LEVEL);
+        expect(middle).toBeGreaterThan(0.4);
+        expect(middle).toBeLessThan(0.9);
+        for (let level = 30; level < 120; level++) {
+            expect(strengthFor(level + 1, 30)).toBeGreaterThanOrEqual(strengthFor(level, 30));
+        }
     });
 });
 

@@ -52,6 +52,7 @@
                   rotationDeg: 0,
                   seed: 0,
                   tempo: {},
+                  strength: {},
                   second: null,
                   size: 1,
               }

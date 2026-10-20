@@ -11,6 +11,9 @@ export type ExpectedInput = Answer | "none" | "spam";
 // How many times faster than normal a group's animation plays; groups that are missing play at normal speed
 export type Tempo = Readonly<Partial<Record<ModifierGroupId, number>>>;
 
+// How strong a group's effect is, from 0 on its intro level to 1 in the late game; groups that are missing are at 0
+export type Strength = Readonly<Partial<Record<ModifierGroupId, number>>>;
+
 // A color word in an ink, true when the word names its ink
 export interface ColorWord {
     readonly word: Color;
@@ -27,6 +30,8 @@ export interface Challenge extends ColorWord {
     // Between 0 and 1, makes moving, shaking, pulsing and scrambling look different on every level
     readonly seed: number;
     readonly tempo: Tempo;
+    // Rotation, pulsing, shaking, blur and font flip grow with it
+    readonly strength: Strength;
     // Only set with the two words modifier: the lower word, the upper one is `word` in `color`
     readonly second: ColorWord | null;
     // The word's size relative to normal, below 1 only with the zoom modifier
@@ -42,6 +47,7 @@ export function createChallenge(
     rng: Rng,
     tempo: Tempo = {},
     size = 1,
+    strength: Strength = {},
 ): Challenge {
     const color = randomColor(rng);
     const matches = rng() >= 0.5;
@@ -75,6 +81,7 @@ export function createChallenge(
         rotationDeg: modifiers.has("rotation") ? rotationDeg(level) : 0,
         seed: rng(),
         tempo,
+        strength,
         second,
         size: modifiers.has("zoom") ? size : 1,
     };

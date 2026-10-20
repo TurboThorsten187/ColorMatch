@@ -13,8 +13,9 @@ import {
     lowTimeGlow,
     toAnchor,
     letterOrder,
+    pulseRange,
     pulseScale,
-    SHAKE_TILT_DEG,
+    shakeTiltDeg,
     scramble,
     scrambleWords,
     spin,
@@ -93,14 +94,39 @@ describe("word motion", () => {
         for (const { x, y, rotation } of offsets) {
             expect(Math.abs(x)).toBeLessThanOrEqual(AREA.width * 0.02);
             expect(Math.abs(y)).toBeLessThanOrEqual(AREA.height * 0.05);
-            expect(Math.abs(rotation)).toBeLessThanOrEqual(SHAKE_TILT_DEG);
+            expect(Math.abs(rotation)).toBeLessThanOrEqual(shakeTiltDeg(0));
         }
+    });
+
+    it("shakes and tilts further the stronger it is", () => {
+        const shaky = set("shaky");
+        const reach = (strength: number, pick: (motion: { x: number; rotation: number }) => number): number =>
+            Math.max(
+                ...Array.from({ length: 50 }, (_, i) =>
+                    Math.abs(pick(wordMotion(shaky, 0.7, i * 60, AREA, WORD, {}, 1, { shaky: strength }))),
+                ),
+            );
+
+        expect(reach(1, (motion) => motion.x)).toBeCloseTo(3 * reach(0, (motion) => motion.x));
+        expect(reach(1, (motion) => motion.rotation)).toBeGreaterThan(reach(0, (motion) => motion.rotation));
+        expect(shakeTiltDeg(0)).toBe(4);
+        expect(shakeTiltDeg(1)).toBe(13);
+        expect(effectFontScale(shaky, { shaky: 1 })).toBeLessThan(effectFontScale(shaky, { shaky: 0 }));
     });
 
     it("spins a full turn in 2.5 s, the direction depends on the level", () => {
         expect(spin(0.2, 0)).toBe(0);
         expect(Math.abs(spin(0.2, 2500))).toBe(360);
         expect(Math.sign(spin(0.2, 100))).not.toBe(Math.sign(spin(0.8, 100)));
+    });
+
+    it("spins unevenly the stronger it is, but always forward and a full turn in 2.5 s on average", () => {
+        const angles = Array.from({ length: 200 }, (_, i) => spin(0.2, i * 35, 1));
+        const steps = angles.slice(1).map((angle, i) => angle - angles[i]);
+
+        expect(Math.min(...steps)).toBeGreaterThan(0);
+        expect(Math.max(...steps)).toBeGreaterThan(5 * Math.min(...steps));
+        expect(spin(0.2, 7000, 1)).toBeCloseTo(spin(0.2, 7000, 0));
     });
 
     it("moves, shakes and pulses faster with a higher tempo", () => {
@@ -119,12 +145,18 @@ describe("word motion", () => {
         expect(fadeOpacity(5000)).toBe(0);
     });
 
-    it("pulses between 70 % and 114 %", () => {
-        const scales = Array.from({ length: 100 }, (_, i) => pulseScale(0.5, i * 13));
+    it("pulses between 85 % and 108 %, and between 55 % and 120 % at full strength", () => {
+        for (const [strength, low, high] of [
+            [0, 0.85, 1.08],
+            [1, 0.55, 1.2],
+        ]) {
+            const scales = Array.from({ length: 100 }, (_, i) => pulseScale(0.5, i * 13, strength));
 
-        expect(Math.min(...scales)).toBeGreaterThanOrEqual(0.7 - 1e-9);
-        expect(Math.max(...scales)).toBeLessThanOrEqual(1.14 + 1e-9);
-        expect(Math.max(...scales) - Math.min(...scales)).toBeGreaterThan(0.4);
+            expect(pulseRange(strength)).toEqual({ low: expect.closeTo(low), high: expect.closeTo(high) });
+            expect(Math.min(...scales)).toBeGreaterThanOrEqual(low - 1e-9);
+            expect(Math.max(...scales)).toBeLessThanOrEqual(high + 1e-9);
+            expect(Math.max(...scales) - Math.min(...scales)).toBeGreaterThan((high - low) * 0.95);
+        }
     });
 
     it("leaves the word alone without these modifiers", () => {
@@ -165,23 +197,37 @@ describe("assembled letters", () => {
 });
 
 describe("font flip", () => {
+    const EVEN = Array.from({ length: 28 }, () => 1);
+
     it("gives every letter a new font every 200 ms, never the same twice in a row", () => {
         for (let letter = 0; letter < 6; letter++) {
-            const fonts = Array.from({ length: 30 }, (_, step) => flipFont(0.42, letter, step * 200 + 50, 28));
+            const fonts = Array.from({ length: 30 }, (_, step) => flipFont(0.42, letter, step * 200 + 50, EVEN));
 
             fonts.forEach((font, step) => {
                 expect(font).toBeGreaterThanOrEqual(0);
                 expect(font).toBeLessThan(28);
                 if (step > 0) expect(font).not.toBe(fonts[step - 1]);
             });
-            expect(flipFont(0.42, letter, 199, 28)).toBe(fonts[0]);
+            expect(flipFont(0.42, letter, 199, EVEN)).toBe(fonts[0]);
         }
     });
 
     it("mixes the fonts of the letters", () => {
-        const fonts = new Set(Array.from({ length: 6 }, (_, letter) => flipFont(0.42, letter, 0, 28)));
+        const fonts = new Set(Array.from({ length: 6 }, (_, letter) => flipFont(0.42, letter, 0, EVEN)));
 
         expect(fonts.size).toBeGreaterThan(1);
+    });
+
+    it("picks every font as often as its weight says", () => {
+        // Font 0 never, font 1 three times as often as each of the others
+        const weights = [0, 3, 1, 1, 1];
+        const counts = [0, 0, 0, 0, 0];
+        for (let letter = 0; letter < 40; letter++) {
+            for (let step = 0; step < 100; step++) counts[flipFont(0.42, letter, step * 200, weights)]++;
+        }
+
+        expect(counts[0]).toBe(0);
+        expect(counts[1]).toBeGreaterThan(1.5 * Math.max(counts[2], counts[3], counts[4]));
     });
 });
 
