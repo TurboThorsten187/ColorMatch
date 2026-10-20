@@ -11,6 +11,8 @@ Ein schnelles Reaktionsspiel im Browser: Passt das angezeigte Wort zu seiner Sch
 | Starten, Fortsetzen                   | **Enter**                    | irgendwo tippen                |
 | Zurück zum Menü                       | **Esc** oder **Backspace**   | ◄ / MENU                       |
 
+Mit **FLIP CONTROLS** in SETUP sind die Seiten getauscht: FALSE links (**←**, **A**, linke Hälfte), TRUE rechts.
+
 Alle Menüs lassen sich nur mit der Tastatur bedienen: Der ausgewählte Button ist gelb gefüllt, bewegt wird er mit den
 Pfeiltasten oder WASD zum nächsten Button in der Richtung (mit einem leisen Blip). Die Hervorhebung erscheint nur beim
 Spielen mit der Tastatur; der erste Tastendruck zeigt, wo die Auswahl steht. Im Menü ist PRESS START ausgewählt, nach
@@ -23,7 +25,8 @@ geht aus wie ein alter Röhrenfernseher. RETRY und MENU (Enter / Esc) reagieren 
 Weitertippen das Ergebnis nicht überspringt.
 
 Der Balken oben zeigt die verbleibende Zeit: 3 s in Level 1, mit jedem Level etwas weniger, bis es sich bei gut
-1,2 s einpendelt; ab Level 40 sinkt sie weiter bis 1,0 s bei Level 80. Ab Level 5 kommt alle 3 Level ein neuer Modifier dazu, zuerst die leichten, dann die mittleren, dann
+1,2 s einpendelt; ab Level 40 sinkt sie weiter bis 1,0 s bei Level 80. Im letzten Viertel wird er rot, und ein roter
+Rahmen um den Bildschirm leuchtet immer stärker, bis die Zeit abläuft. Ab Level 5 kommt alle 3 Level ein neuer Modifier dazu, zuerst die leichten, dann die mittleren, dann
 die schweren; innerhalb einer Stufe wird die Reihenfolge jede Runde neu gemischt.
 
 | Modifier         | Stufe  | Wirkung                                                                                              |
@@ -36,32 +39,35 @@ die schweren; innerhalb einer Stufe wird die Reihenfolge jede Runde neu gemischt
 | Blurred          | mittel | Text ist unscharf                                                                                    |
 | Moving           | mittel | kleinerer Text gleitet schnell über den Bildschirm                                                   |
 | Don't Click      | mittel | nichts drücken oder tippen, bis die Zeit abläuft                                                     |
-| Blink            | mittel | Text blendet in 0,9 s aus, Hintergrund bleibt                                                        |
+| Fade             | mittel | Text blendet in 0,9 s aus, Hintergrund bleibt                                                        |
 | Scrambled        | schwer | Buchstaben werden laufend neu gemischt                                                               |
 | Inverted Input   | schwer | richtige Antwort ist umgedreht                                                                       |
 | Spam             | schwer | fünfmal schnell drücken oder tippen (egal wo), jeder Druck lässt ein Zeichen von SPAM! aufleuchten   |
 | Zoom             | leicht | Text ist winzig: ein Fünftel der normalen Größe, mit jedem Level danach kleiner bis zu einem Zehntel |
-| Split Mirror     | leicht | nur die linke Hälfte des Worts ist zu sehen, die rechte ist ihr Spiegelbild (CYAN wird zu CYYC)      |
-| Count Up         | leicht | der Timer läuft rückwärts: er füllt sich von der Mitte aus, erst rot, dann gelb, dann grün           |
+| Symmetry         | leicht | nur die linke Hälfte des Worts ist zu sehen, die rechte ist ihr Spiegelbild (CYAN wird zu CYYC)      |
+| Reverse Timer    | leicht | der Timer läuft rückwärts: er füllt sich von der Mitte aus, erst rot, dann gelb, dann grün           |
 | Assemble         | mittel | die Buchstaben fliegen vom Bildschirmrand herein, nach einem Viertel der Zeit ist das Wort komplett  |
 | Font Flip        | mittel | jeder Buchstabe wechselt alle 200 ms in eine andere von 28 Schriften                                 |
 | Negative         | mittel | von 10 % bis 50 % der Zeit ist der ganze Bildschirm ein Fotonegativ, danach kurz ein Nachbild        |
 | Wait             | mittel | das Schild zeigt die erste Hälfte der Zeit WAIT, dann NOW; ein Druck vorher ist TOO EARLY!           |
 | Double Tap       | mittel | die Antwort zweimal drücken, egal wie schnell; ein falscher Druck ist sofort ein Fehler              |
-| Two Words        | schwer | zwei Wörter übereinander: TRUE, wenn beide oder keins zu ihrer Farbe passen (BOTH OR NEITHER)        |
+| Duo              | schwer | zwei Wörter übereinander: TRUE, wenn beide oder keins zu ihrer Farbe passen (BOTH OR NEITHER)        |
+
+Nach dem letzten Druck bei Spam bleibt das ganz erleuchtete SPAM! noch 0,12 s stehen, dann zeigt STOP SPAMMING! 0,5 s
+lang, dass weiteres Tippen nichts bringt.
 
 Ein neuer Modifier kommt in seinem Einführungslevel allein und mit 1 s Extrazeit; fällt die Einführung auf ein
-Surge-Level, kommt sie ein Level später. Die neun Modifier von Zoom bis Two Words kommen vorerst immer allein, nie
+Surge-Level, kommt sie ein Level später. Die neun Modifier von Zoom bis Duo kommen vorerst immer allein, nie
 zusammen mit anderen, also auch nicht im Surge. Sonst wird gemischt: bis Level 14
 höchstens ein Modifier gleichzeitig, bis Level 29 zwei, danach drei, und frisch eingeführte kommen häufiger. Ab Level
 15 kommt ein neuer Modifier im Level nach seiner Einführung meist gleich noch einmal, zusammen mit einem bekannten.
 Jeder weitere Modifier in einem Level bringt 0,3 s Extrazeit. Bei Don't Click läuft nur 60 % der Zeit, damit man
-nicht so lange warten muss. Rotation, Pulsing, Shaky, Moving, Blink, Scrambled und Font Flip
+nicht so lange warten muss. Rotation, Pulsing, Shaky, Moving, Fade, Scrambled und Font Flip
 werden mit dem Level schneller, so wie die Zeit pro Level schrumpft (gut doppelt so schnell bei Level 40, 2,5-mal
 ab Level 80). Jeder
 startet bei seiner Einführung im normalen Tempo und holt dann innerhalb von 8 Leveln auf; ein spät eingeführter wird
 also schneller schnell als ein früher. Höchstens einer pro Level ändert die Regeln (Inverted
-Input, Don't Click, Spam, Wait, Double Tap, Two Words), und dieselbe Kombination kommt nie zweimal hintereinander. Die
+Input, Don't Click, Spam, Wait, Double Tap, Duo), und dieselbe Kombination kommt nie zweimal hintereinander. Die
 Hinweise DON'T CLICK, INVERTED INPUT, WAIT/NOW, DOUBLE TAP und BOTH OR NEITHER hängen am Wort und bekommen jeden Modifier mit: Sie werden mit ihm gespiegelt (stehen dann auch mal
 darunter), gedreht, bewegt und unscharf, blenden mit aus und ihre Buchstaben werden gemischt.
 
@@ -80,7 +86,8 @@ Reaktionszeit (nur Level mit TRUE/FALSE-Antwort, bei Wait ab NOW) und Spielzeit 
 schaffen, 10 Surges und je 10 Level mit einem Modifier (alle Spiegel zählen zusammen), jeweils über alle Spiele. Badges antippen zeigt Bedingung und
 Fortschritt. Ein neuer Award erscheint sofort kurz unter dem Timer und wird auf dem Game-Over-Screen aufgelistet.
 
-Unter **SETUP** lassen sich Sound (an/aus, Lautstärke in 8 Stufen), die Scanlines und **COLORBLIND** einstellen. Im
+Unter **SETUP** lassen sich Sound (an/aus, Lautstärke in 8 Stufen), die Scanlines, **COLORBLIND** und **FLIP
+CONTROLS** (TRUE und FALSE tauschen die Seiten, auch im Tutorial und auf den Hinweisen) einstellen. Im
 Farbenblind-Modus steht jede Farbe für eine Form (Rot = HEART, Grün = TRIANGLE, Blau = SQUARE, Gelb = STAR, Lila =
 PLUS, Cyan = CIRCLE): Die Wörter nennen Formen, und die Buchstaben sind mit den Formen ihrer Farbe gefüllt. Gefragt
 ist dasselbe, nur passt jetzt das Wort zu den Formen in seinen Buchstaben oder nicht. Der Background-Modifier zeigt

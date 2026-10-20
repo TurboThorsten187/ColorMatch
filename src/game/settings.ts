@@ -1,3 +1,4 @@
+import type { Answer } from "./challenge.ts";
 import type { KeyValueStore } from "./highscore.ts";
 
 const SETTINGS_KEY = "colormatch_settings";
@@ -11,9 +12,28 @@ export interface Settings {
     readonly scanlines: boolean;
     // Shapes instead of colors, see SHAPE_WORDS
     readonly colorblind: boolean;
+    // FALSE on the left and TRUE on the right: screen halves, arrow keys and A / D
+    readonly flipControls: boolean;
 }
 
-export const DEFAULT_SETTINGS: Settings = { sound: true, volume: 5, scanlines: true, colorblind: false };
+export const DEFAULT_SETTINGS: Settings = {
+    sound: true,
+    volume: 5,
+    scanlines: true,
+    colorblind: false,
+    flipControls: false,
+};
+
+export type Side = "left" | "right";
+
+// The answer a screen half, arrow key or A / D gives
+export function answerOn(side: Side, flipControls: boolean): Answer {
+    return (side === "left") !== flipControls ? "true" : "false";
+}
+
+export function sideOf(answer: Answer, flipControls: boolean): Side {
+    return (answer === "true") !== flipControls ? "left" : "right";
+}
 
 function isVolume(value: unknown): value is number {
     return typeof value === "number" && Number.isInteger(value) && value >= 1 && value <= VOLUME_STEPS;
@@ -34,11 +54,13 @@ export function loadSettings(storage: KeyValueStore | null): Settings {
     const volume = "volume" in stored ? stored.volume : undefined;
     const scanlines = "scanlines" in stored ? stored.scanlines : undefined;
     const colorblind = "colorblind" in stored ? stored.colorblind : undefined;
+    const flipControls = "flipControls" in stored ? stored.flipControls : undefined;
     return {
         sound: typeof sound === "boolean" ? sound : DEFAULT_SETTINGS.sound,
         volume: isVolume(volume) ? volume : DEFAULT_SETTINGS.volume,
         scanlines: typeof scanlines === "boolean" ? scanlines : DEFAULT_SETTINGS.scanlines,
         colorblind: typeof colorblind === "boolean" ? colorblind : DEFAULT_SETTINGS.colorblind,
+        flipControls: typeof flipControls === "boolean" ? flipControls : DEFAULT_SETTINGS.flipControls,
     };
 }
 

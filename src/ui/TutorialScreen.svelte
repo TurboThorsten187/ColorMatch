@@ -1,6 +1,7 @@
 <script lang="ts">
     import type { Answer, Challenge } from "../game/challenge.ts";
     import { type Color, COLOR_CSS, wordFor } from "../game/colors.ts";
+    import { type Side, sideOf } from "../game/settings.ts";
     import {
         currentStep,
         expectedAnswer,
@@ -20,11 +21,15 @@
         height: number;
         // Shapes instead of colors
         colorblind: boolean;
+        // FALSE on the left, TRUE on the right
+        flipControls: boolean;
         onnext: () => void;
         onskip: () => void;
     }
 
-    let { tutorial, flash, width, height, colorblind, onnext, onskip }: Props = $props();
+    let { tutorial, flash, width, height, colorblind, flipControls, onnext, onskip }: Props = $props();
+
+    const KEY_ARROWS: Readonly<Record<Side, string>> = { left: "←", right: "→" };
 
     const CARD_DOTS = Array.from({ length: TUTORIAL_CARDS }, (_, i) => i);
     const TIMER_SEGMENTS = Array.from({ length: 10 }, (_, i) => i);
@@ -33,6 +38,9 @@
     const step = $derived(currentStep(tutorial));
     const practice = $derived(step?.kind === "try" ? PRACTICE_WORDS[step.practice] : null);
     const expected = $derived(practice ? expectedAnswer(practice) : null);
+    const expectedSide = $derived(expected ? sideOf(expected, flipControls) : null);
+    const trueSide = $derived(sideOf("true", flipControls));
+    const falseSide = $derived(sideOf("false", flipControls));
     const challenge = $derived<Challenge | null>(
         practice && expected
             ? {
@@ -67,11 +75,15 @@
         {#if step.card === 0}
             <p class="text">DOES THE <em>WORD</em><br />MATCH ITS <em>{colorblind ? "SHAPES" : "COLOR"}</em>?</p>
             <div class="example" style={inkStyle("red", colorblind)}>{wordFor("red", colorblind)}</div>
-            <p class="hint"><span class="yes">YES</span> → TAP LEFT · TRUE<br />OR PRESS ←</p>
+            <p class="hint">
+                <span class="yes">YES</span> → TAP {trueSide.toUpperCase()} · TRUE<br />OR PRESS {KEY_ARROWS[trueSide]}
+            </p>
         {:else if step.card === 1}
             <p class="text">IF THEY<br /><em>DON'T MATCH</em>...</p>
             <div class="example" style={inkStyle("green", colorblind)}>{wordFor("blue", colorblind)}</div>
-            <p class="hint"><span class="no">NO</span> → TAP RIGHT · FALSE<br />OR PRESS →</p>
+            <p class="hint">
+                <span class="no">NO</span> → TAP {falseSide.toUpperCase()} · FALSE<br />OR PRESS {KEY_ARROWS[falseSide]}
+            </p>
         {:else}
             <p class="text">BEAT THE <em>TIMER</em></p>
             <div class="timer" aria-hidden="true">
@@ -94,7 +106,7 @@
     <button class="skip" onclick={onskip}>SKIP</button>
 {:else if step?.kind === "try" && practice && challenge && expected}
     <ChallengeScreen {challenge} elapsed={0} timeLimit={Infinity} {width} {height} {colorblind} />
-    <div class="half" class:right={expected === "false"} aria-hidden="true"></div>
+    <div class="half" class:right={expectedSide === "right"} aria-hidden="true"></div>
     <div class="divider" aria-hidden="true"></div>
     <div class="practice-top">TRY IT · {step.practice + 1}/{PRACTICE_WORDS.length}</div>
     <!-- Hidden while +1 or MISS! is shown, which sits at the same height -->
@@ -104,8 +116,10 @@
         )}<br />
         {expected === "true" ? "THEY MATCH" : "THEY DON'T MATCH"}
     </p>
-    <div class="nudge" class:right={expected === "false"} aria-hidden="true">{expected === "true" ? "◄" : "►"}</div>
-    <TapHints {flash} highlight={expected} />
+    <div class="nudge" class:right={expectedSide === "right"} aria-hidden="true">
+        {expectedSide === "left" ? "◄" : "►"}
+    </div>
+    <TapHints {flash} highlight={expected} {flipControls} />
 {/if}
 
 <style>

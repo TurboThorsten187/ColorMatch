@@ -27,10 +27,12 @@
         elapsed: number;
         // Shapes instead of colors
         colorblind: boolean;
+        // FALSE on the left, TRUE on the right
+        flipControls: boolean;
         ongotit: () => void;
     }
 
-    let { intro, level, elapsed, colorblind, ongotit }: Props = $props();
+    let { intro, level, elapsed, colorblind, flipControls, ongotit }: Props = $props();
 
     // Their examples are animated with the game's own effect functions
     const ANIMATED: ReadonlySet<IntroId> = new Set(["moving", "scrambled", "shaky", "pulsing"]);
@@ -76,7 +78,13 @@
     const baseText = $derived("word" in intro.example ? wordFor(intro.example.word, colorblind) : intro.example.text);
     const exampleText = $derived(effects.has("scrambled") ? scramble(baseText, EXAMPLE_SEED, elapsed) : baseText);
     const secondText = $derived(intro.second ? wordFor(intro.second.word, colorblind) : null);
-    const lines = $derived(colorblind && intro.colorblindLines ? intro.colorblindLines : intro.lines);
+    const lines = $derived(
+        colorblind && intro.colorblindLines
+            ? intro.colorblindLines
+            : flipControls && intro.flippedLines
+              ? intro.flippedLines
+              : intro.lines,
+    );
     // The largest font size at which the word (or the wider of two) still fits its box, unset until it is measured
     const fitFont = $derived(
         boxWidth > 0

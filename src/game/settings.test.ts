@@ -1,11 +1,13 @@
 import { describe, expect, it } from "vitest";
 import {
+    answerOn,
     changeVolume,
     clearSettings,
     DEFAULT_SETTINGS,
     loadSettings,
     saveSettings,
     type Settings,
+    sideOf,
     VOLUME_STEPS,
 } from "./settings.ts";
 import { blockedStorage, memoryStorage } from "./testStorage.ts";
@@ -17,7 +19,13 @@ describe("settings", () => {
 
     it("load what was saved", () => {
         const storage = memoryStorage();
-        const settings: Settings = { sound: false, volume: 2, scanlines: false, colorblind: true };
+        const settings: Settings = {
+            sound: false,
+            volume: 2,
+            scanlines: false,
+            colorblind: true,
+            flipControls: true,
+        };
 
         saveSettings(storage, settings);
 
@@ -28,7 +36,7 @@ describe("settings", () => {
         const storage = memoryStorage();
         storage.setItem(
             "colormatch_settings",
-            JSON.stringify({ sound: "yes", volume: 99, scanlines: false, colorblind: "on" }),
+            JSON.stringify({ sound: "yes", volume: 99, scanlines: false, colorblind: "on", flipControls: 1 }),
         );
 
         expect(loadSettings(storage)).toEqual({ ...DEFAULT_SETTINGS, scanlines: false });
@@ -44,7 +52,7 @@ describe("settings", () => {
 
     it("go back to the defaults when cleared", () => {
         const storage = memoryStorage();
-        saveSettings(storage, { sound: false, volume: 1, scanlines: false, colorblind: true });
+        saveSettings(storage, { sound: false, volume: 1, scanlines: false, colorblind: true, flipControls: true });
 
         clearSettings(storage);
 
@@ -66,5 +74,22 @@ describe("settings", () => {
         expect(changeVolume(DEFAULT_SETTINGS, -1).volume).toBe(DEFAULT_SETTINGS.volume - 1);
         expect(changeVolume(quiet, -1)).toBe(quiet);
         expect(changeVolume(loud, 1)).toBe(loud);
+    });
+});
+
+describe("flipped controls", () => {
+    it("put TRUE on the left normally and on the right when flipped", () => {
+        expect(answerOn("left", false)).toBe("true");
+        expect(answerOn("right", false)).toBe("false");
+        expect(answerOn("left", true)).toBe("false");
+        expect(answerOn("right", true)).toBe("true");
+    });
+
+    it("find the side of an answer the other way round", () => {
+        for (const flipped of [false, true]) {
+            for (const side of ["left", "right"] as const) {
+                expect(sideOf(answerOn(side, flipped), flipped)).toBe(side);
+            }
+        }
     });
 });

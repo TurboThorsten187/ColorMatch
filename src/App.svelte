@@ -6,18 +6,28 @@
         confirm,
         type GameState,
         isGameOverLocked,
+        isSpamBang,
         isTooEarly,
         MENU,
         pause,
         type PlayingState,
         resume,
+        SPAM_PRESSES_NEEDED,
         tick,
         toMenu,
         WAIT_SHARE,
     } from "./game/game.ts";
     import { browserStorage, clearHighscore, loadHighscore, saveHighscore } from "./game/highscore.ts";
     import { introById, type IntroId, introsForLevel } from "./game/intros.ts";
-    import { clearSettings, DEFAULT_SETTINGS, loadSettings, saveSettings, type Settings } from "./game/settings.ts";
+    import {
+        answerOn,
+        clearSettings,
+        DEFAULT_SETTINGS,
+        loadSettings,
+        saveSettings,
+        type Settings,
+        type Side,
+    } from "./game/settings.ts";
     import {
         clearLevel,
         clearStats,
@@ -45,7 +55,7 @@
     } from "./game/tutorial.ts";
     import AwardToast from "./ui/AwardToast.svelte";
     import ChallengeScreen from "./ui/ChallengeScreen.svelte";
-    import { isNegative } from "./ui/effects.ts";
+    import { isNegative, lowTimeGlow } from "./ui/effects.ts";
     import FeedbackFlash, { type FeedbackKind } from "./ui/FeedbackFlash.svelte";
     import GameOverScreen from "./ui/GameOverScreen.svelte";
     import { canInstall, install } from "./ui/install.svelte.ts";
@@ -65,13 +75,14 @@
     import TopBar, { LOW_TIME_SHARE } from "./ui/TopBar.svelte";
     import TutorialScreen from "./ui/TutorialScreen.svelte";
 
-    const ANSWER_KEYS: Readonly<Record<string, Answer | undefined>> = {
-        ArrowLeft: "true",
-        ArrowRight: "false",
-        a: "true",
-        A: "true",
-        d: "false",
-        D: "false",
+    // The answer of a side depends on FLIP CONTROLS, see answerOn
+    const SIDE_KEYS: Readonly<Record<string, Side | undefined>> = {
+        ArrowLeft: "left",
+        ArrowRight: "right",
+        a: "left",
+        A: "left",
+        d: "right",
+        D: "right",
     };
     // Outside of a level, arrow keys and WASD move the selection between the buttons of a screen
     const NAV_KEYS: Readonly<Record<string, Direction | undefined>> = {
@@ -114,6 +125,8 @@
     let lastAnswer = $state.raw<{ answer: Answer; at: number } | null>(null);
     let feedback = $state.raw<{ kind: FeedbackKind; at: number } | null>(null);
     let loss = $state.raw<{ level: PlayingState; kind: Exclude<FeedbackKind, "hit">; at: number } | null>(null);
+    // The solved SPAM! level, shown frozen with its ! lit at the start of the spam pause
+    let spamDone = $state.raw<{ level: PlayingState; at: number } | null>(null);
     let settings = $state.raw<Settings>(initialSettings);
     let stats = $state.raw<Stats>(unlockMilestones(loadStats(storage), initialHighscore));
     // Awards of the current game, listed on the game over screen
@@ -142,12 +155,6 @@
 
     const flash = $derived(lastAnswer && now - lastAnswer.at < FLASH_MS ? lastAnswer.answer : null);
     const showLoss = $derived(game.phase === "gameOver" && loss !== null && now - loss.at < LOSS_ANIMATION_MS);
-    // NEGATIVE turns the whole level into its photo negative for a while, the timer and the hints too
-    const negative = $derived(
-        game.phase === "playing" &&
-            game.challenge.modifiers.has("negative") &&
-            isNegative(now - game.startedAt, game.timeLimit),
-    );
     const toast = $derived.by(() => {
         const shown = game.phase === "playing" || game.phase === "spamPause" || game.phase === "surgeBanner";
         return shown ? visible(toasts, now) : null;
@@ -183,6 +190,7 @@
         const solved =
             (next.phase === "playing" && game.phase === "playing" && next.level > game.level) ||
             ((next.phase === "spamPause" || next.phase === "surgeBanner") && game.phase === "playing");
+        if (next.phase === "spamPause" && game.phase === "playing") spamDone = { level: game, at: time };
         if (game.phase === "playing" && solved) {
             feedback = { kind: "hit", at: time };
             playSound("hit");
@@ -409,7 +417,8 @@
             return;
         }
 
-        const input = ANSWER_KEYS[event.key];
+        const side = SIDE_KEYS[event.key];
+        const input = side ? answerOn(side, settings.flipControls) : undefined;
         if (tutorial) {
             onTutorialKey(event, input, tutorial);
             return;
@@ -481,7 +490,8 @@
         }
     }
 
-    // During a level the left half of the screen answers TRUE and the right half FALSE.
+    // During a level the left half of the screen answers TRUE and the right half FALSE, or the other way round with
+    // FLIP CONTROLS.
     // Menu and pause continue on any tap; game over, settings, stats and modifier cards have their own buttons.
     function onPointerdown(event: PointerEvent): void {
         unlockAudio();
@@ -491,12 +501,13 @@
         if (event.target instanceof Element && event.target.closest("button")) return;
         if (performance.now() < inputLockedUntil) return;
 
+        const input = answerOn(event.clientX < width / 2 ? "left" : "right", settings.flipControls);
         if (tutorial) {
-            if (currentStep(tutorial)?.kind === "try") answerTutorial(event.clientX < width / 2 ? "true" : "false");
+            if (currentStep(tutorial)?.kind === "try") answerTutorial(input);
             return;
         }
         if (game.phase === "playing") {
-            giveAnswer(event.clientX < width / 2 ? "true" : "false", event);
+            giveAnswer(input, event);
         } else {
             goOn();
         }
@@ -510,7 +521,40 @@
     function remainingShare(level: PlayingState, time: number): number {
         return 1 - (time - level.startedAt) / level.timeLimit;
     }
+
+    // NEGATIVE turns the whole level into its photo negative for a while, the timer and the hints too
+    function isNegativeAt(level: PlayingState, time: number): boolean {
+        return level.challenge.modifiers.has("negative") && isNegative(time - level.startedAt, level.timeLimit);
+    }
 </script>
+
+<!-- A level at the given time: the playing level, or the solved SPAM! level frozen at its last press -->
+{#snippet playfield(level: PlayingState, time: number, spamCount: number)}
+    <div class="playfield" style:filter={isNegativeAt(level, time) ? "invert(1)" : null}>
+        <ChallengeScreen
+            challenge={level.challenge}
+            elapsed={time - level.startedAt}
+            timeLimit={level.timeLimit}
+            {spamCount}
+            {width}
+            {height}
+            colorblind={settings.colorblind}
+        />
+        <TopBar
+            level={level.level}
+            {highscore}
+            remaining={remainingShare(level, time)}
+            countUp={level.challenge.modifiers.has("countUp")}
+        />
+        <TapHints {flash} double={level.challenge.modifiers.has("doubleTap")} flipControls={settings.flipControls} />
+    </div>
+    <!-- Outside of the playfield, so NEGATIVE does not turn it cyan -->
+    <div
+        class="low-time"
+        style:opacity={lowTimeGlow(remainingShare(level, time), LOW_TIME_SHARE)}
+        aria-hidden="true"
+    ></div>
+{/snippet}
 
 <!-- On touch screens only pointerup counts as a gesture that may start audio -->
 <svelte:window
@@ -544,36 +588,21 @@
             {width}
             {height}
             colorblind={settings.colorblind}
+            flipControls={settings.flipControls}
             onnext={tutorialNext}
             onskip={skipTutorial}
         />
     {:else if game.phase === "menu"}
         <MenuScreen
             {highscore}
+            flipControls={settings.flipControls}
             onstart={goOn}
             onstats={() => showView("stats")}
             onsetup={() => showView("settings")}
             oninstall={canInstall() ? installGame : undefined}
         />
     {:else if game.phase === "playing"}
-        <div class="playfield" style:filter={negative ? "invert(1)" : null}>
-            <ChallengeScreen
-                challenge={game.challenge}
-                elapsed={now - game.startedAt}
-                timeLimit={game.timeLimit}
-                spamCount={game.spamCount}
-                {width}
-                {height}
-                colorblind={settings.colorblind}
-            />
-            <TopBar
-                level={game.level}
-                {highscore}
-                remaining={remainingShare(game, now)}
-                countUp={game.challenge.modifiers.has("countUp")}
-            />
-            <TapHints {flash} double={game.challenge.modifiers.has("doubleTap")} />
-        </div>
+        {@render playfield(game, now, game.spamCount)}
     {:else if showLoss && loss}
         <LossScreen
             level={loss.level}
@@ -584,7 +613,10 @@
             {width}
             {height}
             colorblind={settings.colorblind}
+            flipControls={settings.flipControls}
         />
+    {:else if game.phase === "spamPause" && spamDone && isSpamBang(game, now)}
+        {@render playfield(spamDone.level, spamDone.at, SPAM_PRESSES_NEEDED)}
     {:else if game.phase === "spamPause"}
         <SpamPauseScreen />
     {:else if game.phase === "surgeBanner"}
@@ -595,6 +627,7 @@
             level={game.resumeTo.level}
             elapsed={now - game.pausedAt}
             colorblind={settings.colorblind}
+            flipControls={settings.flipControls}
             ongotit={gotIt}
         />
     {:else if game.phase === "paused"}
@@ -668,6 +701,16 @@
     .playfield {
         position: absolute;
         inset: 0;
+    }
+
+    /* LOW TIME: a glowing red frame, its opacity comes from lowTimeGlow */
+    .low-time {
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        box-shadow:
+            inset 0 0 0 6px #ff3b4e,
+            inset 0 0 28px 10px rgb(255 59 78 / 0.75);
     }
 
     /* CRT look */

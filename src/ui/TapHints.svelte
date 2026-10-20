@@ -1,5 +1,6 @@
 <script lang="ts">
     import type { Answer } from "../game/challenge.ts";
+    import { answerOn } from "../game/settings.ts";
 
     interface Props {
         // The answer that was just given, lights up its label
@@ -8,17 +9,27 @@
         highlight?: Answer | null;
         // DOUBLE TAP: double arrows as a reminder to tap twice
         double?: boolean;
+        // FALSE on the left, TRUE on the right
+        flipControls: boolean;
     }
 
-    let { flash, highlight = null, double = false }: Props = $props();
+    let { flash, highlight = null, double = false, flipControls }: Props = $props();
 
-    const trueLabel = $derived(double ? "◄◄ TRUE" : "◄ TRUE");
-    const falseLabel = $derived(double ? "FALSE ►►" : "FALSE ►");
+    const left = $derived(answerOn("left", flipControls));
+    const right = $derived(answerOn("right", flipControls));
+    const leftArrow = $derived(double ? "◄◄" : "◄");
+    const rightArrow = $derived(double ? "►►" : "►");
 </script>
 
 <div class="hints" aria-hidden="true">
-    <span class="hint" class:flash={flash === "true"} class:highlight={highlight === "true"}>{trueLabel}</span>
-    <span class="hint" class:flash={flash === "false"} class:highlight={highlight === "false"}>{falseLabel}</span>
+    <span class="hint" class:flash={flash === left} class:highlight={highlight === left}>
+        {leftArrow}
+        {left.toUpperCase()}
+    </span>
+    <span class="hint" class:flash={flash === right} class:highlight={highlight === right}>
+        {right.toUpperCase()}
+        {rightArrow}
+    </span>
 </div>
 
 <style>

@@ -1,8 +1,11 @@
 <script lang="ts">
     import { COLOR_CSS, randomColor } from "../game/colors.ts";
+    import { answerOn } from "../game/settings.ts";
 
     interface Props {
         highscore: number;
+        // FALSE on the left, TRUE on the right
+        flipControls: boolean;
         onstart: () => void;
         onstats: () => void;
         onsetup: () => void;
@@ -10,7 +13,7 @@
         oninstall?: () => void;
     }
 
-    let { highscore, onstart, onstats, onsetup, oninstall }: Props = $props();
+    let { highscore, flipControls, onstart, onstats, onsetup, oninstall }: Props = $props();
 
     const TITLE_LINES = ["COLOR", "MATCH"];
     const LETTER_COUNT = TITLE_LINES.join("").length;
@@ -47,7 +50,10 @@
         {/each}
     </h1>
 
-    <div class="controls"><span>◄ TRUE</span><span>FALSE ►</span></div>
+    <div class="controls">
+        <span>◄ {answerOn("left", flipControls).toUpperCase()}</span>
+        <span>{answerOn("right", flipControls).toUpperCase()} ►</span>
+    </div>
     <!-- Selected from the start, so Enter and the arrow keys begin here -->
     <button class="start blink" onclick={onstart} {@attach (node) => node.focus()}>PRESS START</button>
 
