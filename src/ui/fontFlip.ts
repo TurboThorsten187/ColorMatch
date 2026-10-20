@@ -10,18 +10,25 @@ export interface FlipLetter {
 }
 
 const MEASURE_PX = 100;
+// How often a wild font comes compared to a readable one, from strength 0 to 1
+const WILD_WEIGHT_GENTLE = 0.5;
+const WILD_WEIGHT_STRONG = 3;
 
 // FONT FLIP: every letter in its own font, as large as the whole word would be in that font so that it fits, at most
-// `maxSize`. If the letters then add up to more than `maxWidth`, all of them shrink together. Both are in em.
+// `maxSize`. If the letters then add up to more than `maxWidth`, all of them shrink together. Both are in em. The
+// stronger the modifier, the more often the wild fonts come.
 export function flipLetters(
     text: string,
     seed: number,
     elapsed: number,
     maxSize: number,
     maxWidth: number,
+    strength = 0,
 ): FlipLetter[] {
+    const wild = WILD_WEIGHT_GENTLE + (WILD_WEIGHT_STRONG - WILD_WEIGHT_GENTLE) * strength;
+    const weights = FLIP_FONTS.map((font) => (font.wild ? wild : 1));
     const letters = [...text].map((char, index) => {
-        const font = FLIP_FONTS[flipFont(seed, index, elapsed, FLIP_FONTS.length)];
+        const font = FLIP_FONTS[flipFont(seed, index, elapsed, weights)];
         return { char, font, size: Math.min(maxSize, maxWidth / emWidth(text, font)) };
     });
     const total = letters.reduce((sum, letter) => sum + letter.size * emWidth(letter.char, letter.font), 0);

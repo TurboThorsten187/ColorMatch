@@ -12,7 +12,7 @@
         fadeOpacity,
         scramble,
         scrambleWords,
-        SHAKE_TILT_DEG,
+        shakeTiltDeg,
         spin,
         toAnchor,
         wordMotion,
@@ -87,9 +87,11 @@
     const FREE_HEIGHT_SHARE = 0.62;
     // Distance from the word's center to the bottom of its rule tags, in font sizes
     const TAG_GAP = 0.6;
-    // The word gets BLUR_PX; the small tags would vanish with that, this keeps about the same share of their size
-    const TAG_BLUR = "blur(0.14em)";
-    const BLUR_PX = 10;
+    // BLURRED grows from BLUR_GENTLE_PX to BLUR_STRONG_PX with its strength. The small tags would vanish with that,
+    // they get about the same share of their size.
+    const BLUR_GENTLE_PX = 6;
+    const BLUR_STRONG_PX = 10;
+    const TAG_BLUR_EM_PER_PX = 0.014;
     const WORD_HEIGHT_SHARE = 0.24;
     const WORD_WIDTH_SHARE = 0.9;
     // TWO WORDS: both words get this share of the normal size and sit this many font sizes above and below the middle
@@ -111,6 +113,9 @@
     const played = (id: ModifierGroupId): number => elapsed * (challenge.tempo[id] ?? 1);
 
     const lineSeed = (index: number): number => (challenge.seed + LINE_SEED_STEP * index) % 1;
+
+    const strengthOf = (id: ModifierGroupId): number => challenge.strength[id] ?? 0;
+    const blurPx = $derived(BLUR_GENTLE_PX + (BLUR_STRONG_PX - BLUR_GENTLE_PX) * strengthOf("blur"));
 
     const opacity = $derived(has("blink") ? fadeOpacity(played("blink")) : 1);
     const words = $derived([
@@ -148,11 +153,11 @@
     );
     // Smaller again to leave room for the effects, and for ZOOM
     const fontSize = $derived.by(() => {
-        const size = fitted * effectFontScale(challenge.modifiers) * challenge.size;
+        const size = fitted * effectFontScale(challenge.modifiers, challenge.strength) * challenge.size;
         return challenge.size < 1 ? Math.max(MIN_FONT_PX, size) : size;
     });
     // ZOOM: the word's size relative to normal. Effects measured in px shrink with it.
-    const zoom = $derived(fontSize / (fitted * effectFontScale(challenge.modifiers)));
+    const zoom = $derived(fontSize / (fitted * effectFontScale(challenge.modifiers, challenge.strength)));
     // TWO WORDS: the upper word sits this far above the middle, the lower one as far below it
     const lineOffset = $derived(words.length > 1 ? fontSize * TWO_WORDS_OFFSET : 0);
 
@@ -166,7 +171,14 @@
             if (!byLetter) return { text, color, offset, seed, letters: null, width: wordWidth };
             // FONT FLIP keeps the proportions it has at the fitted size, whatever shrinks the word
             const shapes = has("fontFlip")
-                ? flipLetters(text, seed, played("fontFlip"), fullSize / fitted, maxWidth / fitted).map((letter) => ({
+                ? flipLetters(
+                      text,
+                      seed,
+                      played("fontFlip"),
+                      fullSize / fitted,
+                      maxWidth / fitted,
+                      strengthOf("fontFlip"),
+                  ).map((letter) => ({
                       ...letter,
                       width: letter.size * emWidth(letter.char, letter.font) * fontSize,
                   }))
@@ -193,7 +205,7 @@
     // tags move with it: above it, or below when it is mirrored upside down, and around it when it rotates.
     const extent = $derived.by(() => {
         const wordWidth = Math.max(...placedLines.map((line) => line.width));
-        const tilt = has("shaky") ? wordWidth * Math.sin((SHAKE_TILT_DEG * Math.PI) / 180) : 0;
+        const tilt = has("shaky") ? wordWidth * Math.sin((shakeTiltDeg(strengthOf("shaky")) * Math.PI) / 180) : 0;
         const alone = has("rotation")
             ? { width: wordWidth, height: wordWidth }
             : { width: wordWidth, height: fontSize + 2 * lineOffset + tilt };
@@ -216,6 +228,7 @@
             extent,
             challenge.tempo,
             zoom,
+            challenge.strength,
         );
         const mirrorX = has("mirrorHorizontal") || has("mirrorBoth") ? -1 : 1;
         const mirrorY = has("mirrorVertical") || has("mirrorBoth") ? -1 : 1;
@@ -223,7 +236,10 @@
             x,
             y,
             rotation:
-                rotation + (has("rotation") ? challenge.rotationDeg + spin(challenge.seed, played("rotation")) : 0),
+                rotation +
+                (has("rotation")
+                    ? challenge.rotationDeg + spin(challenge.seed, played("rotation"), strengthOf("rotation"))
+                    : 0),
             scaleX: mirrorX * scale,
             scaleY: mirrorY * scale,
         };
@@ -282,7 +298,7 @@
         data-ink={ink}
         style={ink ? inkStyle(ink, colorblind) : null}
         style:transform="translate(-50%, calc(-50% + {line.offset}px))"
-        style:filter={has("blur") ? `blur(${BLUR_PX * zoom}px)` : null}
+        style:filter={has("blur") ? `blur(${blurPx * zoom}px)` : null}
     >
         {#if has("splitMirror")}
             <SplitMirror ink={line.letters ? null : line.color} {colorblind}>{@render content(line)}</SplitMirror>
@@ -328,7 +344,9 @@
                     bind:clientHeight={tagsHeight}
                 >
                     {#each tags as tag, index (index)}
-                        <span class="tag" style:filter={has("blur") ? TAG_BLUR : null}>{tag}</span>
+                        <span class="tag" style:filter={has("blur") ? `blur(${TAG_BLUR_EM_PER_PX * blurPx}em)` : null}
+                            >{tag}</span
+                        >
                     {/each}
                 </div>
             {/if}

@@ -1,4 +1,4 @@
-import type { Tempo } from "../game/challenge.ts";
+import type { Strength, Tempo } from "../game/challenge.ts";
 import type { ModifierId } from "../game/modifiers.ts";
 
 // Moving, shaking, pulsing, spinning, fading and scrambling only depend on the time since the word appeared and the
@@ -35,21 +35,32 @@ const MOVING_PERIOD_Y_MS = 1100;
 const MOVING_MARGIN = 10;
 
 const SHAKE_STEP_MS = 60;
-const SHAKE_FONT_SCALE = 0.94;
-// Share of the free area the word jumps around in, and how far it tilts with every jump
+// Share of the free area the word jumps around in, times a factor that grows with the strength, and how far it tilts
+// with every jump
 const SHAKE_X = 0.02;
 const SHAKE_Y = 0.05;
-export const SHAKE_TILT_DEG = 7;
+const SHAKE_FACTOR_GENTLE = 0.6;
+const SHAKE_FACTOR_STRONG = 1.8;
+const SHAKE_TILT_GENTLE_DEG = 4;
+const SHAKE_TILT_STRONG_DEG = 13;
+// Font size given up per unit of the shake factor, so the shaking word stays on screen
+const SHAKE_FONT_SHRINK = 0.06;
 
+// Pulsing swings between a low and a high scale, both further from 1 with the strength
 const PULSE_PERIOD_MS = 350;
-const PULSE_MIN = 0.7;
-const PULSE_MAX = 1.14;
+const PULSE_LOW_GENTLE = 0.85;
+const PULSE_LOW_STRONG = 0.55;
+const PULSE_HIGH_GENTLE = 1.08;
+const PULSE_HIGH_STRONG = 1.2;
 
 const SCRAMBLE_STEP_MS = 380;
 // Shifts the seed for every word of a rule text, so it is not mixed in step with the color word
 const WORD_SEED_STEP = 0.37;
 
 const SPIN_MS = 2500;
+// ROTATION turns unevenly with the strength: its speed swings by up to this share, once every SPIN_WOBBLE_MS
+const SPIN_WOBBLE = 0.8;
+const SPIN_WOBBLE_MS = 700;
 const FADE_MS = 900;
 
 // ASSEMBLE: the word is complete after this share of the time limit. Every letter starts at a random time in the
@@ -73,17 +84,17 @@ const LOW_TIME_GLOW = 0.3;
 const LOW_TIME_GLOW_START = 0.35;
 
 // Font size factor that keeps the moved, shaken or grown word on screen
-export function effectFontScale(modifiers: ReadonlySet<ModifierId>): number {
+export function effectFontScale(modifiers: ReadonlySet<ModifierId>, strength: Strength = {}): number {
     return (
         (modifiers.has("moving") ? MOVING_FONT_SCALE : 1) *
-        (modifiers.has("shaky") ? SHAKE_FONT_SCALE : 1) *
-        (modifiers.has("pulsing") ? 1 / PULSE_MAX : 1)
+        (modifiers.has("shaky") ? 1 - SHAKE_FONT_SHRINK * shakeFactor(strength.shaky ?? 0) : 1) *
+        (modifiers.has("pulsing") ? 1 / pulseRange(strength.pulsing ?? 0).high : 1)
     );
 }
 
 // Offset and scale of the word inside `area`, the free rectangle around the screen center. `word` is the space
-// the word takes up at scale 1. `tempo` speeds up moving, shaking and pulsing. `size` is the zoomed word's size
-// relative to normal: it shakes as much relative to its own size as a normal word.
+// the word takes up at scale 1. `tempo` speeds up moving, shaking and pulsing, `strength` widens shaking and pulsing.
+// `size` is the zoomed word's size relative to normal: it shakes as much relative to its own size as a normal word.
 export function wordMotion(
     modifiers: ReadonlySet<ModifierId>,
     seed: number,
@@ -92,15 +103,17 @@ export function wordMotion(
     word: Size,
     tempo: Tempo = {},
     size = 1,
+    strength: Strength = {},
 ): WordMotion {
-    const shakeX = modifiers.has("shaky") ? area.width * SHAKE_X * size : 0;
-    const shakeY = modifiers.has("shaky") ? area.height * SHAKE_Y * size : 0;
+    const shake = shakeFactor(strength.shaky ?? 0) * size;
+    const shakeX = modifiers.has("shaky") ? area.width * SHAKE_X * shake : 0;
+    const shakeY = modifiers.has("shaky") ? area.height * SHAKE_Y * shake : 0;
     let x = 0;
     let y = 0;
     let rotation = 0;
     if (modifiers.has("moving")) {
         // A shaking word needs the shake's amplitude as extra margin, or it leaves the screen at the turning points
-        const grown = modifiers.has("pulsing") ? PULSE_MAX : 1;
+        const grown = modifiers.has("pulsing") ? pulseRange(strength.pulsing ?? 0).high : 1;
         const roomX = Math.max(0, (area.width - word.width * grown) / 2 - MOVING_MARGIN - shakeX);
         const roomY = Math.max(0, (area.height - word.height * grown) / 2 - shakeY);
         const moved = elapsed * (tempo.moving ?? 1);
@@ -111,15 +124,29 @@ export function wordMotion(
         const step = Math.floor((elapsed * (tempo.shaky ?? 1)) / SHAKE_STEP_MS);
         x += shakeX * signedNoise(seed, step, 1);
         y += shakeY * signedNoise(seed, step, 2);
-        rotation = SHAKE_TILT_DEG * signedNoise(seed, step, 3);
+        rotation = shakeTiltDeg(strength.shaky ?? 0) * signedNoise(seed, step, 3);
     }
-    const scale = modifiers.has("pulsing") ? pulseScale(seed, elapsed * (tempo.pulsing ?? 1)) : 1;
+    const scale = modifiers.has("pulsing")
+        ? pulseScale(seed, elapsed * (tempo.pulsing ?? 1), strength.pulsing ?? 0)
+        : 1;
     return { x, y, scale, rotation };
 }
 
-// Degrees a rotated word has turned since it appeared: a full turn every 2.5 s, left or right depending on the seed
-export function spin(seed: number, elapsed: number): number {
-    const turns = elapsed / SPIN_MS;
+// How far a shaking word tilts at most, in degrees
+export function shakeTiltDeg(strength: number): number {
+    return lerp(SHAKE_TILT_GENTLE_DEG, SHAKE_TILT_STRONG_DEG, strength);
+}
+
+function shakeFactor(strength: number): number {
+    return lerp(SHAKE_FACTOR_GENTLE, SHAKE_FACTOR_STRONG, strength);
+}
+
+// Degrees a rotated word has turned since it appeared: a full turn every 2.5 s on average, left or right depending on
+// the seed. With strength its speed swings, but it never stops or turns back.
+export function spin(seed: number, elapsed: number, strength = 0): number {
+    const phase = (2 * Math.PI * elapsed) / SPIN_WOBBLE_MS;
+    const wobble = (SPIN_WOBBLE * strength * SPIN_WOBBLE_MS * (1 - Math.cos(phase))) / (2 * Math.PI);
+    const turns = (elapsed + wobble) / SPIN_MS;
     return 360 * (seed < 0.5 ? turns : -turns);
 }
 
@@ -128,9 +155,17 @@ export function fadeOpacity(elapsed: number): number {
     return Math.max(0, 1 - elapsed / FADE_MS);
 }
 
-export function pulseScale(seed: number, elapsed: number): number {
-    const middle = (PULSE_MIN + PULSE_MAX) / 2;
-    const swing = (PULSE_MAX - PULSE_MIN) / 2;
+export function pulseRange(strength: number): { readonly low: number; readonly high: number } {
+    return {
+        low: lerp(PULSE_LOW_GENTLE, PULSE_LOW_STRONG, strength),
+        high: lerp(PULSE_HIGH_GENTLE, PULSE_HIGH_STRONG, strength),
+    };
+}
+
+export function pulseScale(seed: number, elapsed: number, strength = 0): number {
+    const { low, high } = pulseRange(strength);
+    const middle = (low + high) / 2;
+    const swing = (high - low) / 2;
     return middle + swing * Math.sin((2 * Math.PI * (elapsed + seed * PULSE_PERIOD_MS)) / PULSE_PERIOD_MS);
 }
 
@@ -200,15 +235,30 @@ export function toAnchor(point: Point, anchor: AnchorTransform): Point {
     };
 }
 
-// The font (an index below `count`) of a letter of FONT FLIP: a new random one every 200 ms, never the same twice in
-// a row
-export function flipFont(seed: number, letter: number, elapsed: number, count: number): number {
+// The font (an index into `weights`) of a letter of FONT FLIP: a new random one every 200 ms, never the same twice
+// in a row, each one as often as its weight says
+export function flipFont(seed: number, letter: number, elapsed: number, weights: readonly number[]): number {
     const steps = Math.floor(elapsed / FONT_FLIP_MS);
-    let font = Math.floor(noise(seed, 0, FONT_FLIP_SALT + letter) * count);
+    let font = weightedIndex(weights, noise(seed, 0, FONT_FLIP_SALT + letter), -1);
     for (let step = 1; step <= steps; step++) {
-        font = (font + 1 + Math.floor(noise(seed, step, FONT_FLIP_SALT + letter) * (count - 1))) % count;
+        font = weightedIndex(weights, noise(seed, step, FONT_FLIP_SALT + letter), font);
     }
     return font;
+}
+
+// The index `value` (in [0, 1)) falls on when every index but `skip` takes up a share as large as its weight
+function weightedIndex(weights: readonly number[], value: number, skip: number): number {
+    const total = weights.reduce((sum, weight, index) => (index === skip ? sum : sum + weight), 0);
+    let rest = value * total;
+    let last = -1;
+    for (let index = 0; index < weights.length; index++) {
+        if (index === skip || weights[index] <= 0) continue;
+        last = index;
+        rest -= weights[index];
+        if (rest < 0) return index;
+    }
+    // Only reached through rounding: the last index that could be picked
+    return last;
 }
 
 // Opacity of the red frame for the share of the time that is left, starting below `from`
@@ -226,6 +276,10 @@ export function isNegative(elapsed: number, timeLimit: number): boolean {
 export function afterimageOpacity(elapsed: number, timeLimit: number): number {
     const since = elapsed - timeLimit * NEGATIVE_UNTIL;
     return since >= 0 && since < AFTERIMAGE_MS ? 1 - since / AFTERIMAGE_MS : 0;
+}
+
+function lerp(from: number, to: number, share: number): number {
+    return from + (to - from) * share;
 }
 
 // -1 at the start, 1 halfway, -1 again after a full period: straight lines that bounce off both sides

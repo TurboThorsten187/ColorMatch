@@ -67,7 +67,9 @@ files.
   announced by the `surgeBanner` phase; `surgeGroupCount` grows by one per surge, the time is a fixed
   `SURGE_TIME_MS`), the time limit (every group adds `EXTRA_GROUP_BONUS_MS`, Don't Click levels get
   `NO_CLICK_TIME_SHARE` of it) and the tempo of animated modifiers
-  (`tempoFor`, stored in `Challenge.tempo`, applied in `ChallengeScreen` and `effects.ts`). A new modifier needs a
+  (`tempoFor`, stored in `Challenge.tempo`, applied in `ChallengeScreen` and `effects.ts`), and along with the tempo
+  the strength (`strengthFor`, `Challenge.strength`, 0 on the intro level to 1 from level 80) that makes rotation
+  uneven, widens pulse and shake, blurs more and picks the `wild` Font Flip fonts more often. A new modifier needs a
   group, an intro card, an award and, if animated, a function in `src/ui/effects.ts` driven by the level's `seed`, the
   elapsed time and its tempo.
 

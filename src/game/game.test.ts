@@ -54,6 +54,7 @@ function playing(
             rotationDeg: 0,
             seed: 0,
             tempo: {},
+            strength: {},
             second: null,
             size: 1,
         },
@@ -303,6 +304,7 @@ describe("surge", () => {
                 surge.challenge.expected === "none" ? Math.round(SURGE_TIME_MS * NO_CLICK_TIME_SHARE) : SURGE_TIME_MS,
         });
         expect(groupsOf(surge.challenge.modifiers)).toHaveLength(surgeGroupCount(SURGE_FIRST_LEVEL));
+        expect(Object.keys(surge.challenge.strength).sort()).toEqual(groupsOf(surge.challenge.modifiers).sort());
     });
 
     it("ignores answers during the banner", () => {

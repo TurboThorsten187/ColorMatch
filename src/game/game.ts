@@ -9,6 +9,7 @@ import {
     NO_CLICK_TIME_SHARE,
     pickGroups,
     tempoFor,
+    strengthFor,
     timeLimitFor,
     zoomSizeFor,
 } from "./progression.ts";
@@ -21,7 +22,7 @@ export const SPAM_PAUSE_MS = 500;
 // After the last press the whole SPAM! stays lit this long, then STOP SPAMMING! shows for SPAM_PAUSE_MS
 export const SPAM_BANG_MS = 120;
 // A WAIT level shows WAIT for this share of its time limit, then NOW; a press before NOW is a miss
-export const WAIT_SHARE = 0.5;
+export const WAIT_SHARE = 0.4;
 // Right taps a DOUBLE TAP level needs, with no limit on the time between them
 export const DOUBLE_TAPS = 2;
 export const SURGE_BANNER_MS = 900;
@@ -202,8 +203,9 @@ function playLevel(
 ): PlayingState {
     const groups = pickGroups(level, curriculum, previous, rng);
     const tempo = Object.fromEntries(groups.map((id) => [id, tempoFor(level, introLevel(curriculum, id))]));
+    const strength = Object.fromEntries(groups.map((id) => [id, strengthFor(level, introLevel(curriculum, id))]));
     const size = groups.includes("zoom") ? zoomSizeFor(level, introLevel(curriculum, "zoom")) : 1;
-    const challenge = createChallenge(groups, level, rng, tempo, size);
+    const challenge = createChallenge(groups, level, rng, tempo, size, strength);
     const timeLimit = timeLimitFor(level, groups.length, introducedAt(curriculum, level) !== null);
     return {
         phase: "playing",
