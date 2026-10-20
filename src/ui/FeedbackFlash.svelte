@@ -1,10 +1,12 @@
 <script module lang="ts">
-    export type FeedbackKind = "hit" | "miss" | "timeout";
+    // "early": pressed before WAIT turned into NOW
+    export type FeedbackKind = "hit" | "miss" | "timeout" | "early";
 
     export const FEEDBACK_LABELS: Readonly<Record<FeedbackKind, string>> = {
         hit: "+1",
         miss: "MISS!",
         timeout: "TIME UP!",
+        early: "TOO EARLY!",
     };
 </script>
 

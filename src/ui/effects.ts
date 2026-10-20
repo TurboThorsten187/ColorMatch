@@ -40,6 +40,22 @@ const WORD_SEED_STEP = 0.37;
 const SPIN_MS = 2500;
 const FADE_MS = 900;
 
+// ASSEMBLE: the word is complete after this share of the time limit. Every letter starts at a random time in the
+// first half of that and flies for the other half.
+export const ASSEMBLE_SHARE = 0.25;
+const ASSEMBLE_FLIGHT = 0.5;
+// Letters start anywhere along an edge, but not in its outer tenths
+const ASSEMBLE_ALONG = 0.8;
+const ASSEMBLE_SALT = 41;
+
+const FONT_FLIP_MS = 200;
+const FONT_FLIP_SALT = 100;
+
+// NEGATIVE: the photo negative shows from 10 % to 50 % of the time limit, its afterimage fades out after it
+const NEGATIVE_FROM = 0.1;
+const NEGATIVE_UNTIL = 0.5;
+export const AFTERIMAGE_MS = 400;
+
 // Font size factor that keeps the moved, shaken or grown word on screen
 export function effectFontScale(modifiers: ReadonlySet<ModifierId>): number {
     return (
@@ -128,6 +144,49 @@ export function scrambleWords(text: string, seed: number, elapsed: number): stri
         .split(" ")
         .map((word, index) => scramble(word, (seed + WORD_SEED_STEP * (index + 1)) % 1, elapsed))
         .join(" ");
+}
+
+// How far a letter of ASSEMBLE still is from its place: 1 where it starts, 0 once it has arrived
+export function assembleRemaining(seed: number, letter: number, elapsed: number, timeLimit: number): number {
+    const progress = elapsed / (timeLimit * ASSEMBLE_SHARE);
+    const start = noise(seed, letter, ASSEMBLE_SALT) * (1 - ASSEMBLE_FLIGHT);
+    return 1 - Math.min(1, Math.max(0, (progress - start) / ASSEMBLE_FLIGHT));
+}
+
+// Where a letter of ASSEMBLE starts, relative to the center of `area`: `margin` outside a random edge
+export function assembleStart(seed: number, letter: number, area: Size, margin: number): { x: number; y: number } {
+    const along = noise(seed, letter, ASSEMBLE_SALT + 2) - 0.5;
+    switch (Math.floor(noise(seed, letter, ASSEMBLE_SALT + 1) * 4)) {
+        case 0:
+            return { x: -area.width / 2 - margin, y: along * area.height * ASSEMBLE_ALONG };
+        case 1:
+            return { x: area.width / 2 + margin, y: along * area.height * ASSEMBLE_ALONG };
+        case 2:
+            return { x: along * area.width * ASSEMBLE_ALONG, y: -area.height / 2 - margin };
+        default:
+            return { x: along * area.width * ASSEMBLE_ALONG, y: area.height / 2 + margin };
+    }
+}
+
+// The font (an index below `count`) of a letter of FONT FLIP: a new random one every 200 ms, never the same twice in
+// a row
+export function flipFont(seed: number, letter: number, elapsed: number, count: number): number {
+    const steps = Math.floor(elapsed / FONT_FLIP_MS);
+    let font = Math.floor(noise(seed, 0, FONT_FLIP_SALT + letter) * count);
+    for (let step = 1; step <= steps; step++) {
+        font = (font + 1 + Math.floor(noise(seed, step, FONT_FLIP_SALT + letter) * (count - 1))) % count;
+    }
+    return font;
+}
+
+export function isNegative(elapsed: number, timeLimit: number): boolean {
+    return elapsed >= timeLimit * NEGATIVE_FROM && elapsed < timeLimit * NEGATIVE_UNTIL;
+}
+
+// The afterimage of NEGATIVE: the word in its negative colors, fading out once the negative is gone
+export function afterimageOpacity(elapsed: number, timeLimit: number): number {
+    const since = elapsed - timeLimit * NEGATIVE_UNTIL;
+    return since >= 0 && since < AFTERIMAGE_MS ? 1 - since / AFTERIMAGE_MS : 0;
 }
 
 // -1 at the start, 1 halfway, -1 again after a full period: straight lines that bounce off both sides

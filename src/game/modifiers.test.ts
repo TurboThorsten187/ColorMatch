@@ -6,7 +6,7 @@ describe("modifier groups", () => {
         const variants = MODIFIER_GROUPS.flatMap((group) => group.variants);
 
         expect(new Set(variants).size).toBe(variants.length);
-        expect(variants).toHaveLength(14);
+        expect(variants).toHaveLength(23);
     });
 
     it("find the groups of a level's modifiers", () => {
@@ -20,6 +20,14 @@ describe("modifier groups", () => {
         expect(conflicts("invertInput", "noClick")).toBe(true);
         expect(conflicts("spam", "invertInput")).toBe(true);
         expect(conflicts("invertInput", "mirror")).toBe(false);
+    });
+
+    it("never combine a group that comes alone", () => {
+        for (const group of MODIFIER_GROUPS) {
+            expect(conflicts("zoom", group.id)).toBe(true);
+            expect(conflicts(group.id, "twoWords")).toBe(true);
+        }
+        expect(conflicts("mirror", "rotation")).toBe(false);
     });
 
     it("conflict both ways", () => {

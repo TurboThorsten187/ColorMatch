@@ -3,6 +3,12 @@ export type ModifierId =
     | "invertInput"
     | "noClick"
     | "spam"
+    // Two words, the answer says whether both are true or both false
+    | "twoWords"
+    // A press before the WAIT sign turns into NOW is a miss
+    | "wait"
+    // The answer needs two taps
+    | "doubleTap"
     // Only change how the challenge looks
     | "mirrorVertical"
     | "mirrorHorizontal"
@@ -15,7 +21,19 @@ export type ModifierId =
     | "moving"
     | "scrambled"
     | "shaky"
-    | "pulsing";
+    | "pulsing"
+    // The left half of the word, mirrored onto its right half
+    | "splitMirror"
+    // The letters fly in from the screen edges
+    | "assemble"
+    // Every letter keeps switching its font
+    | "fontFlip"
+    // The word is tiny
+    | "zoom"
+    // The timer fills up instead of running down
+    | "countUp"
+    // The whole screen flashes as its photo negative
+    | "negative";
 
 // Modifiers are introduced, picked and explained per group; both mirrors form one group
 export type ModifierGroupId =
@@ -30,7 +48,16 @@ export type ModifierGroupId =
     | "blink"
     | "scrambled"
     | "invertInput"
-    | "spam";
+    | "spam"
+    | "splitMirror"
+    | "assemble"
+    | "fontFlip"
+    | "zoom"
+    | "countUp"
+    | "negative"
+    | "twoWords"
+    | "wait"
+    | "doubleTap";
 
 export type Tier = "easy" | "medium" | "hard";
 
@@ -42,6 +69,8 @@ export interface ModifierGroup {
     readonly variants: readonly ModifierId[];
     // Changes which input is correct; a level has at most one of these
     readonly rule: boolean;
+    // Never shares a level with another group
+    readonly alone: boolean;
     readonly conflictsWith: readonly ModifierGroupId[];
 }
 
@@ -51,9 +80,9 @@ function group(
     id: ModifierGroupId,
     tier: Tier,
     variants: readonly ModifierId[],
-    { rule = false, conflictsWith = [] as readonly ModifierGroupId[] } = {},
+    { rule = false, alone = false, conflictsWith = [] as readonly ModifierGroupId[] } = {},
 ): ModifierGroup {
-    return { id, tier, variants, rule, conflictsWith };
+    return { id, tier, variants, rule, alone, conflictsWith };
 }
 
 export const MODIFIER_GROUPS: readonly ModifierGroup[] = [
@@ -73,6 +102,16 @@ export const MODIFIER_GROUPS: readonly ModifierGroup[] = [
         rule: true,
         conflictsWith: ["background", "blink", "scrambled"],
     }),
+    // These always come alone, none of them is combined with another group yet
+    group("zoom", "easy", ["zoom"], { alone: true }),
+    group("splitMirror", "easy", ["splitMirror"], { alone: true }),
+    group("countUp", "easy", ["countUp"], { alone: true }),
+    group("assemble", "medium", ["assemble"], { alone: true }),
+    group("fontFlip", "medium", ["fontFlip"], { alone: true }),
+    group("negative", "medium", ["negative"], { alone: true }),
+    group("wait", "medium", ["wait"], { rule: true, alone: true }),
+    group("doubleTap", "medium", ["doubleTap"], { rule: true, alone: true }),
+    group("twoWords", "hard", ["twoWords"], { rule: true, alone: true }),
 ];
 
 export function groupById(id: ModifierGroupId): ModifierGroup {
@@ -84,7 +123,13 @@ export function groupById(id: ModifierGroupId): ModifierGroup {
 export function conflicts(a: ModifierGroupId, b: ModifierGroupId): boolean {
     const first = groupById(a);
     const second = groupById(b);
-    return (first.rule && second.rule) || first.conflictsWith.includes(b) || second.conflictsWith.includes(a);
+    return (
+        first.alone ||
+        second.alone ||
+        (first.rule && second.rule) ||
+        first.conflictsWith.includes(b) ||
+        second.conflictsWith.includes(a)
+    );
 }
 
 // The groups of a level's modifiers, in list order

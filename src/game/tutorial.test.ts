@@ -35,10 +35,13 @@ function playing(level: number, modifiers: ModifierId[]): PlayingState {
             rotationDeg: 0,
             seed: 0,
             tempo: {},
+            second: null,
+            size: 1,
         },
         startedAt: 0,
         timeLimit: 3000,
         spamCount: 0,
+        taps: 0,
         curriculum: MODIFIER_GROUPS.map((group) => group.id),
     };
 }

@@ -1,4 +1,4 @@
-import { conflicts, MODIFIER_GROUPS, type ModifierGroupId, TIERS } from "./modifiers.ts";
+import { conflicts, groupById, MODIFIER_GROUPS, type ModifierGroupId, TIERS } from "./modifiers.ts";
 import type { Rng } from "./random.ts";
 
 // The order in which one game introduces the modifier groups: shuffled per game, but easy before medium before hard
@@ -38,6 +38,12 @@ export const SURGE_FIRST_LEVEL = 50;
 export const SURGE_EVERY = 10;
 export const SURGE_GROUP_COUNT = 4;
 
+// The zoomed word starts at a fifth of the normal size and shrinks with every level after its introduction, down to
+// a tenth
+export const ZOOM_SIZE = 0.2;
+export const ZOOM_MIN_SIZE = 0.1;
+const ZOOM_SHRINK_PER_LEVEL = 0.04;
+
 export function createCurriculum(rng: Rng): Curriculum {
     return TIERS.flatMap((tier) =>
         shuffle(
@@ -47,15 +53,19 @@ export function createCurriculum(rng: Rng): Curriculum {
     );
 }
 
+// A surge introduces nothing: the group due on a surge level comes on the level after it
 export function introLevel(curriculum: Curriculum, id: ModifierGroupId): number {
     const index = curriculum.indexOf(id);
     if (index < 0) throw new Error(`Modifier group ${id} is missing in the curriculum`);
-    return FIRST_INTRO_LEVEL + INTRO_EVERY * index;
+    const due = FIRST_INTRO_LEVEL + INTRO_EVERY * index;
+    return isSurgeLevel(due) ? due + 1 : due;
 }
 
 // The group this level introduces, it then comes alone
 export function introducedAt(curriculum: Curriculum, level: number): ModifierGroupId | null {
-    const offset = level - FIRST_INTRO_LEVEL;
+    if (isSurgeLevel(level)) return null;
+    const due = isSurgeLevel(level - 1) ? level - 1 : level;
+    const offset = due - FIRST_INTRO_LEVEL;
     if (offset < 0 || offset % INTRO_EVERY !== 0) return null;
     return curriculum[offset / INTRO_EVERY] ?? null;
 }
@@ -96,6 +106,11 @@ export function tempoFor(level: number, introducedOn: number): number {
     return 1 - catchUp + catchUp * levelTempo(level);
 }
 
+export function zoomSizeFor(level: number, introducedOn: number): number {
+    const shrink = 1 - ZOOM_SHRINK_PER_LEVEL * Math.max(0, level - introducedOn);
+    return Math.max(ZOOM_MIN_SIZE, ZOOM_SIZE * shrink);
+}
+
 function baseLimit(level: number): number {
     return BASE_MIN_MS - LATE_MIN_DROP_MS * lateShare(level) + BASE_RANGE_MS * BASE_DECAY ** (level - 1);
 }
@@ -118,9 +133,14 @@ export function pickGroups(
     const known = curriculum.filter((id) => introLevel(curriculum, id) < level);
     const newest = known.at(-1);
     if (!newest) return [];
-    if (isSurgeLevel(level)) return pick(known, SURGE_GROUP_COUNT, level, curriculum, rng, []);
+    // A group that comes alone has no place in a surge and no practice level together with a known group
+    if (isSurgeLevel(level)) {
+        const combinable = known.filter((id) => !groupById(id).alone);
+        return pick(combinable, SURGE_GROUP_COUNT, level, curriculum, rng, []);
+    }
 
-    const practice = level === introLevel(curriculum, newest) + 1 && maxGroupCount(level) >= 2;
+    const practice =
+        level === introLevel(curriculum, newest) + 1 && maxGroupCount(level) >= 2 && !groupById(newest).alone;
     for (let attempt = 0; attempt < PICK_ATTEMPTS; attempt++) {
         let picked: ModifierGroupId[];
         if (practice && rng() < PRACTICE_CHANCE) {

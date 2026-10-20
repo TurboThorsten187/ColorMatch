@@ -1,8 +1,15 @@
 import { describe, expect, it } from "vitest";
 import type { ModifierId } from "../game/modifiers.ts";
 import {
+    AFTERIMAGE_MS,
+    ASSEMBLE_SHARE,
+    afterimageOpacity,
+    assembleRemaining,
+    assembleStart,
     effectFontScale,
     fadeOpacity,
+    flipFont,
+    isNegative,
     letterOrder,
     pulseScale,
     SHAKE_TILT_DEG,
@@ -127,5 +134,67 @@ describe("word motion", () => {
         });
         expect(effectFontScale(set("blur"))).toBe(1);
         expect(effectFontScale(set("moving", "pulsing"))).toBeLessThan(effectFontScale(set("moving")));
+    });
+});
+
+describe("assembled letters", () => {
+    it("start at their place outside the screen and are all in place at a quarter of the time", () => {
+        const limit = 2000;
+        for (let letter = 0; letter < 8; letter++) {
+            expect(assembleRemaining(0.42, letter, 0, limit)).toBe(1);
+            expect(assembleRemaining(0.42, letter, limit * ASSEMBLE_SHARE, limit)).toBe(0);
+            expect(assembleRemaining(0.42, letter, limit, limit)).toBe(0);
+            const halfway = assembleRemaining(0.42, letter, (limit * ASSEMBLE_SHARE) / 2, limit);
+            expect(halfway).toBeGreaterThanOrEqual(0);
+            expect(halfway).toBeLessThanOrEqual(1);
+        }
+    });
+
+    it("fly in from just outside an edge", () => {
+        for (let letter = 0; letter < 40; letter++) {
+            const { x, y } = assembleStart(0.42, letter, AREA, 30);
+            const outside = Math.abs(x) === AREA.width / 2 + 30 || Math.abs(y) === AREA.height / 2 + 30;
+
+            expect(outside).toBe(true);
+            expect(Math.abs(x)).toBeLessThanOrEqual(AREA.width / 2 + 30);
+            expect(Math.abs(y)).toBeLessThanOrEqual(AREA.height / 2 + 30);
+        }
+    });
+});
+
+describe("font flip", () => {
+    it("gives every letter a new font every 200 ms, never the same twice in a row", () => {
+        for (let letter = 0; letter < 6; letter++) {
+            const fonts = Array.from({ length: 30 }, (_, step) => flipFont(0.42, letter, step * 200 + 50, 28));
+
+            fonts.forEach((font, step) => {
+                expect(font).toBeGreaterThanOrEqual(0);
+                expect(font).toBeLessThan(28);
+                if (step > 0) expect(font).not.toBe(fonts[step - 1]);
+            });
+            expect(flipFont(0.42, letter, 199, 28)).toBe(fonts[0]);
+        }
+    });
+
+    it("mixes the fonts of the letters", () => {
+        const fonts = new Set(Array.from({ length: 6 }, (_, letter) => flipFont(0.42, letter, 0, 28)));
+
+        expect(fonts.size).toBeGreaterThan(1);
+    });
+});
+
+describe("negative", () => {
+    it("shows from 10 % to 50 % of the time limit, then fades out its afterimage", () => {
+        expect([0, 99, 100, 499, 500].map((elapsed) => isNegative(elapsed, 1000))).toEqual([
+            false,
+            false,
+            true,
+            true,
+            false,
+        ]);
+        expect(afterimageOpacity(499, 1000)).toBe(0);
+        expect(afterimageOpacity(500, 1000)).toBe(1);
+        expect(afterimageOpacity(500 + AFTERIMAGE_MS / 2, 1000)).toBeCloseTo(0.5);
+        expect(afterimageOpacity(500 + AFTERIMAGE_MS, 1000)).toBe(0);
     });
 });

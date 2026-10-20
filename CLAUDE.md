@@ -6,7 +6,9 @@ Browser reaction game (Stroop effect): does the word match its ink color? Deploy
 ## Stack
 
 Svelte 5 (runes) + TypeScript, Vite 8, Vitest, ESLint (flat config) + Prettier. Runtime dependencies besides Svelte:
-self-hosted fonts via `@fontsource` (Press Start 2P for the UI, Orbitron 900 for the color word, latin subsets only).
+self-hosted fonts via `@fontsource` (Press Start 2P for the UI, Orbitron 900 for the color word, plus 26 display fonts
+for the Font Flip modifier, `FLIP_FONTS` in `src/ui/fonts.ts`; latin subsets only). `main.ts` awaits only the first two;
+`loadFlipFonts()` runs in the background, and the service worker report waits for it so they are cached offline.
 Sounds are chiptune sounds synthesized with Web Audio oscillators (recipes in `src/ui/synth.ts`), there are no audio
 files.
 
@@ -20,13 +22,18 @@ files.
 
 - `src/game/` – pure game logic, no DOM and no Svelte: immutable `GameState` union and transitions
   `answer`/`confirm`/`toMenu`/`tick`/`pause`/`resume` that take `now` (ms) and an injected `Rng`. All gameplay rules live here and are unit tested.
+  Wait (`isTooEarly`, `WAIT_SHARE`) and Double Tap (`PlayingState.taps`) are rules in `game.ts`; Two Words builds its
+  second word in `createChallenge` (`Challenge.second`), Zoom's shrinking size is `Challenge.size`.
 - `src/ui/` – one Svelte component per screen plus `TopBar` (level, timer; the modifier cards reuse it `inline` and `paused`), `TapHints`, `FeedbackFlash`;
   modifiers are rendered with CSS transforms and filters; the rule tags (DON'T CLICK, INVERTED INPUT) sit in the
   word's anchor and get every effect too. The colorblind setting keeps the six colors internally but shows each as a
   shape: `SHAPE_WORDS`/`wordFor` in `src/game/colors.ts` give the words, `src/ui/shapes.ts` fills the letters
   (`inkStyle`) and the background modifier (`backgroundStyle`) with SVG shape tiles; every screen that shows a color
   word takes a `colorblind` prop. `LossScreen` plays the loss animation (timeline in
-  `lossAnimation.ts`, driven by the time since the loss) before `GameOverScreen` switches on. `src/main.ts` awaits `loadFonts()` before mounting because
+  `lossAnimation.ts`, driven by the time since the loss) before `GameOverScreen` switches on. It rasterizes the
+  anchor's first child: the word itself, or every piece in it with `data-ink` (split mirror halves, Font Flip and
+  Assemble letters, the two words), with its font, ink, transforms and `data-left-half` cut; blocks keep the pixel's
+  color. Negative inverts App's `.playfield` (level, timer, hints) while `isNegative`. `src/main.ts` awaits `loadFonts()` before mounting because
   the word size is fitted by measuring the real font. `sound.ts` wraps Web Audio: `unlockAudio()` on every input
   (browsers need a gesture; on touch only `pointerup` counts), each sound is built from oscillators when it plays.
 - `src/App.svelte` – the only stateful place: rAF loop, keyboard and pointer input (left/right screen half; outside
@@ -44,8 +51,10 @@ files.
 - Awards are defined in `src/game/awards.ts`; `src/game/stats.ts` counts cleared levels per award, is saved after every
   cleared level and reports newly unlocked awards (toast in game, list on game over).
 - Modifiers belong to groups (`MODIFIER_GROUPS` in `src/game/modifiers.ts`, all mirrors are one group) with a tier.
+  Groups with `alone` (the nine newer ones, Zoom to Two Words) conflict with every group, so they never share a level,
+  get no practice level and are left out of surges.
   `src/game/progression.ts` holds the per-game curriculum (`PlayingState.curriculum`: a new group every 3 levels from
-  level 5, alone on its intro level), the per-level pick, the late game ramp from level 40, surge levels (`isSurgeLevel`,
+  level 5, alone on its intro level; an intro due on a surge level moves to the level after it), the per-level pick, the late game ramp from level 40, surge levels (`isSurgeLevel`,
   announced by the `surgeBanner` phase), the time limit (Don't Click levels get `NO_CLICK_TIME_SHARE` of it) and the tempo of animated modifiers
   (`tempoFor`, stored in `Challenge.tempo`, applied in `ChallengeScreen` and `effects.ts`). A new modifier needs a
   group, an intro card, an award and, if animated, a function in `src/ui/effects.ts` driven by the level's `seed`, the

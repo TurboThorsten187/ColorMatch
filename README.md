@@ -26,35 +26,46 @@ Der Balken oben zeigt die verbleibende Zeit: 3 s in Level 1, mit jedem Level etw
 1,2 s einpendelt; ab Level 40 sinkt sie weiter bis 1,0 s bei Level 80. Ab Level 5 kommt alle 3 Level ein neuer Modifier dazu, zuerst die leichten, dann die mittleren, dann
 die schweren; innerhalb einer Stufe wird die Reihenfolge jede Runde neu gemischt.
 
-| Modifier         | Stufe  | Wirkung                                                                                            |
-| ---------------- | ------ | -------------------------------------------------------------------------------------------------- |
-| Mirror           | leicht | Text ist senkrecht, waagrecht oder beides gespiegelt (steht dann auf dem Kopf)                     |
-| Rotation         | leicht | Text dreht sich, eine Umdrehung in 2,5 s                                                           |
-| Pulsing          | leicht | Text wächst und schrumpft schnell                                                                  |
-| Shaky            | leicht | Text zittert und kippt dabei leicht                                                                |
-| Background Color | mittel | zufälliger farbiger Hintergrund als Ablenkung                                                      |
-| Blurred          | mittel | Text ist unscharf                                                                                  |
-| Moving           | mittel | kleinerer Text gleitet schnell über den Bildschirm                                                 |
-| Don't Click      | mittel | nichts drücken oder tippen, bis die Zeit abläuft                                                   |
-| Blink            | mittel | Text blendet in 0,9 s aus, Hintergrund bleibt                                                      |
-| Scrambled        | schwer | Buchstaben werden laufend neu gemischt                                                             |
-| Inverted Input   | schwer | richtige Antwort ist umgedreht                                                                     |
-| Spam             | schwer | fünfmal schnell drücken oder tippen (egal wo), jeder Druck lässt ein Zeichen von SPAM! aufleuchten |
+| Modifier         | Stufe  | Wirkung                                                                                              |
+| ---------------- | ------ | ---------------------------------------------------------------------------------------------------- |
+| Mirror           | leicht | Text ist senkrecht, waagrecht oder beides gespiegelt (steht dann auf dem Kopf)                       |
+| Rotation         | leicht | Text dreht sich, eine Umdrehung in 2,5 s                                                             |
+| Pulsing          | leicht | Text wächst und schrumpft schnell                                                                    |
+| Shaky            | leicht | Text zittert und kippt dabei leicht                                                                  |
+| Background Color | mittel | zufälliger farbiger Hintergrund als Ablenkung                                                        |
+| Blurred          | mittel | Text ist unscharf                                                                                    |
+| Moving           | mittel | kleinerer Text gleitet schnell über den Bildschirm                                                   |
+| Don't Click      | mittel | nichts drücken oder tippen, bis die Zeit abläuft                                                     |
+| Blink            | mittel | Text blendet in 0,9 s aus, Hintergrund bleibt                                                        |
+| Scrambled        | schwer | Buchstaben werden laufend neu gemischt                                                               |
+| Inverted Input   | schwer | richtige Antwort ist umgedreht                                                                       |
+| Spam             | schwer | fünfmal schnell drücken oder tippen (egal wo), jeder Druck lässt ein Zeichen von SPAM! aufleuchten   |
+| Zoom             | leicht | Text ist winzig: ein Fünftel der normalen Größe, mit jedem Level danach kleiner bis zu einem Zehntel |
+| Split Mirror     | leicht | nur die linke Hälfte des Worts ist zu sehen, die rechte ist ihr Spiegelbild (CYAN wird zu CYYC)      |
+| Count Up         | leicht | der Timer läuft rückwärts: er füllt sich von der Mitte aus, erst rot, dann gelb, dann grün           |
+| Assemble         | mittel | die Buchstaben fliegen vom Bildschirmrand herein, nach einem Viertel der Zeit ist das Wort komplett  |
+| Font Flip        | mittel | jeder Buchstabe wechselt alle 200 ms in eine andere von 28 Schriften                                 |
+| Negative         | mittel | von 10 % bis 50 % der Zeit ist der ganze Bildschirm ein Fotonegativ, danach kurz ein Nachbild        |
+| Wait             | mittel | das Schild zeigt die erste Hälfte der Zeit WAIT, dann NOW; ein Druck vorher ist TOO EARLY!           |
+| Double Tap       | mittel | die Antwort zweimal drücken, egal wie schnell; ein falscher Druck ist sofort ein Fehler              |
+| Two Words        | schwer | zwei Wörter übereinander: TRUE, wenn beide oder keins zu ihrer Farbe passen (BOTH OR NEITHER)        |
 
-Ein neuer Modifier kommt in seinem Einführungslevel allein und mit 1 s Extrazeit. Sonst wird gemischt: bis Level 14
+Ein neuer Modifier kommt in seinem Einführungslevel allein und mit 1 s Extrazeit; fällt die Einführung auf ein
+Surge-Level, kommt sie ein Level später. Die neun Modifier von Zoom bis Two Words kommen vorerst immer allein, nie
+zusammen mit anderen, also auch nicht im Surge. Sonst wird gemischt: bis Level 14
 höchstens ein Modifier gleichzeitig, bis Level 29 zwei, danach drei, und frisch eingeführte kommen häufiger. Ab Level
 15 kommt ein neuer Modifier im Level nach seiner Einführung meist gleich noch einmal, zusammen mit einem bekannten.
 Jeder weitere Modifier in einem Level bringt 0,3 s Extrazeit. Bei Don't Click läuft nur 60 % der Zeit, damit man
-nicht so lange warten muss. Rotation, Pulsing, Shaky, Moving, Blink und Scrambled
+nicht so lange warten muss. Rotation, Pulsing, Shaky, Moving, Blink, Scrambled und Font Flip
 werden mit dem Level schneller, so wie die Zeit pro Level schrumpft (gut doppelt so schnell bei Level 40, 2,5-mal
 ab Level 80). Jeder
 startet bei seiner Einführung im normalen Tempo und holt dann innerhalb von 8 Leveln auf; ein spät eingeführter wird
 also schneller schnell als ein früher. Höchstens einer pro Level ändert die Regeln (Inverted
-Input, Don't Click, Spam), und dieselbe Kombination kommt nie zweimal hintereinander. Die Hinweise DON'T CLICK und
-INVERTED INPUT hängen am Wort und bekommen jeden Modifier mit: Sie werden mit ihm gespiegelt (stehen dann auch mal
+Input, Don't Click, Spam, Wait, Double Tap, Two Words), und dieselbe Kombination kommt nie zweimal hintereinander. Die
+Hinweise DON'T CLICK, INVERTED INPUT, WAIT/NOW, DOUBLE TAP und BOTH OR NEITHER hängen am Wort und bekommen jeden Modifier mit: Sie werden mit ihm gespiegelt (stehen dann auch mal
 darunter), gedreht, bewegt und unscharf, blenden mit aus und ihre Buchstaben werden gemischt.
 
-Nach der letzten Einführung (Level 38) wird es weiter härter: Von Level 40 bis 80 werden Level ohne Modifier immer
+Nach der letzten Einführung (Level 65) wird es weiter härter: Von Level 40 bis 80 werden Level ohne Modifier immer
 seltener und verschwinden dann ganz, und zwei oder drei Modifier auf einmal werden häufiger. Ab Level 50 ist jedes
 zehnte Level ein **Surge**: Ein Banner zeigt 0,9 s lang SURGE, dann kommen vier Modifier gleichzeitig (höchstens eine
 Regel), aber nur mit der Grundzeit, ohne Extrazeit pro Modifier.
@@ -65,7 +76,7 @@ startet direkt das Spiel. Taucht ein Modifier zum ersten Mal auf, pausiert das L
 erklärt ihn; **GOT IT** (oder Enter) spielt weiter. Jede Karte erscheint nur einmal.
 
 Unter **STATS** im Menü stehen Spiele, Hi-Score, durchschnittliches Level (auf dem man verloren hat), durchschnittliche
-Reaktionszeit (nur Level mit TRUE/FALSE-Antwort) und Spielzeit ohne Pausen, dazu 17 Awards: Level 10, 25, 50 und 100
+Reaktionszeit (nur Level mit TRUE/FALSE-Antwort, bei Wait ab NOW) und Spielzeit ohne Pausen, dazu 26 Awards: Level 10, 25, 50 und 100
 schaffen, 10 Surges und je 10 Level mit einem Modifier (alle Spiegel zählen zusammen), jeweils über alle Spiele. Badges antippen zeigt Bedingung und
 Fortschritt. Ein neuer Award erscheint sofort kurz unter dem Timer und wird auf dem Game-Over-Screen aufgelistet.
 
@@ -115,7 +126,8 @@ Das Spiel ist mit Svelte 5 und TypeScript gebaut (`src/`):
   (`intros.ts`) und Progression (`progression.ts`: Einführungsreihenfolge, Auswahl pro Level, Surges, Zeitlimit). Alle
   Übergänge sind Funktionen `(Zustand, Eingabe, Zeit, Zufall) → neuer Zustand` und damit direkt testbar.
 - `src/ui/` – Svelte-Komponenten für die einzelnen Screens; Modifier werden per CSS (Transform, Filter) dargestellt,
-  Bewegung, Zittern, Pulsieren und Mischen berechnet `effects.ts` aus der Zeit seit Levelbeginn.
+  Bewegung, Zittern, Pulsieren, Mischen, Einfliegen, Schriftwechsel und Negativ berechnet `effects.ts` aus der Zeit
+  seit Levelbeginn. Die 28 Schriften für Font Flip (`fonts.ts`) lädt das Spiel nach dem Start im Hintergrund.
   `sound.ts` spielt die Sounds über die Web Audio API ab, `synth.ts` beschreibt, wie jeder Sound erzeugt wird.
 - `src/App.svelte` – verbindet beides: Spielschleife (`requestAnimationFrame`), Tastatur und Touch, Pause beim
   Verlassen des Tabs, Highscore, Einstellungen, Stats und Tutorial-Fortschritt speichern, Sounds zu Spielereignissen.

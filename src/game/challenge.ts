@@ -11,9 +11,13 @@ export type ExpectedInput = Answer | "none" | "spam";
 // How many times faster than normal a group's animation plays; groups that are missing play at normal speed
 export type Tempo = Readonly<Partial<Record<ModifierGroupId, number>>>;
 
-export interface Challenge {
+// A color word in an ink, true when the word names its ink
+export interface ColorWord {
     readonly word: Color;
     readonly color: Color;
+}
+
+export interface Challenge extends ColorWord {
     readonly modifiers: ReadonlySet<ModifierId>;
     readonly expected: ExpectedInput;
     // Only set with the background modifier: any color but the ink, so it says nothing about the answer
@@ -23,6 +27,10 @@ export interface Challenge {
     // Between 0 and 1, makes moving, shaking, pulsing and scrambling look different on every level
     readonly seed: number;
     readonly tempo: Tempo;
+    // Only set with the two words modifier: the lower word, the upper one is `word` in `color`
+    readonly second: ColorWord | null;
+    // The word's size relative to normal, below 1 only with the zoom modifier
+    readonly size: number;
 }
 
 export function createChallenge(
@@ -30,10 +38,15 @@ export function createChallenge(
     level: number,
     rng: Rng,
     tempo: Tempo = {},
+    size = 1,
 ): Challenge {
     const color = randomColor(rng);
     const matches = rng() >= 0.5;
-    const word = matches ? color : randomColor(rng, color);
+    // With two words, TRUE means both words are true or both are false: the upper word's truth is drawn, the lower
+    // one follows from the answer
+    const twoWords = groups.includes("twoWords");
+    const firstTrue = twoWords ? rng() < 0.5 : matches;
+    const word = firstTrue ? color : randomColor(rng, color);
     const modifiers: ReadonlySet<ModifierId> = new Set(
         groups.map((id) => {
             const { variants } = groupById(id);
@@ -56,7 +69,14 @@ export function createChallenge(
         rotationDeg: modifiers.has("rotation") ? rotationDeg(level) : 0,
         seed: rng(),
         tempo,
+        second: twoWords ? colorWord(matches ? firstTrue : !firstTrue, rng) : null,
+        size: modifiers.has("zoom") ? size : 1,
     };
+}
+
+function colorWord(truthful: boolean, rng: Rng): ColorWord {
+    const color = randomColor(rng);
+    return { word: truthful ? color : randomColor(rng, color), color };
 }
 
 export function expectedInput(answer: Answer, modifiers: ReadonlySet<ModifierId>): ExpectedInput {

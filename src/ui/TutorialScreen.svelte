@@ -44,6 +44,8 @@
                   rotationDeg: 0,
                   seed: 0,
                   tempo: {},
+                  second: null,
+                  size: 1,
               }
             : null,
     );
@@ -91,7 +93,7 @@
     </div>
     <button class="skip" onclick={onskip}>SKIP</button>
 {:else if step?.kind === "try" && practice && challenge && expected}
-    <ChallengeScreen {challenge} elapsed={0} {width} {height} {colorblind} />
+    <ChallengeScreen {challenge} elapsed={0} timeLimit={Infinity} {width} {height} {colorblind} />
     <div class="half" class:right={expected === "false"} aria-hidden="true"></div>
     <div class="divider" aria-hidden="true"></div>
     <div class="practice-top">TRY IT · {step.practice + 1}/{PRACTICE_WORDS.length}</div>

@@ -13,11 +13,18 @@ import {
 } from "./lossAnimation.ts";
 
 // RGBA image with the given pixels drawn
-function image(width: number, height: number, drawn: (x: number, y: number) => boolean): Uint8ClampedArray {
+// Pixels for which `drawn` gives a color are opaque in that color
+function image(
+    width: number,
+    height: number,
+    drawn: (x: number, y: number) => boolean | readonly [number, number, number],
+): Uint8ClampedArray {
     const rgba = new Uint8ClampedArray(width * height * 4);
     for (let y = 0; y < height; y++) {
         for (let x = 0; x < width; x++) {
-            if (drawn(x, y)) rgba[(y * width + x) * 4 + 3] = 255;
+            const color = drawn(x, y);
+            if (color === false) continue;
+            rgba.set([...(color === true ? [0, 0, 0] : color), 255], (y * width + x) * 4);
         }
     }
     return rgba;
@@ -76,6 +83,15 @@ describe("word blocks", () => {
         expect(blocks.every((b) => b.x >= 20 && b.x < 30 && b.y >= 8 && b.y < 12)).toBe(true);
     });
 
+    it("take the color of the word where they are cut from", () => {
+        const rgba = image(40, 20, (x, y) => (y >= 8 && y < 12 ? (x < 20 ? [255, 59, 78] : [34, 228, 255]) : false));
+        const blocks = wordBlocks(rgba, 40, 20, 2, () => 0.5);
+
+        expect(blocks).toHaveLength(40);
+        expect(blocks.filter((b) => b.x < 20).every((b) => b.color === "rgb(255, 59, 78)")).toBe(true);
+        expect(blocks.filter((b) => b.x >= 20).every((b) => b.color === "rgb(34, 228, 255)")).toBe(true);
+    });
+
     it("fly apart from the middle of the word and jump up", () => {
         const rgba = image(40, 20, (x, y) => x >= 10 && x < 30 && y >= 8 && y < 10);
         const blocks = wordBlocks(rgba, 40, 20, 2, () => 0.5);
@@ -88,7 +104,7 @@ describe("word blocks", () => {
     });
 
     it("stay in place until the word shatters, then fall and fade", () => {
-        const block = { x: 50, y: 100, vx: 0, vy: -200 };
+        const block = { x: 50, y: 100, vx: 0, vy: -200, color: "#fff" };
 
         expect(blockAt(block, 0, 800)).toEqual({ x: 50, y: 100 });
         expect(blockAt(block, SHATTER_AT_MS + 1000, 800).y).toBeGreaterThan(100);

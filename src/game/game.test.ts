@@ -3,6 +3,7 @@ import type { ExpectedInput } from "./challenge.ts";
 import {
     answer,
     confirm,
+    DOUBLE_TAPS,
     GAME_OVER_LOCK_MS,
     type GameState,
     MENU,
@@ -17,8 +18,9 @@ import {
     type SurgeBannerState,
     tick,
     toMenu,
+    WAIT_SHARE,
 } from "./game.ts";
-import { groupsOf, MODIFIER_GROUPS } from "./modifiers.ts";
+import { groupsOf, MODIFIER_GROUPS, type ModifierId } from "./modifiers.ts";
 import {
     introLevel,
     NO_CLICK_TIME_SHARE,
@@ -26,28 +28,36 @@ import {
     SURGE_GROUP_COUNT,
     tempoFor,
     timeLimitFor,
+    ZOOM_SIZE,
 } from "./progression.ts";
 
 const rng = Math.random;
 const CURRICULUM = MODIFIER_GROUPS.map((group) => group.id);
 
-function playing(expected: ExpectedInput, level = 1): PlayingState {
+function playing(
+    expected: ExpectedInput,
+    level = 1,
+    modifiers: readonly ModifierId[] = expected === "spam" ? ["spam"] : [],
+): PlayingState {
     return {
         phase: "playing",
         level,
         challenge: {
             word: "red",
             color: "red",
-            modifiers: new Set(expected === "spam" ? ["spam"] : []),
+            modifiers: new Set(modifiers),
             expected,
             background: null,
             rotationDeg: 0,
             seed: 0,
             tempo: {},
+            second: null,
+            size: 1,
         },
         startedAt: 0,
         timeLimit: timeLimitFor(level, 0, false),
         spamCount: 0,
+        taps: 0,
         curriculum: CURRICULUM,
     };
 }
@@ -128,10 +138,11 @@ describe("game", () => {
     it("gives a no-click level only part of the time limit", () => {
         let noClickLevels = 0;
         for (let run = 0; run < 300; run++) {
-            const next = answer(playing("true", 40), "true", 100, rng);
-            if (next.phase !== "playing") throw new Error("Level 41 did not start");
+            // Level 42 introduces no group
+            const next = answer(playing("true", 41), "true", 100, rng);
+            if (next.phase !== "playing") throw new Error("Level 42 did not start");
 
-            const limit = timeLimitFor(41, groupsOf(next.challenge.modifiers).length, false);
+            const limit = timeLimitFor(42, groupsOf(next.challenge.modifiers).length, false);
             if (next.challenge.expected === "none") {
                 noClickLevels++;
                 expect(next.timeLimit).toBe(Math.round(limit * NO_CLICK_TIME_SHARE));
@@ -145,6 +156,44 @@ describe("game", () => {
     it("ends the game when anything is pressed during a no-click challenge", () => {
         expect(answer(playing("none"), "true", 100, rng).phase).toBe("gameOver");
         expect(answer(playing("none"), "false", 100, rng).phase).toBe("gameOver");
+    });
+
+    it("ends a WAIT level on a press before NOW and takes the answer after it", () => {
+        const state = playing("true", 1, ["wait"]);
+        const now = state.timeLimit * WAIT_SHARE;
+
+        expect(answer(state, "true", now - 1, rng).phase).toBe("gameOver");
+        expect(levelOf(answer(state, "true", now, rng))).toBe(2);
+        expect(answer(state, "false", now, rng).phase).toBe("gameOver");
+    });
+
+    it("needs two right taps on a DOUBLE TAP level, however far apart", () => {
+        const state = playing("true", 1, ["doubleTap"]);
+        const first = answer(state, "true", 10, rng);
+
+        expect(DOUBLE_TAPS).toBe(2);
+        expect(first).toMatchObject({ phase: "playing", level: 1, taps: 1, startedAt: 0 });
+        expect(levelOf(answer(first, "true", state.timeLimit, rng))).toBe(2);
+        expect(answer(first, "false", 20, rng).phase).toBe("gameOver");
+        expect(answer(state, "false", 10, rng).phase).toBe("gameOver");
+        expect(tick(first, state.timeLimit + 1, rng).phase).toBe("gameOver");
+    });
+
+    it("shrinks the zoomed word with every level after its introduction", () => {
+        const intro = introLevel(CURRICULUM, "zoom");
+        const sizes: number[] = [];
+        for (const level of [intro - 1, intro, intro + 1]) {
+            for (let run = 0; run < 200; run++) {
+                const next = answer({ ...playing("true", level - 1), curriculum: CURRICULUM }, "true", 0, rng);
+                if (next.phase === "playing" && next.challenge.modifiers.has("zoom")) {
+                    sizes.push(next.challenge.size);
+                    break;
+                }
+            }
+        }
+
+        expect(sizes[0]).toBe(ZOOM_SIZE);
+        expect(sizes[1]).toBeLessThan(ZOOM_SIZE);
     });
 
     it("needs repeated presses for a spam challenge and pauses before the next level", () => {

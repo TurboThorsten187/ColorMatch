@@ -24,6 +24,8 @@ import type { Rng } from "./random.ts";
 
 const CURRICULUM: Curriculum = MODIFIER_GROUPS.map((group) => group.id);
 const LAST_INTRO = FIRST_INTRO_LEVEL + INTRO_EVERY * (CURRICULUM.length - 1);
+// Plays past the last introduction
+const FULL_RUN = LAST_INTRO + 15;
 
 // Seeded generator, so the statistical tests below always see the same numbers
 function seeded(seed: number): Rng {
@@ -62,6 +64,15 @@ describe("curriculum", () => {
         expect(orders.size).toBeGreaterThan(1);
     });
 
+    it("moves an introduction due on a surge level to the level after it", () => {
+        const index = (SURGE_FIRST_LEVEL - FIRST_INTRO_LEVEL) / INTRO_EVERY;
+
+        expect(introducedAt(CURRICULUM, SURGE_FIRST_LEVEL)).toBeNull();
+        expect(introducedAt(CURRICULUM, SURGE_FIRST_LEVEL + 1)).toBe(CURRICULUM[index]);
+        expect(introLevel(CURRICULUM, CURRICULUM[index])).toBe(SURGE_FIRST_LEVEL + 1);
+        expect(introLevel(CURRICULUM, CURRICULUM[index + 1])).toBe(SURGE_FIRST_LEVEL + INTRO_EVERY);
+    });
+
     it("introduces a new group every few levels from level 5", () => {
         expect(introLevel(CURRICULUM, CURRICULUM[0])).toBe(FIRST_INTRO_LEVEL);
         expect(introducedAt(CURRICULUM, FIRST_INTRO_LEVEL)).toBe(CURRICULUM[0]);
@@ -78,7 +89,7 @@ describe("pickGroups", () => {
         const rng = seeded(3);
         for (let game = 0; game < 200; game++) {
             const curriculum = createCurriculum(rng);
-            const levels = run(curriculum, rng);
+            const levels = run(curriculum, rng, FULL_RUN);
 
             levels.slice(0, FIRST_INTRO_LEVEL - 1).forEach((groups) => expect(groups).toEqual([]));
             for (const id of curriculum) {
@@ -120,11 +131,13 @@ describe("pickGroups", () => {
     it("mostly brings the new group back with a known one, once levels hold two groups", () => {
         const rng = seeded(6);
         let practiced = 0;
-        const games = 400;
-        for (let game = 0; game < games; game++) {
+        let games = 0;
+        while (games < 400) {
             const curriculum = createCurriculum(rng);
             // Introduced on level 14, so level 15 is the first practice level that may hold two groups
             const newest = curriculum[3];
+            if (groupById(newest).alone) continue;
+            games++;
             const groups = pickGroups(introLevel(curriculum, newest) + 1, curriculum, [newest], rng);
             if (groups.includes(newest) && groups.length === 2) practiced++;
         }
@@ -132,12 +145,21 @@ describe("pickGroups", () => {
         expect(practiced / games).toBeGreaterThan(0.6);
     });
 
+    it("never brings a group that comes alone together with another one", () => {
+        const rng = seeded(10);
+        for (let game = 0; game < 200; game++) {
+            run(createCurriculum(rng), rng, FULL_RUN).forEach((groups) => {
+                if (groups.some((id) => groupById(id).alone)) expect(groups).toHaveLength(1);
+            });
+        }
+    });
+
     it("mixes in more groups and fewer plain levels later on", () => {
         const rng = seeded(7);
         const early = { groups: 0, plain: 0, levels: 0 };
         const late = { groups: 0, plain: 0, levels: 0 };
         for (let game = 0; game < 300; game++) {
-            run(createCurriculum(rng), rng).forEach((groups, index) => {
+            run(createCurriculum(rng), rng, FULL_RUN).forEach((groups, index) => {
                 const level = index + 1;
                 const band = level >= 8 && level <= 14 ? early : level > LAST_INTRO ? late : null;
                 if (!band) return;
