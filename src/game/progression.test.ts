@@ -15,7 +15,8 @@ import {
     pickGroups,
     plainChance,
     SURGE_FIRST_LEVEL,
-    SURGE_GROUP_COUNT,
+    SURGE_TIME_MS,
+    surgeGroupCount,
     TEMPO_CATCH_UP_LEVELS,
     tempoFor,
     timeLimitFor,
@@ -106,7 +107,7 @@ describe("pickGroups", () => {
             run(createCurriculum(rng), rng, 80).forEach((groups, index) => {
                 const level = index + 1;
                 expect(groups.length).toBeLessThanOrEqual(
-                    isSurgeLevel(level) ? SURGE_GROUP_COUNT : maxGroupCount(level),
+                    isSurgeLevel(level) ? surgeGroupCount(level) : maxGroupCount(level),
                 );
                 expect(groups.filter((id) => groupById(id).rule).length).toBeLessThanOrEqual(1);
                 for (const a of groups) {
@@ -211,7 +212,7 @@ describe("pickGroups", () => {
         expect(plainChance(120)).toBe(0);
     });
 
-    it("stacks four groups on a surge, every 10 levels from level 50", () => {
+    it("stacks five groups on the first surge and one more on each after it, every 10 levels from level 50", () => {
         expect([40, 49, 50, 51, 55, 60, 70, 100].map(isSurgeLevel)).toEqual([
             false,
             false,
@@ -223,11 +224,24 @@ describe("pickGroups", () => {
             true,
         ]);
 
+        expect([SURGE_FIRST_LEVEL, 60, 90, 150].map(surgeGroupCount)).toEqual([5, 6, 9, 15]);
+
         const rng = seeded(9);
         for (let game = 0; game < 300; game++) {
             const curriculum = createCurriculum(rng);
             for (const level of [SURGE_FIRST_LEVEL, 60, 90]) {
-                expect(pickGroups(level, curriculum, [], rng)).toHaveLength(SURGE_GROUP_COUNT);
+                expect(pickGroups(level, curriculum, [], rng)).toHaveLength(surgeGroupCount(level));
+            }
+        }
+    });
+
+    it("stacks as many groups as go together once a surge asks for more", () => {
+        const rng = seeded(10);
+        for (let game = 0; game < 300; game++) {
+            const groups = pickGroups(200, CURRICULUM, [], rng);
+            expect(groups.length).toBeLessThan(surgeGroupCount(200));
+            for (const id of CURRICULUM.filter((other) => !groups.includes(other))) {
+                expect(groups.some((other) => conflicts(id, other))).toBe(true);
             }
         }
     });
@@ -238,25 +252,28 @@ describe("timeLimitFor", () => {
         expect(timeLimitFor(1, 0, false)).toBe(3000);
         expect(timeLimitFor(10, 0, false)).toBeLessThan(timeLimitFor(9, 0, false));
         expect(timeLimitFor(30, 0, false)).toBe(1419);
-        for (let level = 1; level < 150; level++) {
-            expect(timeLimitFor(level + 1, 0, false)).toBeLessThanOrEqual(timeLimitFor(level, 0, false));
+        // Surge levels have their own fixed time
+        const levels = Array.from({ length: 150 }, (_, index) => index + 1).filter((level) => !isSurgeLevel(level));
+        for (let index = 1; index < levels.length; index++) {
+            expect(timeLimitFor(levels[index], 0, false)).toBeLessThanOrEqual(
+                timeLimitFor(levels[index - 1], 0, false),
+            );
         }
-        expect(timeLimitFor(80, 0, false)).toBe(1006);
-        expect(timeLimitFor(200, 0, false)).toBe(1000);
+        expect(timeLimitFor(81, 0, false)).toBe(1005);
+        expect(timeLimitFor(201, 0, false)).toBe(1000);
     });
 
-    it("gives a surge no extra time for its groups", () => {
-        expect(timeLimitFor(SURGE_FIRST_LEVEL, SURGE_GROUP_COUNT, false)).toBe(
-            timeLimitFor(SURGE_FIRST_LEVEL, 0, false),
-        );
+    it("gives a surge its fixed time, however many groups it stacks", () => {
+        expect(timeLimitFor(SURGE_FIRST_LEVEL, surgeGroupCount(SURGE_FIRST_LEVEL), false)).toBe(SURGE_TIME_MS);
+        expect(timeLimitFor(120, surgeGroupCount(120), false)).toBe(SURGE_TIME_MS);
     });
 
-    it("gives extra time for an introduction and for every additional group", () => {
-        const base = timeLimitFor(20, 1, false);
+    it("gives extra time for an introduction and for every group, the first one too", () => {
+        const base = timeLimitFor(20, 0, false);
 
-        expect(timeLimitFor(20, 1, true)).toBe(base + INTRO_BONUS_MS);
-        expect(timeLimitFor(20, 3, false)).toBe(base + 2 * EXTRA_GROUP_BONUS_MS);
-        expect(timeLimitFor(20, 0, false)).toBe(base);
+        expect(timeLimitFor(20, 1, false)).toBe(base + EXTRA_GROUP_BONUS_MS);
+        expect(timeLimitFor(20, 1, true)).toBe(base + INTRO_BONUS_MS + EXTRA_GROUP_BONUS_MS);
+        expect(timeLimitFor(20, 3, false)).toBe(base + 3 * EXTRA_GROUP_BONUS_MS);
     });
 });
 

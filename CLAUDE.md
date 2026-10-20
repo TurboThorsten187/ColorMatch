@@ -64,7 +64,9 @@ files.
   has at most one `rule` group. With Symmetry the mirror group only turns the word upside down.
   `src/game/progression.ts` holds the per-game curriculum (`PlayingState.curriculum`: a new group every 3 levels from
   level 5, alone on its intro level; an intro due on a surge level moves to the level after it), the per-level pick, the late game ramp from level 40, surge levels (`isSurgeLevel`,
-  announced by the `surgeBanner` phase), the time limit (Don't Click levels get `NO_CLICK_TIME_SHARE` of it) and the tempo of animated modifiers
+  announced by the `surgeBanner` phase; `surgeGroupCount` grows by one per surge, the time is a fixed
+  `SURGE_TIME_MS`), the time limit (every group adds `EXTRA_GROUP_BONUS_MS`, Don't Click levels get
+  `NO_CLICK_TIME_SHARE` of it) and the tempo of animated modifiers
   (`tempoFor`, stored in `Challenge.tempo`, applied in `ChallengeScreen` and `effects.ts`). A new modifier needs a
   group, an intro card, an award and, if animated, a function in `src/ui/effects.ts` driven by the level's `seed`, the
   elapsed time and its tempo.

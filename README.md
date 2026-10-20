@@ -56,11 +56,12 @@ die schweren; innerhalb einer Stufe wird die Reihenfolge jede Runde neu gemischt
 Nach dem letzten Druck bei Spam bleibt das ganz erleuchtete SPAM! noch 0,12 s stehen, dann zeigt STOP SPAMMING! 0,5 s
 lang, dass weiteres Tippen nichts bringt.
 
-Ein neuer Modifier kommt in seinem Einführungslevel allein und mit 1 s Extrazeit; fällt die Einführung auf ein
+Ein neuer Modifier kommt in seinem Einführungslevel allein und mit 1 s Extrazeit (dazu die 0,3 s, die jeder
+Modifier bringt); fällt die Einführung auf ein
 Surge-Level, kommt sie ein Level später. Sonst wird gemischt: bis Level 14
 höchstens ein Modifier gleichzeitig, bis Level 29 zwei, danach drei, und frisch eingeführte kommen häufiger. Ab Level
 15 kommt ein neuer Modifier im Level nach seiner Einführung meist gleich noch einmal, zusammen mit einem bekannten.
-Jeder weitere Modifier in einem Level bringt 0,3 s Extrazeit. Bei Don't Click läuft nur 60 % der Zeit, damit man
+Jeder Modifier in einem Level bringt 0,3 s Extrazeit, auch schon der erste. Bei Don't Click läuft nur 60 % der Zeit, damit man
 nicht so lange warten muss. Rotation, Pulsing, Shaky, Moving, Fade, Scrambled und Font Flip
 werden mit dem Level schneller, so wie die Zeit pro Level schrumpft (gut doppelt so schnell bei Level 40, 2,5-mal
 ab Level 80). Jeder
@@ -76,8 +77,9 @@ darunter), gedreht, bewegt und unscharf, blenden mit aus und ihre Buchstaben wer
 
 Nach der letzten Einführung (Level 65) wird es weiter härter: Von Level 40 bis 80 werden Level ohne Modifier immer
 seltener und verschwinden dann ganz, und zwei oder drei Modifier auf einmal werden häufiger. Ab Level 50 ist jedes
-zehnte Level ein **Surge**: Ein Banner zeigt 0,9 s lang SURGE, dann kommen vier Modifier gleichzeitig (höchstens eine
-Regel), aber nur mit der Grundzeit, ohne Extrazeit pro Modifier.
+zehnte Level ein **Surge**: Ein Banner zeigt 0,9 s lang SURGE, dann kommen fünf Modifier gleichzeitig, bei jedem
+weiteren Surge einer mehr, soweit sie zusammenpassen (höchstens eine Regel). Ein Surge dauert immer 1,3 s, ohne
+Extrazeit pro Modifier.
 
 Beim allerersten Start erklärt ein kurzes Tutorial das Spiel: drei Karten, nach jeder wird sofort geübt (vier Wörter
 ohne Zeitdruck, die richtige Seite blinkt, ein falsches Wort kommt nochmal). **SKIP** oder Esc überspringt es, danach

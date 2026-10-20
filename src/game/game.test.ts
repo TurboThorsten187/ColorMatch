@@ -27,7 +27,8 @@ import {
     introLevel,
     NO_CLICK_TIME_SHARE,
     SURGE_FIRST_LEVEL,
-    SURGE_GROUP_COUNT,
+    SURGE_TIME_MS,
+    surgeGroupCount,
     tempoFor,
     timeLimitFor,
     ZOOM_SIZE,
@@ -289,19 +290,19 @@ describe("surge", () => {
         expect(tick(spamPause, 100, rng)).toEqual(banner);
     });
 
-    it("starts the surge level when the banner is gone, with its stacked groups and the base time only", () => {
+    it("starts the surge level when the banner is gone, with its stacked groups and its fixed time", () => {
         expect(tick(banner, banner.resumeAt - 1, rng)).toBe(banner);
 
         const surge = tick(banner, banner.resumeAt, rng);
         if (surge.phase !== "playing") throw new Error("Surge did not start");
-        // One of the stacked groups may be Don't Click, which shortens the base time like on any other level
-        const baseTime = timeLimitFor(SURGE_FIRST_LEVEL, 0, false);
+        // One of the stacked groups may be Don't Click, which shortens the time like on any other level
         expect(surge).toMatchObject({
             level: SURGE_FIRST_LEVEL,
             startedAt: banner.resumeAt,
-            timeLimit: surge.challenge.expected === "none" ? Math.round(baseTime * NO_CLICK_TIME_SHARE) : baseTime,
+            timeLimit:
+                surge.challenge.expected === "none" ? Math.round(SURGE_TIME_MS * NO_CLICK_TIME_SHARE) : SURGE_TIME_MS,
         });
-        expect(groupsOf(surge.challenge.modifiers)).toHaveLength(SURGE_GROUP_COUNT);
+        expect(groupsOf(surge.challenge.modifiers)).toHaveLength(surgeGroupCount(SURGE_FIRST_LEVEL));
     });
 
     it("ignores answers during the banner", () => {
