@@ -33,10 +33,12 @@ const LATE_UNTIL_LEVEL = 80;
 const LATE_MIN_DROP_MS = 200;
 const LATE_COUNT_WEIGHTS = [0.2, 0.4, 0.4];
 
-// Every few levels a surge stacks more groups than any other level, announced by a banner
+// Every few levels a surge stacks more groups than any other level, announced by a banner: five on the first, one
+// more on each after it, as many as go together. It always lasts the same time, however many groups it stacks.
 export const SURGE_FIRST_LEVEL = 50;
 export const SURGE_EVERY = 10;
-export const SURGE_GROUP_COUNT = 4;
+export const SURGE_FIRST_GROUP_COUNT = 5;
+export const SURGE_TIME_MS = 1300;
 
 // The zoomed word starts at a fifth of the normal size and shrinks with every level after its introduction, down to
 // a tenth
@@ -78,17 +80,20 @@ export function isSurgeLevel(level: number): boolean {
     return level >= SURGE_FIRST_LEVEL && (level - SURGE_FIRST_LEVEL) % SURGE_EVERY === 0;
 }
 
+// How many groups a surge level asks for; fewer come when no more known groups go together
+export function surgeGroupCount(level: number): number {
+    return SURGE_FIRST_GROUP_COUNT + Math.floor((level - SURGE_FIRST_LEVEL) / SURGE_EVERY);
+}
+
 // Outside of introductions and practice, a level stays free of modifiers this often
 export function plainChance(level: number): number {
     return Math.max(0.15, 0.45 - 0.01 * (level - FIRST_INTRO_LEVEL)) * (1 - lateShare(level));
 }
 
-// A surge gets no extra time for its many groups
+// Every group brings extra time, the first one too; a surge has its fixed time instead
 export function timeLimitFor(level: number, groupCount: number, intro: boolean): number {
-    const bonus = isSurgeLevel(level)
-        ? 0
-        : (intro ? INTRO_BONUS_MS : 0) + EXTRA_GROUP_BONUS_MS * Math.max(0, groupCount - 1);
-    return Math.round(baseLimit(level) + bonus);
+    if (isSurgeLevel(level)) return SURGE_TIME_MS;
+    return Math.round(baseLimit(level) + (intro ? INTRO_BONUS_MS : 0) + EXTRA_GROUP_BONUS_MS * groupCount);
 }
 
 // Animated modifiers (spin, pulse, shake, movement, fade, scramble) speed up as much as the time limit shrinks:
@@ -133,7 +138,7 @@ export function pickGroups(
     const known = curriculum.filter((id) => introLevel(curriculum, id) < level);
     const newest = known.at(-1);
     if (!newest) return [];
-    if (isSurgeLevel(level)) return pick(known, SURGE_GROUP_COUNT, level, curriculum, rng, []);
+    if (isSurgeLevel(level)) return pick(known, surgeGroupCount(level), level, curriculum, rng, []);
 
     const practice = level === introLevel(curriculum, newest) + 1 && maxGroupCount(level) >= 2;
     for (let attempt = 0; attempt < PICK_ATTEMPTS; attempt++) {
