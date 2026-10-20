@@ -6,14 +6,19 @@
         flash: Answer | null;
         // The tutorial points at the right answer
         highlight?: Answer | null;
+        // DOUBLE TAP: double arrows as a reminder to tap twice
+        double?: boolean;
     }
 
-    let { flash, highlight = null }: Props = $props();
+    let { flash, highlight = null, double = false }: Props = $props();
+
+    const trueLabel = $derived(double ? "◄◄ TRUE" : "◄ TRUE");
+    const falseLabel = $derived(double ? "FALSE ►►" : "FALSE ►");
 </script>
 
 <div class="hints" aria-hidden="true">
-    <span class="hint" class:flash={flash === "true"} class:highlight={highlight === "true"}>◄ TRUE</span>
-    <span class="hint" class:flash={flash === "false"} class:highlight={highlight === "false"}>FALSE ►</span>
+    <span class="hint" class:flash={flash === "true"} class:highlight={highlight === "true"}>{trueLabel}</span>
+    <span class="hint" class:flash={flash === "false"} class:highlight={highlight === "false"}>{falseLabel}</span>
 </div>
 
 <style>

@@ -1,6 +1,6 @@
 import { mount } from "svelte";
 import App from "./App.svelte";
-import { loadFonts } from "./ui/fonts.ts";
+import { loadFlipFonts, loadFonts } from "./ui/fonts.ts";
 import { listenForInstallOffer } from "./ui/install.svelte.ts";
 import "./app.css";
 
@@ -12,13 +12,16 @@ if (!target) {
 listenForInstallOffer();
 await loadFonts();
 mount(App, { target });
+const flipFonts = loadFlipFonts();
 
 // Offline support (public/sw.js): the worker keeps exactly the files this page loaded
 if (import.meta.env.PROD && "serviceWorker" in navigator) {
     navigator.serviceWorker
         .register("./sw.js")
         .then(() => navigator.serviceWorker.ready)
-        .then((registration) => {
+        // The FONT FLIP fonts belong to the loaded files, so they are there offline too
+        .then(async (registration) => {
+            await flipFonts;
             const loaded = performance.getEntriesByType("resource").map((entry) => entry.name);
             registration.active?.postMessage({ loaded });
         })

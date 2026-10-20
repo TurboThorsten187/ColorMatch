@@ -10,6 +10,7 @@ import {
     pickGroups,
     tempoFor,
     timeLimitFor,
+    zoomSizeFor,
 } from "./progression.ts";
 import type { Rng } from "./random.ts";
 
@@ -17,6 +18,10 @@ export const SPAM_PRESSES_NEEDED = 5;
 // Shown instead of a color word, one character lights up per press
 export const SPAM_WORD = "SPAM!";
 export const SPAM_PAUSE_MS = 500;
+// A WAIT level shows WAIT for this share of its time limit, then NOW; a press before NOW is a miss
+export const WAIT_SHARE = 0.5;
+// Right taps a DOUBLE TAP level needs, with no limit on the time between them
+export const DOUBLE_TAPS = 2;
 export const SURGE_BANNER_MS = 900;
 // Frantic presses right after losing must not skip the result: RETRY, MENU and Enter wait this long, through the
 // loss animation until the buttons have appeared
@@ -29,6 +34,8 @@ export type PlayingState = {
     readonly startedAt: number;
     readonly timeLimit: number;
     readonly spamCount: number;
+    // Right taps so far in a DOUBLE TAP level
+    readonly taps: number;
     readonly curriculum: Curriculum;
 };
 
@@ -77,8 +84,8 @@ export function answer(state: GameState, input: Answer, now: number, rng: Rng): 
     // The press came after the time ran out, only the next frame's tick had not noticed it yet
     if (now - state.startedAt > state.timeLimit) return timeUp(state, now, rng);
 
-    const { expected } = state.challenge;
-    if (expected === "none") return gameOver(state.level, now);
+    const { expected, modifiers } = state.challenge;
+    if (expected === "none" || isTooEarly(state, now)) return gameOver(state.level, now);
 
     if (expected === "spam") {
         const spamCount = state.spamCount + 1;
@@ -93,7 +100,14 @@ export function answer(state: GameState, input: Answer, now: number, rng: Rng): 
             : { ...state, spamCount };
     }
 
-    return input === expected ? nextLevel(state, now, rng) : gameOver(state.level, now);
+    if (input !== expected) return gameOver(state.level, now);
+    const taps = state.taps + 1;
+    return modifiers.has("doubleTap") && taps < DOUBLE_TAPS ? { ...state, taps } : nextLevel(state, now, rng);
+}
+
+// A press on a WAIT level before WAIT has turned into NOW
+export function isTooEarly(state: PlayingState, now: number): boolean {
+    return state.challenge.modifiers.has("wait") && now - state.startedAt < state.timeLimit * WAIT_SHARE;
 }
 
 // The "go on" input outside of a running level: start, continue, or retry after game over
@@ -181,7 +195,8 @@ function playLevel(
 ): PlayingState {
     const groups = pickGroups(level, curriculum, previous, rng);
     const tempo = Object.fromEntries(groups.map((id) => [id, tempoFor(level, introLevel(curriculum, id))]));
-    const challenge = createChallenge(groups, level, rng, tempo);
+    const size = groups.includes("zoom") ? zoomSizeFor(level, introLevel(curriculum, "zoom")) : 1;
+    const challenge = createChallenge(groups, level, rng, tempo, size);
     const timeLimit = timeLimitFor(level, groups.length, introducedAt(curriculum, level) !== null);
     return {
         phase: "playing",
@@ -190,6 +205,7 @@ function playLevel(
         startedAt: now,
         timeLimit: challenge.expected === "none" ? Math.round(timeLimit * NO_CLICK_TIME_SHARE) : timeLimit,
         spamCount: 0,
+        taps: 0,
         curriculum,
     };
 }

@@ -12,6 +12,8 @@
         remaining: number;
         // Part of the screen's layout instead of lying on top of it, for screens that place content below it
         inline?: boolean;
+        // COUNT UP: the timer shows the time that has passed instead, it fills up from the middle
+        countUp?: boolean;
     } & (
         | { highscore: number; paused?: false }
         // A paused level shows PAUSED instead of the highscore and a dimmed timer
@@ -24,9 +26,11 @@
     const CENTER = (SEGMENTS.length - 1) / 2;
 
     const share = $derived(Math.min(1, Math.max(0, props.remaining)));
+    // Counting up plays the normal timer backwards: red in the middle at first, turning green as it fills
+    const shown = $derived(props.countUp ? 1 - share : share);
     // The segments go out in pairs from both ends towards the middle
-    const litPairs = $derived(Math.ceil((share * SEGMENTS.length) / 2));
-    const color = $derived(share > 0.5 ? COLOR_CSS.green : share > LOW_TIME_SHARE ? COLOR_CSS.yellow : COLOR_CSS.red);
+    const litPairs = $derived(Math.ceil((shown * SEGMENTS.length) / 2));
+    const color = $derived(shown > 0.5 ? COLOR_CSS.green : shown > LOW_TIME_SHARE ? COLOR_CSS.yellow : COLOR_CSS.red);
 </script>
 
 <div class="bar" class:inline={props.inline} class:paused={props.paused}>

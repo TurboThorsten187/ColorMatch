@@ -6,12 +6,14 @@
         confirm,
         type GameState,
         isGameOverLocked,
+        isTooEarly,
         MENU,
         pause,
         type PlayingState,
         resume,
         tick,
         toMenu,
+        WAIT_SHARE,
     } from "./game/game.ts";
     import { browserStorage, clearHighscore, loadHighscore, saveHighscore } from "./game/highscore.ts";
     import { introById, type IntroId, introsForLevel } from "./game/intros.ts";
@@ -43,6 +45,7 @@
     } from "./game/tutorial.ts";
     import AwardToast from "./ui/AwardToast.svelte";
     import ChallengeScreen from "./ui/ChallengeScreen.svelte";
+    import { isNegative } from "./ui/effects.ts";
     import FeedbackFlash, { type FeedbackKind } from "./ui/FeedbackFlash.svelte";
     import GameOverScreen from "./ui/GameOverScreen.svelte";
     import { canInstall, install } from "./ui/install.svelte.ts";
@@ -139,6 +142,12 @@
 
     const flash = $derived(lastAnswer && now - lastAnswer.at < FLASH_MS ? lastAnswer.answer : null);
     const showLoss = $derived(game.phase === "gameOver" && loss !== null && now - loss.at < LOSS_ANIMATION_MS);
+    // NEGATIVE turns the whole level into its photo negative for a while, the timer and the hints too
+    const negative = $derived(
+        game.phase === "playing" &&
+            game.challenge.modifiers.has("negative") &&
+            isNegative(now - game.startedAt, game.timeLimit),
+    );
     const toast = $derived.by(() => {
         const shown = game.phase === "playing" || game.phase === "spamPause" || game.phase === "surgeBanner";
         return shown ? visible(toasts, now) : null;
@@ -177,12 +186,14 @@
         if (game.phase === "playing" && solved) {
             feedback = { kind: "hit", at: time };
             playSound("hit");
-            const { expected } = game.challenge;
+            const { expected, modifiers } = game.challenge;
+            // A WAIT level only asks for a reaction once it says NOW
+            const asked = game.startedAt + (modifiers.has("wait") ? game.timeLimit * WAIT_SHARE : 0);
             recordClear(
                 {
                     level: game.level,
-                    modifiers: game.challenge.modifiers,
-                    reactionMs: expected === "true" || expected === "false" ? time - game.startedAt : null,
+                    modifiers,
+                    reactionMs: expected === "true" || expected === "false" ? time - asked : null,
                 },
                 time,
             );
@@ -195,7 +206,7 @@
             playSound("click");
         }
         if (game.phase === "playing" && next.phase === "gameOver") {
-            const kind = time - game.startedAt > game.timeLimit ? "timeout" : "miss";
+            const kind = time - game.startedAt > game.timeLimit ? "timeout" : isTooEarly(game, time) ? "early" : "miss";
             // The loss animation shows the result, a "+1" of the level before must not stay on top of it
             feedback = null;
             loss = { level: game, kind, at: time };
@@ -204,7 +215,7 @@
             newRecord = next.score > best;
             saveHighscore(storage, next.score);
             highscore = Math.max(best, next.score);
-            playSound(kind);
+            playSound(kind === "early" ? "miss" : kind);
             playSound("crt", { delayMs: SQUASH_AT_MS });
             // The jingle belongs to the game over screen, which appears after the loss animation
             playSound(newRecord ? "record" : "gameOver", { delayMs: LOSS_ANIMATION_MS });
@@ -545,16 +556,24 @@
             oninstall={canInstall() ? installGame : undefined}
         />
     {:else if game.phase === "playing"}
-        <ChallengeScreen
-            challenge={game.challenge}
-            elapsed={now - game.startedAt}
-            spamCount={game.spamCount}
-            {width}
-            {height}
-            colorblind={settings.colorblind}
-        />
-        <TopBar level={game.level} {highscore} remaining={remainingShare(game, now)} />
-        <TapHints {flash} />
+        <div class="playfield" style:filter={negative ? "invert(1)" : null}>
+            <ChallengeScreen
+                challenge={game.challenge}
+                elapsed={now - game.startedAt}
+                timeLimit={game.timeLimit}
+                spamCount={game.spamCount}
+                {width}
+                {height}
+                colorblind={settings.colorblind}
+            />
+            <TopBar
+                level={game.level}
+                {highscore}
+                remaining={remainingShare(game, now)}
+                countUp={game.challenge.modifiers.has("countUp")}
+            />
+            <TapHints {flash} double={game.challenge.modifiers.has("doubleTap")} />
+        </div>
     {:else if showLoss && loss}
         <LossScreen
             level={loss.level}
@@ -644,6 +663,11 @@
     /* The volume bar keeps its steps visible and only gets the yellow border */
     .stage.keys :global([role="slider"]:focus) {
         background: none;
+    }
+
+    .playfield {
+        position: absolute;
+        inset: 0;
     }
 
     /* CRT look */

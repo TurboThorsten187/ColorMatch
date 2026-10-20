@@ -81,4 +81,26 @@ describe("createChallenge", () => {
         expect(lures).toBeGreaterThan(0);
         expect(lures / falses).toBeLessThan(0.4);
     });
+
+    it("expects true with two words when both are true or both are false", () => {
+        const combinations = new Set<string>();
+        for (let run = 0; run < 2000; run++) {
+            const challenge = createChallenge(["twoWords"], 20, Math.random);
+            if (!challenge.second) throw new Error("The second word is missing");
+
+            const firstTrue = challenge.word === challenge.color;
+            const secondTrue = challenge.second.word === challenge.second.color;
+            expect(challenge.expected).toBe(firstTrue === secondTrue ? "true" : "false");
+            combinations.add(`${firstTrue}/${secondTrue}`);
+        }
+
+        expect(combinations.size).toBe(4);
+        expect(createChallenge(["mirror"], 20, Math.random).second).toBeNull();
+    });
+
+    it("only shrinks the word with the zoom modifier", () => {
+        expect(createChallenge(["zoom"], 20, Math.random, {}, 0.2).size).toBe(0.2);
+        expect(createChallenge(["mirror"], 20, Math.random, {}, 0.2).size).toBe(1);
+        expect(createChallenge([], 20, Math.random).size).toBe(1);
+    });
 });

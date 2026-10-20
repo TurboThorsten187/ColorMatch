@@ -1,9 +1,8 @@
 <script lang="ts">
-    import { COLOR_CSS } from "../game/colors.ts";
+    import { COLOR_CSS, COLORS } from "../game/colors.ts";
     import type { PlayingState } from "../game/game.ts";
     import ChallengeScreen from "./ChallengeScreen.svelte";
     import { FEEDBACK_LABELS, type FeedbackKind } from "./FeedbackFlash.svelte";
-    import { WORD_FONT, WORD_WEIGHT } from "./fonts.ts";
     import {
         type Block,
         blockAt,
@@ -71,15 +70,16 @@
         const opacity = blocksOpacity(elapsed);
         if (!blocks || opacity === 0) return;
         context.globalAlpha = opacity;
-        context.fillStyle = COLOR_CSS[level.challenge.color];
         for (const block of blocks) {
             const { x, y } = blockAt(block, elapsed, height);
+            context.fillStyle = block.color;
             context.fillRect(Math.round(x), Math.round(y), blockPx, blockPx);
         }
         context.globalAlpha = 1;
     });
 
-    // Draws the word as it is on screen (rotated, mirrored, moved) into an image and cuts it into blocks
+    // Draws the word as it is on screen (rotated, mirrored, moved) into an image and cuts it into blocks. The word is
+    // the anchor's first child; it, or each of its pieces, carries its ink in data-ink.
     function readBlocks(target: HTMLElement): readonly Block[] {
         const word = target.firstElementChild;
         const image = document.createElement("canvas");
@@ -88,19 +88,63 @@
         const context = image.getContext("2d", { willReadFrequently: true });
         if (!(word instanceof HTMLElement) || !context) return [];
 
-        const fontSize = parseFloat(getComputedStyle(word).fontSize);
         // The anchor sits in the middle of the screen, its transform holds every effect on the word
-        const { a, b, c, d, e, f } = new DOMMatrix(getComputedStyle(target).transform);
         context.translate(image.width / 2, image.height / 2);
-        context.transform(a, b, c, d, e, f);
-        context.font = `${WORD_WEIGHT} ${fontSize}px ${WORD_FONT}`;
-        context.textAlign = "center";
-        context.textBaseline = "middle";
-        context.fillText(word.textContent ?? "", 0, 0);
+        context.transform(...matrixArgs(new DOMMatrix(getComputedStyle(target).transform)));
+        const pieces = word.matches("[data-ink]") ? [word] : [...word.querySelectorAll<HTMLElement>("[data-ink]")];
+        for (const piece of pieces) drawPiece(context, piece, target);
 
-        blockPx = blockSize(fontSize);
+        blockPx = blockSize(parseFloat(getComputedStyle(word).fontSize));
         const { data } = context.getImageData(0, 0, image.width, image.height);
         return wordBlocks(data, image.width, image.height, blockPx, Math.random);
+    }
+
+    // One piece of the word in its font and ink, where it sits inside the anchor
+    function drawPiece(context: CanvasRenderingContext2D, piece: HTMLElement, target: HTMLElement): void {
+        const ink = COLORS.find((color) => color === piece.dataset.ink);
+        if (!ink) return;
+        const style = getComputedStyle(piece);
+        const boxWidth = piece.offsetWidth;
+        const boxHeight = piece.offsetHeight;
+        context.save();
+        context.transform(...matrixArgs(placement(piece, target)));
+        if (piece.dataset.leftHalf !== undefined) {
+            context.beginPath();
+            context.rect(0, 0, boxWidth / 2, boxHeight);
+            context.clip();
+        }
+        context.font = `${style.fontWeight} ${style.fontSize} ${style.fontFamily}`;
+        context.fillStyle = COLOR_CSS[ink];
+        context.textAlign = "center";
+        context.textBaseline = "middle";
+        context.fillText(piece.textContent ?? "", boxWidth / 2, boxHeight / 2);
+        context.restore();
+    }
+
+    // From the piece's own box to the anchor: the layout offsets and the transforms of the piece and its positioned
+    // parents, each around its transform origin
+    function placement(piece: HTMLElement, target: HTMLElement): DOMMatrix {
+        let matrix = new DOMMatrix();
+        for (
+            let node: Element | null = piece;
+            node instanceof HTMLElement && node !== target;
+            node = node.offsetParent
+        ) {
+            const style = getComputedStyle(node);
+            const [originX, originY] = style.transformOrigin.split(" ").map(parseFloat);
+            const own = style.transform === "none" ? new DOMMatrix() : new DOMMatrix(style.transform);
+            const local = new DOMMatrix()
+                .translate(node.offsetLeft, node.offsetTop)
+                .translate(originX, originY)
+                .multiply(own)
+                .translate(-originX, -originY);
+            matrix = local.multiply(matrix);
+        }
+        return matrix;
+    }
+
+    function matrixArgs({ a, b, c, d, e, f }: DOMMatrix): [number, number, number, number, number, number] {
+        return [a, b, c, d, e, f];
     }
 
     function shakeOffset(): number {
@@ -112,6 +156,7 @@
     <ChallengeScreen
         challenge={level.challenge}
         elapsed={frozen}
+        timeLimit={level.timeLimit}
         spamCount={level.spamCount}
         {width}
         {height}
@@ -119,8 +164,13 @@
         bind:anchor
         {colorblind}
     />
-    <TopBar level={level.level} {highscore} remaining={1 - frozen / level.timeLimit} />
-    <TapHints flash={null} />
+    <TopBar
+        level={level.level}
+        {highscore}
+        remaining={1 - frozen / level.timeLimit}
+        countUp={level.challenge.modifiers.has("countUp")}
+    />
+    <TapHints flash={null} double={level.challenge.modifiers.has("doubleTap")} />
     <div class="frame" style:opacity={frame.frameOpacity} aria-hidden="true"></div>
     <div
         class="label"

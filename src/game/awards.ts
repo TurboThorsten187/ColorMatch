@@ -17,7 +17,16 @@ export type AwardId =
     | "moving"
     | "scrambled"
     | "shaky"
-    | "pulsing";
+    | "pulsing"
+    | "zoom"
+    | "splitMirror"
+    | "countUp"
+    | "assemble"
+    | "fontFlip"
+    | "negative"
+    | "wait"
+    | "doubleTap"
+    | "twoWords";
 
 // "rule" awards belong to modifiers that change the correct input, "look" awards to the visual ones
 export type AwardKind = "milestone" | "surge" | "rule" | "look";
@@ -96,6 +105,15 @@ export const AWARDS: readonly Award[] = [
     modifierAward("scrambled", "SC", "UNSCRAMBLED", "look", "SCRAMBLED", ["scrambled"]),
     modifierAward("shaky", "SH", "STEADY HAND", "look", "SHAKY", ["shaky"]),
     modifierAward("pulsing", "PU", "HEARTBEAT", "look", "PULSING", ["pulsing"]),
+    modifierAward("zoom", "ZM", "EAGLE EYE", "look", "ZOOMED", ["zoom"]),
+    modifierAward("splitMirror", "SM", "HALF AND HALF", "look", "SPLIT MIRROR", ["splitMirror"]),
+    modifierAward("countUp", "CU", "TIME BENDER", "look", "COUNT UP", ["countUp"]),
+    modifierAward("assemble", "AS", "BUILDER", "look", "ASSEMBLE", ["assemble"]),
+    modifierAward("fontFlip", "FF", "TYPE CASTER", "look", "FONT FLIP", ["fontFlip"]),
+    modifierAward("negative", "NG", "DARKROOM", "look", "NEGATIVE", ["negative"]),
+    modifierAward("wait", "WT", "PATIENCE", "rule", "WAIT", ["wait"]),
+    modifierAward("doubleTap", "DT", "DOUBLE TROUBLE", "rule", "DOUBLE TAP", ["doubleTap"]),
+    modifierAward("twoWords", "TW", "DOUBLE VISION", "rule", "TWO WORDS", ["twoWords"]),
 ];
 
 export function awardById(id: AwardId): Award {

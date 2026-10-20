@@ -1,3 +1,4 @@
+import type { ColorWord } from "./challenge.ts";
 import type { Color } from "./colors.ts";
 import type { GameState } from "./game.ts";
 import { groupsOf, type ModifierGroupId, type ModifierId } from "./modifiers.ts";
@@ -10,8 +11,9 @@ export interface ModifierIntro {
     readonly title: string;
     // Shown on the card with the modifier's effect applied: a color word, which the colorblind mode shows as a shape
     // word, or a fixed text
-    readonly example:
-        { readonly word: Color; readonly color: Color } | { readonly text: string; readonly color: Color };
+    readonly example: ColorWord | { readonly text: string; readonly color: Color };
+    // A second color word below the example, for the two words modifier
+    readonly second?: ColorWord;
     // Words between * are highlighted in the accent color
     readonly lines: readonly string[];
     // Replaces `lines` in the colorblind mode where they talk about colors
@@ -104,6 +106,71 @@ export const INTROS: readonly ModifierIntro[] = [
         example: { word: "red", color: "red" },
         lines: ["THE WORD *PULSES*", "THE RULES STAY THE SAME"],
         accent: "yellow",
+    },
+    {
+        id: "zoom",
+        title: "ZOOM",
+        example: { word: "cyan", color: "cyan" },
+        lines: ["THE WORD IS *TINY*", "THE RULES STAY THE SAME"],
+        accent: "yellow",
+    },
+    {
+        id: "splitMirror",
+        title: "SPLIT MIRROR",
+        example: { word: "cyan", color: "cyan" },
+        lines: ["ONLY THE *LEFT HALF* IS THERE", "THE RIGHT HALF MIRRORS IT"],
+        accent: "yellow",
+    },
+    {
+        id: "countUp",
+        title: "COUNT UP",
+        example: { word: "green", color: "green" },
+        lines: ["THE TIMER *FILLS UP*", "TIME IS UP WHEN IT IS FULL"],
+        accent: "yellow",
+    },
+    {
+        id: "assemble",
+        title: "ASSEMBLE",
+        example: { word: "yellow", color: "yellow" },
+        lines: ["THE LETTERS *FLY IN*", "THE RULES STAY THE SAME"],
+        accent: "yellow",
+    },
+    {
+        id: "fontFlip",
+        title: "FONT FLIP",
+        example: { word: "purple", color: "purple" },
+        lines: ["THE LETTERS *SWITCH FONTS*", "THE RULES STAY THE SAME"],
+        accent: "yellow",
+    },
+    {
+        id: "negative",
+        title: "NEGATIVE",
+        example: { word: "red", color: "red" },
+        lines: ["THE SCREEN FLASHES", "AS A *NEGATIVE*", "ONLY THE REAL COLOR COUNTS"],
+        colorblindLines: ["THE SCREEN FLASHES", "AS A *NEGATIVE*", "THE RULES STAY THE SAME"],
+        accent: "yellow",
+    },
+    {
+        id: "wait",
+        title: "WAIT",
+        example: { text: "WAIT", color: "red" },
+        lines: ["ANSWER ONLY", "ONCE IT SAYS *NOW*", "EARLIER IS A MISS"],
+        accent: "red",
+    },
+    {
+        id: "doubleTap",
+        title: "DOUBLE TAP",
+        example: { text: "DOUBLE TAP", color: "red" },
+        lines: ["TAP YOUR ANSWER *TWICE*", "ONE WRONG TAP IS A MISS"],
+        accent: "red",
+    },
+    {
+        id: "twoWords",
+        title: "TWO WORDS",
+        example: { word: "green", color: "green" },
+        second: { word: "red", color: "blue" },
+        lines: ["TRUE IF *BOTH OR NEITHER*", "OF THE WORDS MATCH"],
+        accent: "red",
     },
 ];
 

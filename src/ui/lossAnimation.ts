@@ -57,6 +57,8 @@ export interface Block {
     // Pixels per second
     readonly vx: number;
     readonly vy: number;
+    // The color of the pixel the block was cut from
+    readonly color: string;
 }
 
 export const SHAKE_OFFSETS = SHAKE_STEPS - 1;
@@ -81,22 +83,25 @@ export function lossFrame(elapsed: number): LossFrame {
     };
 }
 
-// One block per `size` grid cell whose center pixel is drawn in `rgba` (RGBA bytes of a width x height image).
-// Blocks fly apart from the middle of the word, jump up a little and fall.
+// One block per `size` grid cell whose center pixel is drawn in `rgba` (RGBA bytes of a width x height image), in
+// that pixel's color. Blocks fly apart from the middle of the word, jump up a little and fall.
 export function wordBlocks(rgba: ArrayLike<number>, width: number, height: number, size: number, rng: Rng): Block[] {
-    const cells: { x: number; y: number }[] = [];
+    const cells: { x: number; y: number; color: string }[] = [];
     for (let y = 0; y + size <= height; y += size) {
         for (let x = 0; x + size <= width; x += size) {
             const center = (Math.floor(y + size / 2) * width + Math.floor(x + size / 2)) * 4;
-            if (rgba[center + 3] > INK_ALPHA) cells.push({ x, y });
+            if (rgba[center + 3] > INK_ALPHA) {
+                cells.push({ x, y, color: `rgb(${rgba[center]}, ${rgba[center + 1]}, ${rgba[center + 2]})` });
+            }
         }
     }
     const middle = cells.reduce((sum, cell) => sum + cell.x, 0) / Math.max(1, cells.length);
-    return cells.map(({ x, y }) => ({
+    return cells.map(({ x, y, color }) => ({
         x,
         y,
         vx: (x - middle) * between(rng, MIN_SPREAD, MAX_SPREAD) + between(rng, -DRIFT, DRIFT) * height,
         vy: -between(rng, MIN_RISE, MAX_RISE) * height,
+        color,
     }));
 }
 
