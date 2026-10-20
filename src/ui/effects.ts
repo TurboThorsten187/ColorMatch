@@ -56,6 +56,10 @@ const NEGATIVE_FROM = 0.1;
 const NEGATIVE_UNTIL = 0.5;
 export const AFTERIMAGE_MS = 400;
 
+// LOW TIME: a red frame glows once the timer turns red and gets stronger until the time is up
+const LOW_TIME_GLOW = 0.3;
+const LOW_TIME_GLOW_START = 0.35;
+
 // Font size factor that keeps the moved, shaken or grown word on screen
 export function effectFontScale(modifiers: ReadonlySet<ModifierId>): number {
     return (
@@ -177,6 +181,13 @@ export function flipFont(seed: number, letter: number, elapsed: number, count: n
         font = (font + 1 + Math.floor(noise(seed, step, FONT_FLIP_SALT + letter) * (count - 1))) % count;
     }
     return font;
+}
+
+// Opacity of the red frame for the share of the time that is left, starting below `from`
+export function lowTimeGlow(remaining: number, from: number): number {
+    if (remaining >= from) return 0;
+    const progress = 1 - Math.max(0, remaining) / from;
+    return LOW_TIME_GLOW * (LOW_TIME_GLOW_START + (1 - LOW_TIME_GLOW_START) * progress);
 }
 
 export function isNegative(elapsed: number, timeLimit: number): boolean {

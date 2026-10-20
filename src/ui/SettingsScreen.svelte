@@ -14,7 +14,7 @@
 
     let { settings, onchange, onreset, onreplay, onback }: Props = $props();
 
-    type Switch = "sound" | "scanlines" | "colorblind";
+    type Switch = "sound" | "scanlines" | "colorblind" | "flipControls";
 
     // Deleting everything must not happen by accident: the button has to be held this long
     const HOLD_MS = 1500;
@@ -161,6 +161,11 @@
         <div class="row">
             <span id="colorblind-label">COLORBLIND</span>
             {@render onOff("colorblind", "colorblind-label")}
+        </div>
+
+        <div class="row">
+            <span id="flip-controls-label">FLIP CONTROLS</span>
+            {@render onOff("flipControls", "flip-controls-label")}
         </div>
 
         <div class="row">

@@ -18,6 +18,8 @@ export interface ModifierIntro {
     readonly lines: readonly string[];
     // Replaces `lines` in the colorblind mode where they talk about colors
     readonly colorblindLines?: readonly string[];
+    // Replaces `lines` when FLIP CONTROLS puts TRUE on the right, where they name a side
+    readonly flippedLines?: readonly string[];
     readonly accent: Color;
 }
 
@@ -27,6 +29,7 @@ export const INTROS: readonly ModifierIntro[] = [
         title: "INVERTED INPUT",
         example: { word: "blue", color: "blue" },
         lines: ["IT MATCHES, BUT...", "ANSWER THE *OPPOSITE*", "TAP RIGHT · FALSE"],
+        flippedLines: ["IT MATCHES, BUT...", "ANSWER THE *OPPOSITE*", "TAP LEFT · FALSE"],
         accent: "red",
     },
     {
@@ -60,7 +63,7 @@ export const INTROS: readonly ModifierIntro[] = [
     },
     {
         id: "blink",
-        title: "BLINK",
+        title: "FADE",
         example: { word: "cyan", color: "cyan" },
         lines: ["THE WORD FADES AWAY", "IN UNDER A SECOND", "*REMEMBER IT*"],
         accent: "yellow",
@@ -116,14 +119,14 @@ export const INTROS: readonly ModifierIntro[] = [
     },
     {
         id: "splitMirror",
-        title: "SPLIT MIRROR",
+        title: "SYMMETRY",
         example: { word: "cyan", color: "cyan" },
         lines: ["ONLY THE *LEFT HALF* IS THERE", "THE RIGHT HALF MIRRORS IT"],
         accent: "yellow",
     },
     {
         id: "countUp",
-        title: "COUNT UP",
+        title: "REVERSE TIMER",
         example: { word: "green", color: "green" },
         lines: ["THE TIMER *FILLS UP*", "TIME IS UP WHEN IT IS FULL"],
         accent: "yellow",
@@ -166,7 +169,7 @@ export const INTROS: readonly ModifierIntro[] = [
     },
     {
         id: "twoWords",
-        title: "TWO WORDS",
+        title: "DUO",
         example: { word: "green", color: "green" },
         second: { word: "red", color: "blue" },
         lines: ["TRUE IF *BOTH OR NEITHER*", "OF THE WORDS MATCH"],

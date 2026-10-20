@@ -18,6 +18,8 @@ export const SPAM_PRESSES_NEEDED = 5;
 // Shown instead of a color word, one character lights up per press
 export const SPAM_WORD = "SPAM!";
 export const SPAM_PAUSE_MS = 500;
+// After the last press the whole SPAM! stays lit this long, then STOP SPAMMING! shows for SPAM_PAUSE_MS
+export const SPAM_BANG_MS = 120;
 // A WAIT level shows WAIT for this share of its time limit, then NOW; a press before NOW is a miss
 export const WAIT_SHARE = 0.5;
 // Right taps a DOUBLE TAP level needs, with no limit on the time between them
@@ -93,7 +95,7 @@ export function answer(state: GameState, input: Answer, now: number, rng: Rng): 
             ? {
                   phase: "spamPause",
                   level: state.level,
-                  resumeAt: now + SPAM_PAUSE_MS,
+                  resumeAt: now + SPAM_BANG_MS + SPAM_PAUSE_MS,
                   curriculum: state.curriculum,
                   groups: groupsOf(state.challenge.modifiers),
               }
@@ -103,6 +105,11 @@ export function answer(state: GameState, input: Answer, now: number, rng: Rng): 
     if (input !== expected) return gameOver(state.level, now);
     const taps = state.taps + 1;
     return modifiers.has("doubleTap") && taps < DOUBLE_TAPS ? { ...state, taps } : nextLevel(state, now, rng);
+}
+
+// The SPAM! level is solved and still shows its word, fully lit
+export function isSpamBang(state: SpamPauseState, now: number): boolean {
+    return state.resumeAt - now > SPAM_PAUSE_MS;
 }
 
 // A press on a WAIT level before WAIT has turned into NOW

@@ -6,10 +6,12 @@ import {
     DOUBLE_TAPS,
     GAME_OVER_LOCK_MS,
     type GameState,
+    isSpamBang,
     MENU,
     pause,
     type PlayingState,
     resume,
+    SPAM_BANG_MS,
     SPAM_PAUSE_MS,
     SPAM_PRESSES_NEEDED,
     SPAM_WORD,
@@ -207,16 +209,23 @@ describe("game", () => {
         expect(state).toEqual({
             phase: "spamPause",
             level: 1,
-            resumeAt: 100 + SPAM_PAUSE_MS,
+            resumeAt: 100 + SPAM_BANG_MS + SPAM_PAUSE_MS,
             curriculum: CURRICULUM,
             groups: ["spam"],
         });
+        if (state.phase !== "spamPause") throw new Error("expected the spam pause");
 
-        expect(tick(state, 100 + SPAM_PAUSE_MS - 1, rng)).toBe(state);
-        expect(tick(state, 100 + SPAM_PAUSE_MS, rng)).toMatchObject({
+        // First the solved SPAM! stays lit, then STOP SPAMMING! shows
+        expect(isSpamBang(state, 100)).toBe(true);
+        expect(isSpamBang(state, 100 + SPAM_BANG_MS - 1)).toBe(true);
+        expect(isSpamBang(state, 100 + SPAM_BANG_MS)).toBe(false);
+
+        const end = 100 + SPAM_BANG_MS + SPAM_PAUSE_MS;
+        expect(tick(state, end - 1, rng)).toBe(state);
+        expect(tick(state, end, rng)).toMatchObject({
             phase: "playing",
             level: 2,
-            startedAt: 100 + SPAM_PAUSE_MS,
+            startedAt: end,
         });
     });
 

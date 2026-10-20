@@ -26,9 +26,10 @@
         width: number;
         height: number;
         colorblind: boolean;
+        flipControls: boolean;
     }
 
-    let { level, lostAt, kind, elapsed, highscore, width, height, colorblind }: Props = $props();
+    let { level, lostAt, kind, elapsed, highscore, width, height, colorblind, flipControls }: Props = $props();
 
     const SHAKE_PX = 7;
 
@@ -170,7 +171,7 @@
         remaining={1 - frozen / level.timeLimit}
         countUp={level.challenge.modifiers.has("countUp")}
     />
-    <TapHints flash={null} double={level.challenge.modifiers.has("doubleTap")} />
+    <TapHints flash={null} double={level.challenge.modifiers.has("doubleTap")} {flipControls} />
     <div class="frame" style:opacity={frame.frameOpacity} aria-hidden="true"></div>
     <div
         class="label"
