@@ -11,6 +11,7 @@ import {
     flipFont,
     isNegative,
     lowTimeGlow,
+    toAnchor,
     letterOrder,
     pulseScale,
     SHAKE_TILT_DEG,
@@ -212,5 +213,35 @@ describe("low time glow", () => {
         expect(middle).toBeGreaterThan(start);
         expect(end).toBeGreaterThan(middle);
         expect(lowTimeGlow(-0.1, 0.25)).toBe(end);
+    });
+});
+
+describe("anchor coordinates", () => {
+    it("undo the anchor's translate, rotate and scale", () => {
+        const anchor = { x: 30, y: -20, rotation: 35, scaleX: -0.8, scaleY: 1.1 };
+        const local = toAnchor({ x: 120, y: 75 }, anchor);
+
+        // Forward again, the way CSS applies translate(x, y) rotate() scale()
+        const radians = (anchor.rotation * Math.PI) / 180;
+        const sx = local.x * anchor.scaleX;
+        const sy = local.y * anchor.scaleY;
+        expect(anchor.x + sx * Math.cos(radians) - sy * Math.sin(radians)).toBeCloseTo(120);
+        expect(anchor.y + sx * Math.sin(radians) + sy * Math.cos(radians)).toBeCloseTo(75);
+    });
+
+    it("leave a point alone without a transform", () => {
+        expect(toAnchor({ x: 12, y: -7 }, { x: 0, y: 0, rotation: 0, scaleX: 1, scaleY: 1 })).toEqual({ x: 12, y: -7 });
+    });
+});
+
+describe("shaking a zoomed word", () => {
+    it("shakes as much relative to its size as a normal word", () => {
+        const shaky = set("shaky");
+        const normal = wordMotion(shaky, 0.7, 300, AREA, WORD);
+        const zoomed = wordMotion(shaky, 0.7, 300, AREA, WORD, {}, 0.2);
+
+        expect(zoomed.x).toBeCloseTo(normal.x * 0.2);
+        expect(zoomed.y).toBeCloseTo(normal.y * 0.2);
+        expect(zoomed.rotation).toBe(normal.rotation);
     });
 });

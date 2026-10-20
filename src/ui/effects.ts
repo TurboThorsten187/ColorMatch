@@ -17,6 +17,18 @@ export interface WordMotion {
     readonly rotation: number;
 }
 
+export interface Point {
+    readonly x: number;
+    readonly y: number;
+}
+
+// The word's anchor transform: translate(x, y) rotate(rotation deg) scale(scaleX, scaleY)
+export interface AnchorTransform extends Point {
+    readonly rotation: number;
+    readonly scaleX: number;
+    readonly scaleY: number;
+}
+
 const MOVING_FONT_SCALE = 0.62;
 const MOVING_PERIOD_X_MS = 1500;
 const MOVING_PERIOD_Y_MS = 1100;
@@ -70,7 +82,8 @@ export function effectFontScale(modifiers: ReadonlySet<ModifierId>): number {
 }
 
 // Offset and scale of the word inside `area`, the free rectangle around the screen center. `word` is the space
-// the word takes up at scale 1. `tempo` speeds up moving, shaking and pulsing.
+// the word takes up at scale 1. `tempo` speeds up moving, shaking and pulsing. `size` is the zoomed word's size
+// relative to normal: it shakes as much relative to its own size as a normal word.
 export function wordMotion(
     modifiers: ReadonlySet<ModifierId>,
     seed: number,
@@ -78,9 +91,10 @@ export function wordMotion(
     area: Size,
     word: Size,
     tempo: Tempo = {},
+    size = 1,
 ): WordMotion {
-    const shakeX = modifiers.has("shaky") ? area.width * SHAKE_X : 0;
-    const shakeY = modifiers.has("shaky") ? area.height * SHAKE_Y : 0;
+    const shakeX = modifiers.has("shaky") ? area.width * SHAKE_X * size : 0;
+    const shakeY = modifiers.has("shaky") ? area.height * SHAKE_Y * size : 0;
     let x = 0;
     let y = 0;
     let rotation = 0;
@@ -158,7 +172,7 @@ export function assembleRemaining(seed: number, letter: number, elapsed: number,
 }
 
 // Where a letter of ASSEMBLE starts, relative to the center of `area`: `margin` outside a random edge
-export function assembleStart(seed: number, letter: number, area: Size, margin: number): { x: number; y: number } {
+export function assembleStart(seed: number, letter: number, area: Size, margin: number): Point {
     const along = noise(seed, letter, ASSEMBLE_SALT + 2) - 0.5;
     switch (Math.floor(noise(seed, letter, ASSEMBLE_SALT + 1) * 4)) {
         case 0:
@@ -170,6 +184,20 @@ export function assembleStart(seed: number, letter: number, area: Size, margin: 
         default:
             return { x: along * area.width * ASSEMBLE_ALONG, y: area.height / 2 + margin };
     }
+}
+
+// A point given relative to the anchor's untransformed position (the screen center) in the anchor's own
+// coordinates, so that something placed there inside the transformed anchor shows at that point on screen
+export function toAnchor(point: Point, anchor: AnchorTransform): Point {
+    const radians = (anchor.rotation * Math.PI) / 180;
+    const cos = Math.cos(radians);
+    const sin = Math.sin(radians);
+    const dx = point.x - anchor.x;
+    const dy = point.y - anchor.y;
+    return {
+        x: (dx * cos + dy * sin) / anchor.scaleX,
+        y: (-dx * sin + dy * cos) / anchor.scaleY,
+    };
 }
 
 // The font (an index below `count`) of a letter of FONT FLIP: a new random one every 200 ms, never the same twice in

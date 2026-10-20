@@ -20,7 +20,7 @@ export interface ColorWord {
 export interface Challenge extends ColorWord {
     readonly modifiers: ReadonlySet<ModifierId>;
     readonly expected: ExpectedInput;
-    // Only set with the background modifier: any color but the ink, so it says nothing about the answer
+    // Only set with the background modifier: any color but the inks, so it says nothing about the answer
     readonly background: Color | null;
     // Only non-zero with the rotation modifier, the angle the spinning word starts at
     readonly rotationDeg: number;
@@ -32,6 +32,9 @@ export interface Challenge extends ColorWord {
     // The word's size relative to normal, below 1 only with the zoom modifier
     readonly size: number;
 }
+
+// SYMMETRY looks the same mirrored left to right, so with it only the upside-down mirror changes anything
+const SYMMETRY_MIRRORS: readonly ModifierId[] = ["mirrorVertical"];
 
 export function createChallenge(
     groups: readonly ModifierGroupId[],
@@ -49,27 +52,30 @@ export function createChallenge(
     const word = firstTrue ? color : randomColor(rng, color);
     const modifiers: ReadonlySet<ModifierId> = new Set(
         groups.map((id) => {
-            const { variants } = groupById(id);
+            const variants =
+                id === "mirror" && groups.includes("splitMirror") ? SYMMETRY_MIRRORS : groupById(id).variants;
             return variants[Math.floor(rng() * variants.length)];
         }),
     );
     const expected = expectedInput(matches ? "true" : "false", modifiers);
+    const second = twoWords ? colorWord(matches ? firstTrue : !firstTrue, rng) : null;
 
     return {
         word,
         color,
         modifiers,
         expected,
+        // Never the ink of a word, or that word would vanish
         background: modifiers.has("background")
             ? pick(
                   rng,
-                  COLORS.filter((other) => other !== color),
+                  COLORS.filter((other) => other !== color && other !== second?.color),
               )
             : null,
         rotationDeg: modifiers.has("rotation") ? rotationDeg(level) : 0,
         seed: rng(),
         tempo,
-        second: twoWords ? colorWord(matches ? firstTrue : !firstTrue, rng) : null,
+        second,
         size: modifiers.has("zoom") ? size : 1,
     };
 }

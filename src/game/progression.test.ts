@@ -136,7 +136,6 @@ describe("pickGroups", () => {
             const curriculum = createCurriculum(rng);
             // Introduced on level 14, so level 15 is the first practice level that may hold two groups
             const newest = curriculum[3];
-            if (groupById(newest).alone) continue;
             games++;
             const groups = pickGroups(introLevel(curriculum, newest) + 1, curriculum, [newest], rng);
             if (groups.includes(newest) && groups.length === 2) practiced++;
@@ -145,13 +144,31 @@ describe("pickGroups", () => {
         expect(practiced / games).toBeGreaterThan(0.6);
     });
 
-    it("never brings a group that comes alone together with another one", () => {
+    it("mixes the newer groups with others, in surges too", () => {
+        const newer: readonly ModifierGroupId[] = [
+            "zoom",
+            "splitMirror",
+            "countUp",
+            "assemble",
+            "fontFlip",
+            "negative",
+            "wait",
+            "doubleTap",
+            "twoWords",
+        ];
         const rng = seeded(10);
+        const mixed = new Set<ModifierGroupId>();
+        let surgesWithNewer = 0;
         for (let game = 0; game < 200; game++) {
-            run(createCurriculum(rng), rng, FULL_RUN).forEach((groups) => {
-                if (groups.some((id) => groupById(id).alone)) expect(groups).toHaveLength(1);
+            run(createCurriculum(rng), rng, FULL_RUN).forEach((groups, index) => {
+                const shown = groups.filter((id) => newer.includes(id));
+                if (groups.length > 1) shown.forEach((id) => mixed.add(id));
+                if (isSurgeLevel(index + 1) && shown.length > 0) surgesWithNewer++;
             });
         }
+
+        expect([...mixed].sort()).toEqual([...newer].sort());
+        expect(surgesWithNewer).toBeGreaterThan(0);
     });
 
     it("mixes in more groups and fewer plain levels later on", () => {

@@ -4,6 +4,7 @@
     import { SPAM_WORD, WAIT_SHARE } from "../game/game.ts";
     import type { ModifierGroupId, ModifierId } from "../game/modifiers.ts";
     import {
+        type AnchorTransform,
         afterimageOpacity,
         assembleRemaining,
         assembleStart,
@@ -13,11 +14,12 @@
         scrambleWords,
         SHAKE_TILT_DEG,
         spin,
+        toAnchor,
         wordMotion,
     } from "./effects.ts";
     import { fitScale, textWidth } from "./fitText.ts";
-    import { flipLetters } from "./fontFlip.ts";
-    import { WORD_FONT, WORD_WEIGHT } from "./fonts.ts";
+    import { emWidth, flipLetters } from "./fontFlip.ts";
+    import { type Font, WORD_FONT, WORD_WEIGHT } from "./fonts.ts";
     import { backgroundStyle, inkStyle } from "./shapes.ts";
     import SplitMirror from "./SplitMirror.svelte";
 
@@ -39,6 +41,35 @@
         colorblind?: boolean;
     }
 
+    // One letter of a word that is drawn letter by letter
+    interface Letter {
+        readonly char: string;
+        // FONT FLIP: the letter's own font and its size in em of the word's font size
+        readonly font: Font | null;
+        readonly size: number;
+        // In px
+        readonly width: number;
+        // ASSEMBLE: how far the letter still is from its place, in px
+        readonly x: number;
+        readonly y: number;
+        // SPAM!: not pressed yet
+        readonly dim: boolean;
+    }
+
+    // One word on screen; TWO WORDS has two of them
+    interface Line {
+        readonly text: string;
+        readonly color: Color;
+        // Distance of the word's middle below the anchor, in px
+        readonly offset: number;
+        // Each word scrambles, flips and flies in its own way
+        readonly seed: number;
+        // FONT FLIP, ASSEMBLE and SPAM! draw the word letter by letter, else it is one text
+        readonly letters: readonly Letter[] | null;
+        // In px
+        readonly width: number;
+    }
+
     let {
         challenge,
         elapsed,
@@ -56,8 +87,9 @@
     const FREE_HEIGHT_SHARE = 0.62;
     // Distance from the word's center to the bottom of its rule tags, in font sizes
     const TAG_GAP = 0.6;
-    // The word gets 10px; the small tags would vanish with that, this keeps about the same share of their size
+    // The word gets BLUR_PX; the small tags would vanish with that, this keeps about the same share of their size
     const TAG_BLUR = "blur(0.14em)";
+    const BLUR_PX = 10;
     const WORD_HEIGHT_SHARE = 0.24;
     const WORD_WIDTH_SHARE = 0.9;
     // TWO WORDS: both words get this share of the normal size and sit this many font sizes above and below the middle
@@ -67,16 +99,28 @@
     const MIN_FONT_PX = 10;
     // Assembling letters start this many font sizes outside the screen
     const ASSEMBLE_MARGIN = 0.5;
+    // NEGATIVE: where the afterimage lies behind the word
+    const AFTERIMAGE_X_PX = 12;
+    const AFTERIMAGE_Y_PX = 8;
+    // Shifts the seed for the lower of two words
+    const LINE_SEED_STEP = 0.29;
 
     const has = (id: ModifierId): boolean => challenge.modifiers.has(id);
 
     // Animations play faster in later levels: the time each one has run, at its own tempo
     const played = (id: ModifierGroupId): number => elapsed * (challenge.tempo[id] ?? 1);
 
+    const lineSeed = (index: number): number => (challenge.seed + LINE_SEED_STEP * index) % 1;
+
     const opacity = $derived(has("blink") ? fadeOpacity(played("blink")) : 1);
-    const word = $derived(has("spam") ? SPAM_WORD : wordFor(challenge.word, colorblind));
-    const shownWord = $derived(has("scrambled") ? scramble(word, challenge.seed, played("scrambled")) : word);
-    const secondWord = $derived(challenge.second ? wordFor(challenge.second.word, colorblind) : null);
+    const words = $derived([
+        has("spam") ? SPAM_WORD : wordFor(challenge.word, colorblind),
+        ...(challenge.second ? [wordFor(challenge.second.word, colorblind)] : []),
+    ]);
+    const inks = $derived([challenge.color, ...(challenge.second ? [challenge.second.color] : [])]);
+    const shownWords = $derived(
+        words.map((text, index) => (has("scrambled") ? scramble(text, lineSeed(index), played("scrambled")) : text)),
+    );
     const tags = $derived(
         [
             ...(has("noClick") ? ["DON'T CLICK"] : []),
@@ -86,54 +130,69 @@
             ...(has("twoWords") ? ["BOTH OR NEITHER"] : []),
         ].map((tag) => (has("scrambled") ? scrambleWords(tag, challenge.seed, played("scrambled")) : tag)),
     );
-    // These draw the word in pieces, each piece in the ink
-    const pieces = $derived(has("splitMirror") || has("fontFlip") || has("assemble"));
+    const byLetter = $derived(has("fontFlip") || has("assemble") || has("spam"));
     let tagsWidth = $state(0);
     let tagsHeight = $state(0);
 
-    const fullSize = $derived(height * WORD_HEIGHT_SHARE * (secondWord ? TWO_WORDS_SIZE : 1));
+    const fullSize = $derived(height * WORD_HEIGHT_SHARE * (words.length > 1 ? TWO_WORDS_SIZE : 1));
     const maxWidth = $derived(WORD_WIDTH_SHARE * (has("rotation") ? Math.min(width, height) : width));
-    // Font size relative to the height, shrunk to fit narrow (or rotated) screens and to leave room for the effects
+    // The size at which the word (or the wider of two) fits narrow or rotated screens, before the effects shrink it
+    const fitted = $derived(
+        fullSize *
+            fitScale(
+                words.map((text) => ({ text, fontSize: fullSize })),
+                maxWidth,
+                WORD_FONT,
+                WORD_WEIGHT,
+            ),
+    );
+    // Smaller again to leave room for the effects, and for ZOOM
     const fontSize = $derived.by(() => {
-        const lines = [word, ...(secondWord ? [secondWord] : [])].map((text) => ({ text, fontSize: fullSize }));
-        const fitted = fullSize * fitScale(lines, maxWidth, WORD_FONT, WORD_WEIGHT);
         const size = fitted * effectFontScale(challenge.modifiers) * challenge.size;
         return challenge.size < 1 ? Math.max(MIN_FONT_PX, size) : size;
     });
+    // ZOOM: the word's size relative to normal. Effects measured in px shrink with it.
+    const zoom = $derived(fontSize / (fitted * effectFontScale(challenge.modifiers)));
     // TWO WORDS: the upper word sits this far above the middle, the lower one as far below it
-    const lineOffset = $derived(secondWord ? fontSize * TWO_WORDS_OFFSET : 0);
+    const lineOffset = $derived(words.length > 1 ? fontSize * TWO_WORDS_OFFSET : 0);
 
-    const flipped = $derived(
-        has("fontFlip")
-            ? flipLetters(shownWord, challenge.seed, played("fontFlip"), fullSize / fontSize, maxWidth / fontSize)
-            : [],
+    // The words with their letters in place. A word is measured unscrambled, so that its moving room stays the same.
+    const placedLines = $derived(
+        shownWords.map((text, index): Line => {
+            const color = inks[index];
+            const offset = index === 0 ? -lineOffset : lineOffset;
+            const seed = lineSeed(index);
+            const wordWidth = textWidth({ text: words[index], fontSize }, WORD_FONT, WORD_WEIGHT);
+            if (!byLetter) return { text, color, offset, seed, letters: null, width: wordWidth };
+            // FONT FLIP keeps the proportions it has at the fitted size, whatever shrinks the word
+            const shapes = has("fontFlip")
+                ? flipLetters(text, seed, played("fontFlip"), fullSize / fitted, maxWidth / fitted).map((letter) => ({
+                      ...letter,
+                      width: letter.size * emWidth(letter.char, letter.font) * fontSize,
+                  }))
+                : [...text].map((char) => ({
+                      char,
+                      font: null,
+                      size: 1,
+                      width: textWidth({ text: char, fontSize }, WORD_FONT, WORD_WEIGHT),
+                  }));
+            const letters = shapes.map((shape, letter) => ({
+                ...shape,
+                x: 0,
+                y: 0,
+                dim: has("spam") && letter >= spamCount,
+            }));
+            // Letters that are placed one by one are not kerned, plain SPAM! letters are
+            const placed = has("fontFlip") || has("assemble");
+            const lineWidth = placed ? letters.reduce((sum, letter) => sum + letter.width, 0) : wordWidth;
+            return { text, color, offset, seed, letters, width: lineWidth };
+        }),
     );
-
-    // ASSEMBLE: every letter flies in from its own point outside the screen to its place in the word
-    const assembled = $derived.by(() => {
-        if (!has("assemble")) return [];
-        const letters = [...shownWord];
-        const widths = letters.map((text) => textWidth({ text, fontSize }, WORD_FONT, WORD_WEIGHT));
-        let left = -widths.reduce((sum, letterWidth) => sum + letterWidth, 0) / 2;
-        return letters.map((char, index) => {
-            const place = left + widths[index] / 2;
-            left += widths[index];
-            const start = assembleStart(challenge.seed, index, { width, height }, fontSize * ASSEMBLE_MARGIN);
-            const remaining = assembleRemaining(challenge.seed, index, elapsed, timeLimit);
-            return { char, x: (start.x - place) * remaining, y: start.y * remaining };
-        });
-    });
-
-    const afterimage = $derived(has("negative") ? afterimageOpacity(elapsed, timeLimit) : 0);
 
     // Space the word takes up, a rotated word may point in any direction and a shaking one tilts a little. The rule
     // tags move with it: above it, or below when it is mirrored upside down, and around it when it rotates.
     const extent = $derived.by(() => {
-        const wordWidth = Math.max(
-            ...[word, ...(secondWord ? [secondWord] : [])].map((text) =>
-                textWidth({ text, fontSize }, WORD_FONT, WORD_WEIGHT),
-            ),
-        );
+        const wordWidth = Math.max(...placedLines.map((line) => line.width));
         const tilt = has("shaky") ? wordWidth * Math.sin((SHAKE_TILT_DEG * Math.PI) / 180) : 0;
         const alone = has("rotation")
             ? { width: wordWidth, height: wordWidth }
@@ -147,7 +206,7 @@
         };
     });
 
-    const transform = $derived.by(() => {
+    const motion = $derived.by((): AnchorTransform => {
         const area = { width, height: height * FREE_HEIGHT_SHARE };
         const { x, y, scale, rotation } = wordMotion(
             challenge.modifiers,
@@ -156,23 +215,80 @@
             area,
             extent,
             challenge.tempo,
+            zoom,
         );
-        const turned =
-            rotation + (has("rotation") ? challenge.rotationDeg + spin(challenge.seed, played("rotation")) : 0);
         const mirrorX = has("mirrorHorizontal") || has("mirrorBoth") ? -1 : 1;
         const mirrorY = has("mirrorVertical") || has("mirrorBoth") ? -1 : 1;
-        return `translate(${x}px, ${y}px) rotate(${turned}deg) scale(${mirrorX * scale}, ${mirrorY * scale})`;
+        return {
+            x,
+            y,
+            rotation:
+                rotation + (has("rotation") ? challenge.rotationDeg + spin(challenge.seed, played("rotation")) : 0),
+            scaleX: mirrorX * scale,
+            scaleY: mirrorY * scale,
+        };
     });
+    const transform = $derived(
+        `translate(${motion.x}px, ${motion.y}px) rotate(${motion.rotation}deg) scale(${motion.scaleX}, ${motion.scaleY})`,
+    );
+
+    // ASSEMBLE: every letter flies in from its own point outside the screen to its place in the word. The points are
+    // on the screen's edges whatever the word does, so they are taken back through the anchor's transform.
+    const lines = $derived(
+        has("assemble")
+            ? placedLines.map((line): Line => {
+                  let left = -line.width / 2;
+                  const letters = line.letters?.map((letter, index) => {
+                      const place = { x: left + letter.width / 2, y: line.offset };
+                      left += letter.width;
+                      const edge = assembleStart(line.seed, index, { width, height }, fontSize * ASSEMBLE_MARGIN);
+                      const start = toAnchor(edge, motion);
+                      const remaining = assembleRemaining(line.seed, index, elapsed, timeLimit);
+                      return { ...letter, x: (start.x - place.x) * remaining, y: (start.y - place.y) * remaining };
+                  });
+                  return { ...line, letters: letters ?? null };
+              })
+            : placedLines,
+    );
+
+    const afterimage = $derived(has("negative") ? afterimageOpacity(elapsed, timeLimit) : 0);
 </script>
 
-{#snippet colorWord(text: string, color: Color, offset: number)}
+{#snippet content(line: Line)}
+    {#if line.letters}
+        {#each line.letters as letter, index (index)}
+            <span
+                class="letter"
+                class:placed={letter.font || has("assemble")}
+                data-ink={line.color}
+                style={letter.dim ? `color: ${SPAM_DIM}` : inkStyle(line.color, colorblind && !has("spam"))}
+                style:font-family={letter.font?.family}
+                style:font-weight={letter.font?.weight}
+                style:font-size={letter.font ? `${letter.size}em` : null}
+                style:transform={letter.x || letter.y ? `translate(${letter.x}px, ${letter.y}px)` : null}
+                >{letter.char}</span
+            >
+        {/each}
+    {:else}
+        {line.text}
+    {/if}
+{/snippet}
+
+<!-- The loss animation draws every piece with data-ink in its ink: the word, or each of its letters or halves -->
+{#snippet wordLine(line: Line)}
+    {@const ink = line.letters || has("splitMirror") ? null : line.color}
     <div
         class="word"
-        data-ink={color}
-        style={inkStyle(color, colorblind)}
-        style:transform="translate(-50%, calc(-50% + {offset}px))"
+        data-ink={ink}
+        style={ink ? inkStyle(ink, colorblind) : null}
+        style:transform="translate(-50%, calc(-50% + {line.offset}px))"
+        style:filter={has("blur") ? `blur(${BLUR_PX * zoom}px)` : null}
     >
-        {text}
+        {#if has("splitMirror")}
+            <SplitMirror ink={line.letters ? null : line.color} {colorblind}>{@render content(line)}</SplitMirror>
+        {:else}
+            {@render content(line)}
+        {/if}
     </div>
 {/snippet}
 
@@ -183,63 +299,26 @@
     <!-- Blink only fades the word and its rule tags, the background stays. The tags get every effect of the word. -->
     {#if opacity > 0}
         <div bind:this={anchor} class="anchor" style:transform style:opacity={opacity < 1 ? opacity : null}>
-            <!-- The word comes first: the loss animation reads it as the anchor's first child and draws every piece of
-                 it with data-ink in that ink -->
-            {#if !hideWord && challenge.second && secondWord}
-                <div class="pair" style:font-size="{fontSize}px">
-                    {@render colorWord(shownWord, challenge.color, -lineOffset)}
-                    {@render colorWord(secondWord, challenge.second.color, lineOffset)}
+            {#if !hideWord}
+                <!-- The words come first: the loss animation reads them as the anchor's first child -->
+                <div class="lines" style:font-size="{fontSize}px">
+                    {#each lines as line, index (index)}
+                        {@render wordLine(line)}
+                    {/each}
                 </div>
-            {:else if !hideWord}
-                <!-- SPAM! is not about the color, its characters light up in plain ink -->
-                <div
-                    class="word"
-                    data-ink={pieces ? null : challenge.color}
-                    style={pieces ? null : inkStyle(challenge.color, colorblind && !has("spam"))}
-                    style:font-size="{fontSize}px"
-                    style:filter={has("blur") ? "blur(10px)" : null}
-                >
-                    {#if has("spam")}
-                        {#each [...shownWord] as character, index (index)}
-                            <span style:color={index < spamCount ? null : SPAM_DIM}>{character}</span>
+                {#if afterimage > 0}
+                    <!-- NEGATIVE: the words in their negative colors, behind them -->
+                    <div
+                        class="lines afterimage"
+                        style:font-size="{fontSize}px"
+                        style:opacity={afterimage}
+                        style:transform="translate({AFTERIMAGE_X_PX * zoom}px, {AFTERIMAGE_Y_PX * zoom}px)"
+                    >
+                        {#each lines as line, index (index)}
+                            {@render wordLine(line)}
                         {/each}
-                    {:else if has("splitMirror")}
-                        <SplitMirror text={shownWord} color={challenge.color} {colorblind} />
-                    {:else if has("fontFlip")}
-                        {#each flipped as letter, index (index)}
-                            <span
-                                class="letter"
-                                data-ink={challenge.color}
-                                style={inkStyle(challenge.color, colorblind)}
-                                style:font-family={letter.font.family}
-                                style:font-weight={letter.font.weight}
-                                style:font-size="{letter.size}em">{letter.char}</span
-                            >
-                        {/each}
-                    {:else if has("assemble")}
-                        {#each assembled as letter, index (index)}
-                            <span
-                                class="letter"
-                                data-ink={challenge.color}
-                                style={inkStyle(challenge.color, colorblind)}
-                                style:transform="translate({letter.x}px, {letter.y}px)">{letter.char}</span
-                            >
-                        {/each}
-                    {:else}
-                        {shownWord}
-                    {/if}
-                </div>
-            {/if}
-            {#if afterimage > 0 && !hideWord}
-                <!-- NEGATIVE: the word in its negative colors, behind the word -->
-                <div
-                    class="word afterimage"
-                    style={inkStyle(challenge.color, colorblind)}
-                    style:font-size="{fontSize}px"
-                    style:opacity={afterimage}
-                >
-                    {shownWord}
-                </div>
+                    </div>
+                {/if}
             {/if}
             {#if tags.length > 0}
                 <div
@@ -288,27 +367,26 @@
         top: 50%;
     }
 
+    /* Zero-size like the anchor, the words are placed around it */
+    .lines {
+        position: absolute;
+    }
+
     .word {
         position: absolute;
-        transform: translate(-50%, -50%);
         font-family: Orbitron, sans-serif;
         font-weight: 900;
         line-height: 1;
         white-space: nowrap;
     }
 
-    /* Zero-size like the anchor, the two words are placed around it */
-    .pair {
-        position: absolute;
-    }
-
-    .letter {
+    /* Moved or in its own font; SPAM! letters alone stay inline, kerned like the plain word */
+    .placed {
         display: inline-block;
     }
 
     .afterimage {
         z-index: -1;
-        transform: translate(calc(-50% + 12px), calc(-50% + 8px));
         filter: invert(1);
     }
 </style>
