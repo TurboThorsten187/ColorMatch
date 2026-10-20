@@ -33,10 +33,13 @@ files.
   shape: `SHAPE_WORDS`/`wordFor` in `src/game/colors.ts` give the words, `src/ui/shapes.ts` fills the letters
   (`inkStyle`) and the background modifier (`backgroundStyle`) with SVG shape tiles; every screen that shows a color
   word takes a `colorblind` prop. `LossScreen` plays the loss animation (timeline in
-  `lossAnimation.ts`, driven by the time since the loss) before `GameOverScreen` switches on. It rasterizes the
-  anchor's first child: the word itself, or every piece in it with `data-ink` (split mirror halves, Font Flip and
-  Assemble letters, the two words), with its font, ink, transforms and `data-left-half` cut; blocks keep the pixel's
-  color. Negative inverts App's `.playfield` (level, timer, hints) while `isNegative`; the low time frame
+  `lossAnimation.ts`, driven by the time since the loss) before `GameOverScreen` switches on. `ChallengeScreen`
+  draws every word (two for `twoWords`) with one snippet: as one text, or letter by letter for Font Flip, Assemble
+  and SPAM!, inside `SplitMirror` (which renders it twice) for Symmetry; the Negative afterimage reuses it. Only the leaves
+  carry `data-ink` (the plain word, a Symmetry half of plain text, or each letter), never their wrappers. Assemble's start points lie on the screen edges and are mapped
+  into the transformed anchor with `toAnchor`; blur, the afterimage offset and the shake shrink with Zoom. The loss
+  animation rasterizes the anchor's first child, every `data-ink` piece with its font, ink and transforms, cut at
+  the middle of its closest `data-left-half`; blocks keep the pixel's color. Negative inverts App's `.playfield` (level, timer, hints) while `isNegative`; the low time frame
   (`lowTimeGlow`, from `LOW_TIME_SHARE` of real time left, also on Count Up) lies outside of it so it stays red. `src/main.ts` awaits `loadFonts()` before mounting because
   the word size is fitted by measuring the real font. `sound.ts` wraps Web Audio: `unlockAudio()` on every input
   (browsers need a gesture; on touch only `pointerup` counts), each sound is built from oscillators when it plays.
@@ -57,8 +60,8 @@ files.
 - Awards are defined in `src/game/awards.ts`; `src/game/stats.ts` counts cleared levels per award, is saved after every
   cleared level and reports newly unlocked awards (toast in game, list on game over).
 - Modifiers belong to groups (`MODIFIER_GROUPS` in `src/game/modifiers.ts`, all mirrors are one group) with a tier.
-  Groups with `alone` (the nine newer ones, `zoom` to `twoWords`) conflict with every group, so they never share a level,
-  get no practice level and are left out of surges.
+  Groups that must not share a level name each other in `conflictsWith` (only one of them needs to), and a level
+  has at most one `rule` group. With Symmetry the mirror group only turns the word upside down.
   `src/game/progression.ts` holds the per-game curriculum (`PlayingState.curriculum`: a new group every 3 levels from
   level 5, alone on its intro level; an intro due on a surge level moves to the level after it), the per-level pick, the late game ramp from level 40, surge levels (`isSurgeLevel`,
   announced by the `surgeBanner` phase), the time limit (Don't Click levels get `NO_CLICK_TIME_SHARE` of it) and the tempo of animated modifiers

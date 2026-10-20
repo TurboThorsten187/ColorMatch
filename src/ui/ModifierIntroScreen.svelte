@@ -165,7 +165,7 @@
                 <span style:color={index < spamLit ? null : SPAM_DIM}>{character}</span>
             {/each}
         {:else if intro.id === "splitMirror"}
-            <SplitMirror text={exampleText} color={intro.example.color} {colorblind} />
+            <SplitMirror ink={intro.example.color} {colorblind}>{exampleText}</SplitMirror>
         {:else if intro.id === "fontFlip"}
             {#each flipped as letter, index (index)}
                 <span

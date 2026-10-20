@@ -82,6 +82,26 @@ describe("createChallenge", () => {
         expect(lures / falses).toBeLessThan(0.4);
     });
 
+    it("keeps the background off the inks of both words", () => {
+        for (let run = 0; run < 500; run++) {
+            const challenge = createChallenge(["background", "twoWords"], 20, Math.random);
+            if (!challenge.second) throw new Error("The second word is missing");
+
+            expect(challenge.background).not.toBe(challenge.color);
+            expect(challenge.background).not.toBe(challenge.second.color);
+        }
+    });
+
+    it("only turns the word upside down with SYMMETRY, a mirror left to right would change nothing", () => {
+        const mirrors = new Set<ModifierId>();
+        for (let run = 0; run < 200; run++) {
+            const { modifiers } = createChallenge(["mirror", "splitMirror"], 20, Math.random);
+            for (const id of modifiers) mirrors.add(id);
+        }
+
+        expect([...mirrors].sort()).toEqual(["mirrorVertical", "splitMirror"]);
+    });
+
     it("expects true with two words when both are true or both are false", () => {
         const combinations = new Set<string>();
         for (let run = 0; run < 2000; run++) {

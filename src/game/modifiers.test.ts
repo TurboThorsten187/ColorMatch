@@ -22,12 +22,20 @@ describe("modifier groups", () => {
         expect(conflicts("invertInput", "mirror")).toBe(false);
     });
 
-    it("never combine a group that comes alone", () => {
-        for (const group of MODIFIER_GROUPS) {
-            expect(conflicts("zoom", group.id)).toBe(true);
-            expect(conflicts(group.id, "twoWords")).toBe(true);
+    it("keep apart the pairs that do not work together", () => {
+        expect(conflicts("splitMirror", "scrambled")).toBe(true);
+        expect(conflicts("splitMirror", "spam")).toBe(true);
+        for (const id of ["assemble", "negative", "wait", "twoWords"] as const) {
+            expect(conflicts(id, "blink")).toBe(true);
         }
+        expect(conflicts("wait", "invertInput")).toBe(true);
+
         expect(conflicts("mirror", "rotation")).toBe(false);
+        expect(conflicts("zoom", "moving")).toBe(false);
+        expect(conflicts("fontFlip", "scrambled")).toBe(false);
+        expect(conflicts("assemble", "spam")).toBe(false);
+        expect(conflicts("negative", "invertInput")).toBe(false);
+        expect(conflicts("twoWords", "splitMirror")).toBe(false);
     });
 
     it("conflict both ways", () => {

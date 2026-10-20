@@ -69,8 +69,6 @@ export interface ModifierGroup {
     readonly variants: readonly ModifierId[];
     // Changes which input is correct; a level has at most one of these
     readonly rule: boolean;
-    // Never shares a level with another group
-    readonly alone: boolean;
     readonly conflictsWith: readonly ModifierGroupId[];
 }
 
@@ -80,9 +78,9 @@ function group(
     id: ModifierGroupId,
     tier: Tier,
     variants: readonly ModifierId[],
-    { rule = false, alone = false, conflictsWith = [] as readonly ModifierGroupId[] } = {},
+    { rule = false, conflictsWith = [] as readonly ModifierGroupId[] } = {},
 ): ModifierGroup {
-    return { id, tier, variants, rule, alone, conflictsWith };
+    return { id, tier, variants, rule, conflictsWith };
 }
 
 export const MODIFIER_GROUPS: readonly ModifierGroup[] = [
@@ -100,18 +98,22 @@ export const MODIFIER_GROUPS: readonly ModifierGroup[] = [
     // SPAM! replaces the word, so nothing that is about the word or its color makes sense with it
     group("spam", "hard", ["spam"], {
         rule: true,
-        conflictsWith: ["background", "blink", "scrambled"],
+        conflictsWith: ["background", "blink", "scrambled", "splitMirror"],
     }),
-    // These always come alone, none of them is combined with another group yet
-    group("zoom", "easy", ["zoom"], { alone: true }),
-    group("splitMirror", "easy", ["splitMirror"], { alone: true }),
-    group("countUp", "easy", ["countUp"], { alone: true }),
-    group("assemble", "medium", ["assemble"], { alone: true }),
-    group("fontFlip", "medium", ["fontFlip"], { alone: true }),
-    group("negative", "medium", ["negative"], { alone: true }),
-    group("wait", "medium", ["wait"], { rule: true, alone: true }),
-    group("doubleTap", "medium", ["doubleTap"], { rule: true, alone: true }),
-    group("twoWords", "hard", ["twoWords"], { rule: true, alone: true }),
+    group("zoom", "easy", ["zoom"]),
+    // Half of a scrambled word is too few letters to recognize it
+    group("splitMirror", "easy", ["splitMirror"], { conflictsWith: ["scrambled"] }),
+    group("countUp", "easy", ["countUp"]),
+    // The word would fade before its letters have arrived
+    group("assemble", "medium", ["assemble"], { conflictsWith: ["blink"] }),
+    group("fontFlip", "medium", ["fontFlip"]),
+    // The word would be gone before the negative is over, so it would show almost only in the wrong colors
+    group("negative", "medium", ["negative"], { conflictsWith: ["blink"] }),
+    // Blink fades the rule tags too, so NOW would never show
+    group("wait", "medium", ["wait"], { rule: true, conflictsWith: ["blink"] }),
+    group("doubleTap", "medium", ["doubleTap"], { rule: true }),
+    // Two words and two inks are too much to read before they fade
+    group("twoWords", "hard", ["twoWords"], { rule: true, conflictsWith: ["blink"] }),
 ];
 
 export function groupById(id: ModifierGroupId): ModifierGroup {
@@ -123,13 +125,7 @@ export function groupById(id: ModifierGroupId): ModifierGroup {
 export function conflicts(a: ModifierGroupId, b: ModifierGroupId): boolean {
     const first = groupById(a);
     const second = groupById(b);
-    return (
-        first.alone ||
-        second.alone ||
-        (first.rule && second.rule) ||
-        first.conflictsWith.includes(b) ||
-        second.conflictsWith.includes(a)
-    );
+    return (first.rule && second.rule) || first.conflictsWith.includes(b) || second.conflictsWith.includes(a);
 }
 
 // The groups of a level's modifiers, in list order

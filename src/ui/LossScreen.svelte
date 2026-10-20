@@ -32,6 +32,8 @@
     let { level, lostAt, kind, elapsed, highscore, width, height, colorblind, flipControls }: Props = $props();
 
     const SHAKE_PX = 7;
+    // SYMMETRY cuts at the middle only, letters of ASSEMBLE may still be far above, below or left of the word
+    const CUT_REACH_PX = 10000;
 
     // A new shake for every loss
     const offsets: readonly (readonly [number, number])[] = Array.from({ length: SHAKE_OFFSETS }, () => [
@@ -108,11 +110,16 @@
         const boxWidth = piece.offsetWidth;
         const boxHeight = piece.offsetHeight;
         context.save();
-        context.transform(...matrixArgs(placement(piece, target)));
-        if (piece.dataset.leftHalf !== undefined) {
+        // SYMMETRY: the piece, or the half of the word it lies in, only shows left of that half's middle
+        const half = piece.closest<HTMLElement>("[data-left-half]");
+        if (half) {
+            context.transform(...matrixArgs(placement(half, target)));
             context.beginPath();
-            context.rect(0, 0, boxWidth / 2, boxHeight);
+            context.rect(-CUT_REACH_PX, -CUT_REACH_PX, CUT_REACH_PX + half.offsetWidth / 2, 2 * CUT_REACH_PX);
             context.clip();
+            context.transform(...matrixArgs(placement(piece, half)));
+        } else {
+            context.transform(...matrixArgs(placement(piece, target)));
         }
         context.font = `${style.fontWeight} ${style.fontSize} ${style.fontFamily}`;
         context.fillStyle = COLOR_CSS[ink];
@@ -122,8 +129,8 @@
         context.restore();
     }
 
-    // From the piece's own box to the anchor: the layout offsets and the transforms of the piece and its positioned
-    // parents, each around its transform origin
+    // From the piece's own box to `target` (the anchor, or a half of the word): the layout offsets and the transforms
+    // of the piece and its positioned parents, each around its transform origin
     function placement(piece: HTMLElement, target: HTMLElement): DOMMatrix {
         let matrix = new DOMMatrix();
         for (

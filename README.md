@@ -57,8 +57,7 @@ Nach dem letzten Druck bei Spam bleibt das ganz erleuchtete SPAM! noch 0,12 s st
 lang, dass weiteres Tippen nichts bringt.
 
 Ein neuer Modifier kommt in seinem Einführungslevel allein und mit 1 s Extrazeit; fällt die Einführung auf ein
-Surge-Level, kommt sie ein Level später. Die neun Modifier von Zoom bis Duo kommen vorerst immer allein, nie
-zusammen mit anderen, also auch nicht im Surge. Sonst wird gemischt: bis Level 14
+Surge-Level, kommt sie ein Level später. Sonst wird gemischt: bis Level 14
 höchstens ein Modifier gleichzeitig, bis Level 29 zwei, danach drei, und frisch eingeführte kommen häufiger. Ab Level
 15 kommt ein neuer Modifier im Level nach seiner Einführung meist gleich noch einmal, zusammen mit einem bekannten.
 Jeder weitere Modifier in einem Level bringt 0,3 s Extrazeit. Bei Don't Click läuft nur 60 % der Zeit, damit man
@@ -67,8 +66,12 @@ werden mit dem Level schneller, so wie die Zeit pro Level schrumpft (gut doppelt
 ab Level 80). Jeder
 startet bei seiner Einführung im normalen Tempo und holt dann innerhalb von 8 Leveln auf; ein spät eingeführter wird
 also schneller schnell als ein früher. Höchstens einer pro Level ändert die Regeln (Inverted
-Input, Don't Click, Spam, Wait, Double Tap, Duo), und dieselbe Kombination kommt nie zweimal hintereinander. Die
-Hinweise DON'T CLICK, INVERTED INPUT, WAIT/NOW, DOUBLE TAP und BOTH OR NEITHER hängen am Wort und bekommen jeden Modifier mit: Sie werden mit ihm gespiegelt (stehen dann auch mal
+Input, Don't Click, Spam, Wait, Double Tap, Duo), und dieselbe Kombination kommt nie zweimal hintereinander.
+Nie zusammen kommen Symmetry mit Scrambled oder Spam, Fade mit Assemble, Negative, Wait, Duo oder Spam und Spam
+mit Background oder Scrambled. Mit Symmetry steht Mirrored nur auf dem Kopf, denn links-rechts gespiegelt sähe das
+Wort gleich aus. Bei Duo wirken Scrambled, Blurred, Symmetry, Assemble, Font Flip und das Nachbild von Negative auf
+beide Wörter. Die
+Hinweise DON'T CLICK, INVERTED INPUT, WAIT/NOW, DOUBLE TAP und BOTH OR NEITHER hängen am Wort und bekommen die meisten Modifier mit: Sie werden mit ihm gespiegelt (stehen dann auch mal
 darunter), gedreht, bewegt und unscharf, blenden mit aus und ihre Buchstaben werden gemischt.
 
 Nach der letzten Einführung (Level 65) wird es weiter härter: Von Level 40 bis 80 werden Level ohne Modifier immer

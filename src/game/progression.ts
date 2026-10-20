@@ -1,4 +1,4 @@
-import { conflicts, groupById, MODIFIER_GROUPS, type ModifierGroupId, TIERS } from "./modifiers.ts";
+import { conflicts, MODIFIER_GROUPS, type ModifierGroupId, TIERS } from "./modifiers.ts";
 import type { Rng } from "./random.ts";
 
 // The order in which one game introduces the modifier groups: shuffled per game, but easy before medium before hard
@@ -133,14 +133,9 @@ export function pickGroups(
     const known = curriculum.filter((id) => introLevel(curriculum, id) < level);
     const newest = known.at(-1);
     if (!newest) return [];
-    // A group that comes alone has no place in a surge and no practice level together with a known group
-    if (isSurgeLevel(level)) {
-        const combinable = known.filter((id) => !groupById(id).alone);
-        return pick(combinable, SURGE_GROUP_COUNT, level, curriculum, rng, []);
-    }
+    if (isSurgeLevel(level)) return pick(known, SURGE_GROUP_COUNT, level, curriculum, rng, []);
 
-    const practice =
-        level === introLevel(curriculum, newest) + 1 && maxGroupCount(level) >= 2 && !groupById(newest).alone;
+    const practice = level === introLevel(curriculum, newest) + 1 && maxGroupCount(level) >= 2;
     for (let attempt = 0; attempt < PICK_ATTEMPTS; attempt++) {
         let picked: ModifierGroupId[];
         if (practice && rng() < PRACTICE_CHANCE) {
