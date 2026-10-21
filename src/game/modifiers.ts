@@ -102,7 +102,8 @@ export const MODIFIER_GROUPS: readonly ModifierGroup[] = [
         rule: true,
         conflictsWith: ["background", "blink", "scrambled", "splitMirror"],
     }),
-    group("zoom", "easy", ["zoom"], { hidesShapes: true }),
+    // A tiny word blurred is only a smudge
+    group("zoom", "easy", ["zoom"], { conflictsWith: ["blur"], hidesShapes: true }),
     // Half of a scrambled word is too few letters to recognize it
     group("splitMirror", "easy", ["splitMirror"], { conflictsWith: ["scrambled"] }),
     group("countUp", "easy", ["countUp"]),

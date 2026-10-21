@@ -310,7 +310,7 @@
         data-ink={ink}
         style={ink ? inkStyle(ink, colorblind) : null}
         style:transform="translate(-50%, calc(-50% + {line.offset}px))"
-        style:filter={has("blur") ? `blur(${blurPx * zoom}px)` : null}
+        style:filter={has("blur") ? `blur(${blurPx}px)` : null}
     >
         {#if has("splitMirror")}
             <SplitMirror ink={line.letters ? null : line.color} {colorblind}>{@render content(line)}</SplitMirror>
