@@ -363,6 +363,7 @@
     }
 
     .gotit {
+        --button-color: var(--accent);
         margin-top: auto;
         width: min(400px, 100%);
         height: 56px;
@@ -373,7 +374,6 @@
         color: #fff;
         font-family: inherit;
         font-size: 13px;
-        box-shadow: 4px 4px 0 var(--accent);
         cursor: pointer;
     }
 

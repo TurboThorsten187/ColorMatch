@@ -50,10 +50,12 @@ files.
 - `src/App.svelte` – the only stateful place: rAF loop, keyboard and pointer input (left/right screen half, mapped to
   an answer by `answerOn` in `settings.ts` because FLIP CONTROLS swaps them; every screen that names a side takes a
   `flipControls` prop; outside
-  of a level arrow keys and WASD move the focus between buttons by position, `src/ui/spatialNav.ts`; the white
-  highlight only shows while `keyboardMode` puts the `keys` class on the stage; a tapped or clicked button flashes
-  white first, `flashButton` holds the click back for `BUTTON_FLASH_MS` and replays it, `data-no-flash` opts out; no
-  button is white otherwise),
+  of a level arrow keys and WASD move the focus between buttons by position, `src/ui/spatialNav.ts`, and a moved
+  mouse focuses the button under it (`selectHovered`); the selection only shows while `keyboardMode` puts the `keys`
+  class on the stage, together with the `key-help` line. App's global button CSS gives every button a shadow in a dark
+  shade of its `--button-color` (gray without one, `--shade` sets the shadow alone) and colors border and text of the
+  selected one in it (the accent without one); a pressed button (tap, click, Enter, Space) sinks into its shadow first,
+  `pressButton` holds the click back for `BUTTON_PRESS_MS` and replays it, `data-no-press` opts out),
   pause on `blur`/`visibilitychange`, highscore, settings and stats persistence, sounds and stats for game transitions
   in `update()` (a hardcore game records no stats and no awards). Settings and stats screens are a `view` in App, not
   a game phase. The stage sets the six game colors as CSS variables (`--red` … `--cyan`); components use them, or

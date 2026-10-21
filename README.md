@@ -6,18 +6,22 @@ Ein schnelles Reaktionsspiel im Browser: Passt das angezeigte Wort zu seiner Sch
 | ------------------------------------- | ---------------------------- | ------------------------------ |
 | TRUE – Wort und Farbe stimmen überein | **←** oder **A**             | linke Bildschirmhälfte tippen  |
 | FALSE – Wort und Farbe passen nicht   | **→** oder **D**             | rechte Bildschirmhälfte tippen |
-| In Menüs einen Button auswählen       | Pfeiltasten oder **WASD**    | –                              |
+| In Menüs einen Button auswählen       | Pfeiltasten oder **WASD**    | Maus darüber bewegen           |
 | Ausgewählten Button drücken           | **Enter** oder **Leertaste** | Button antippen                |
 | Starten, Fortsetzen                   | **Enter**                    | irgendwo tippen                |
 | Zurück zum Menü                       | **Esc** oder **Backspace**   | ◄ / MENU                       |
 
 Mit **FLIP CONTROLS** in SETUP sind die Seiten getauscht: FALSE links (**←**, **A**, linke Hälfte), TRUE rechts.
 
-Alle Menüs lassen sich nur mit der Tastatur bedienen: Der ausgewählte Button ist weiß gefüllt, bewegt wird er mit den
-Pfeiltasten oder WASD zum nächsten Button in der Richtung (mit einem leisen Blip). Die Hervorhebung erscheint nur beim
-Spielen mit der Tastatur; der erste Tastendruck zeigt, wo die Auswahl steht. Im Menü ist START GAME ausgewählt, nach
-Game Over RETRY, sobald es reagiert. In SETUP ändern ← und → die Lautstärke, wenn die Lautstärke-Leiste ausgewählt ist.
-Ein angetippter oder angeklickter Button blitzt kurz weiß auf, bevor er auslöst; sonst ist kein Button weiß.
+Jeder Button hat eine Farbe (START GAME gelb, HARDCORE und SETUP rot, STATS und REPLAY blau, RETRY grün; die übrigen
+nehmen Gelb, im Hardcore-Spiel Rot) und darunter einen Schatten in einer dunklen Stufe davon, bei weißen Buttons grau.
+Alle Menüs lassen sich nur mit der Tastatur bedienen: Beim ausgewählten Button nehmen Rahmen und Schrift seine Farbe an,
+bewegt wird die Auswahl mit den Pfeiltasten oder WASD zum nächsten Button in der Richtung (mit einem leisen Blip). Die
+Hervorhebung erscheint nur beim Spielen mit der Tastatur, dann steht unten auch eine kurze Tastenhilfe; der erste
+Tastendruck zeigt, wo die Auswahl steht. Im Browser wählt die Maus genauso aus: Der Button unter ihr ist ausgewählt, die
+Pfeiltasten machen dort weiter. Im Menü ist START GAME ausgewählt, nach Game Over RETRY, sobald es reagiert. In SETUP
+ändern ← und → die Lautstärke, wenn die Lautstärke-Leiste ausgewählt ist. Ein gedrückter Button (antippen, klicken,
+Enter oder Leertaste) rutscht kurz in seinen Schatten und färbt Rahmen und Schrift, bevor er auslöst.
 
 Wechselt man den Tab oder die App, pausiert das Spiel; danach geht es mit derselben Aufgabe und der Restzeit weiter.
 
@@ -85,8 +89,8 @@ zehnte Level ein **Surge**: Ein Banner zeigt 0,9 s lang SURGE, dann kommen fünf
 weiteren Surge einer mehr, soweit sie zusammenpassen (höchstens eine Regel). Ein Surge dauert immer 1,3 s, ohne
 Extrazeit pro Modifier.
 
-**HARDCORE** öffnet sich im Menü, sobald ein normales Spiel Level 50 geschafft hat (vorher ist der Button grau und
-zeigt ein Schloss und LEVEL 50). Es gibt keine Einführungen: Alle Modifier können ab Level 1 kommen, mit voller
+**HARDCORE** öffnet sich im Menü, sobald ein normales Spiel Level 50 geschafft hat (vorher ist der Button grau mit
+Schloss und zeigt beim Drücken kurz CLEAR LEVEL 50). Es gibt keine Einführungen: Alle Modifier können ab Level 1 kommen, mit voller
 Stärke und 2,5-fachem Tempo, die Grundzeit ist immer 1 s (plus die Extrazeit der Stufen). Ab Level 1 einer, alle 3 Level darf
 einer mehr gleichzeitig kommen, nie ein Level ohne Modifier, und jede Anzahl bis zum Höchstmaß ist gleich
 wahrscheinlich. Surges kommen ab Level 10 alle 5 Level (fünf Modifier, bei jedem einer mehr, 1,3 s). Hardcore hat

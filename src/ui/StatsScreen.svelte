@@ -49,8 +49,10 @@
 
     <div class="badges">
         {#each AWARDS as award (award.id)}
+            <!-- Only selects, so it does not sink in like the buttons that act -->
             <button
                 class="badge-button"
+                data-no-press
                 class:selected={award.id === selectedId}
                 aria-pressed={award.id === selectedId}
                 aria-label="{award.name}{unlocked.has(award.id) ? '' : ', locked'}"
@@ -162,24 +164,26 @@
         font-size: 12px;
     }
 
-    .badge-button {
+    /* A tile, not a framed button: the badge is its frame, the outline around it the selection. .badges outweighs
+       App's shadow for every button. */
+    .badges .badge-button {
         padding: 0;
         border: none;
         border-radius: 0;
         background: none;
         font: inherit;
         cursor: pointer;
+        box-shadow: none;
     }
 
-    .badge-button.selected {
+    /* On the badge, App removes the focus outline of buttons */
+    .badge-button.selected :global(.badge) {
         outline: 2px solid #fff;
         outline-offset: 3px;
     }
 
-    /* On the white of the keyboard selection the badge turns black */
     :global(.keys) .badge-button:focus :global(.badge) {
-        border-color: #000;
-        color: #000;
+        outline-color: var(--select);
     }
 
     .detail {

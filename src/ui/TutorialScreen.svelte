@@ -264,11 +264,12 @@
         left: 50%;
         bottom: calc(env(safe-area-inset-bottom) + 40px);
         transform: translateX(-50%);
-        padding: 10px;
-        border: none;
-        background: none;
-        color: #bbb;
-        font-size: 10px;
+        height: 44px;
+        padding: 0 16px;
+        border: 3px solid #fff;
+        background: #000;
+        color: #fff;
+        font-size: 11px;
     }
 
     .half {

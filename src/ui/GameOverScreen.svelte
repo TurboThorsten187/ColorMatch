@@ -216,9 +216,9 @@
     }
 
     .retry {
+        --button-color: var(--green);
         background: #000;
         color: #fff;
-        box-shadow: 4px 4px 0 var(--green);
     }
 
     .menu {
