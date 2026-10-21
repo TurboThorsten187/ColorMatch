@@ -83,7 +83,9 @@ mit Background oder Scrambled. Mit Symmetry steht Mirrored nur auf dem Kopf, den
 Wort gleich aus. Bei Duo wirken Scrambled, Blurred, Symmetry, Assemble, Font Flip und das Nachbild von Negative auf
 beide Wörter. Die
 Hinweise DON'T CLICK, INVERTED INPUT, WAIT/NOW, DOUBLE TAP und BOTH OR NEITHER hängen am Wort und bekommen die meisten Modifier mit: Sie werden mit ihm gespiegelt (stehen dann auch mal
-darunter), gedreht, bewegt und unscharf, blenden mit aus und ihre Buchstaben werden gemischt.
+darunter), gedreht, bewegt und unscharf, blenden mit aus und ihre Buchstaben werden gemischt. Jedes Schild trägt vorn und
+hinten ein Pixel-Icon seiner Regel (Kreuz, Pfeile links/rechts, Pause und bei NOW Play, zwei Punkte, Gleichheitszeichen),
+damit man die Regel erkennt, ohne zu lesen; das Play-Icon hinten ist gespiegelt und zeigt so auch zum Text.
 
 Nach der letzten Einführung (Level 65) wird es weiter härter: Von Level 40 bis 80 werden Level ohne Modifier immer
 seltener und verschwinden dann ganz. Bis Level 40 kommt meist nur ein Modifier, danach werden mehrere häufiger, und ab

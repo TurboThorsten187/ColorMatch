@@ -20,6 +20,8 @@
     import { fitScale, textWidth } from "./fitText.ts";
     import { emWidth, flipLetters } from "./fontFlip.ts";
     import { type Font, WORD_FONT, WORD_WEIGHT } from "./fonts.ts";
+    import { RULE_ICONS } from "./ruleIcons.ts";
+    import RuleSign from "./RuleSign.svelte";
     import { backgroundStyle, inkStyle } from "./shapes.ts";
     import SplitMirror from "./SplitMirror.svelte";
 
@@ -126,14 +128,23 @@
     const shownWords = $derived(
         words.map((text, index) => (has("scrambled") ? scramble(text, lineSeed(index), played("scrambled")) : text)),
     );
+    // The rule signs with their icons; SCRAMBLED mixes only the text
     const tags = $derived(
         [
-            ...(has("noClick") ? ["DON'T CLICK"] : []),
-            ...(has("invertInput") ? ["INVERTED INPUT"] : []),
-            ...(has("wait") ? [elapsed < timeLimit * WAIT_SHARE ? "WAIT" : "NOW"] : []),
-            ...(has("doubleTap") ? ["DOUBLE TAP"] : []),
-            ...(has("twoWords") ? ["BOTH OR NEITHER"] : []),
-        ].map((tag) => (has("scrambled") ? scrambleWords(tag, challenge.seed, played("scrambled")) : tag)),
+            ...(has("noClick") ? [{ text: "DON'T CLICK", icon: RULE_ICONS.noClick }] : []),
+            ...(has("invertInput") ? [{ text: "INVERTED INPUT", icon: RULE_ICONS.invertInput }] : []),
+            ...(has("wait")
+                ? [
+                      elapsed < timeLimit * WAIT_SHARE
+                          ? { text: "WAIT", icon: RULE_ICONS.wait }
+                          : { text: "NOW", icon: RULE_ICONS.now },
+                  ]
+                : []),
+            ...(has("doubleTap") ? [{ text: "DOUBLE TAP", icon: RULE_ICONS.doubleTap }] : []),
+            ...(has("twoWords") ? [{ text: "BOTH OR NEITHER", icon: RULE_ICONS.twoWords }] : []),
+        ].map((tag) =>
+            has("scrambled") ? { ...tag, text: scrambleWords(tag.text, challenge.seed, played("scrambled")) } : tag,
+        ),
     );
     const byLetter = $derived(has("fontFlip") || has("assemble") || has("spam"));
     let tagsWidth = $state(0);
@@ -345,9 +356,11 @@
                     bind:clientHeight={tagsHeight}
                 >
                     {#each tags as tag, index (index)}
-                        <span class="tag" style:filter={has("blur") ? `blur(${TAG_BLUR_EM_PER_PX * blurPx}em)` : null}
-                            >{tag}</span
-                        >
+                        <RuleSign
+                            icon={tag.icon}
+                            text={tag.text}
+                            filter={has("blur") ? `blur(${TAG_BLUR_EM_PER_PX * blurPx}em)` : null}
+                        />
                     {/each}
                 </div>
             {/if}
@@ -369,14 +382,7 @@
         flex-direction: column;
         align-items: center;
         gap: 8px;
-    }
-
-    .tag {
-        padding: 8px 10px;
-        background: #fff;
-        color: #000;
         font-size: max(11px, calc(1.5 * var(--unit)));
-        white-space: nowrap;
     }
 
     /* Zero-size point in the center that all transformations pivot around */
