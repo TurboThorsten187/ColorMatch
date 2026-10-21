@@ -115,7 +115,7 @@
 
     <div class="buttons">
         <button class="stats" onclick={onstats}>STATS</button>
-        <button class="setup" onclick={onsetup}>SETUP</button>
+        <button class="setup" onclick={onsetup}>SETTINGS</button>
     </div>
 </div>
 

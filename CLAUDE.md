@@ -56,7 +56,7 @@ files.
   bottom. App's global button CSS colors border and text of the selected button in its `--button-color` (the accent
   without one); a pressed button (tap, click, Enter, Space) shrinks a little first, `pressButton` holds the click back
   for `BUTTON_PRESS_MS` and replays it, `data-no-press` opts out. Buttons have no shadows. Menu and game over redefine
-  `--unit` with a stronger height cap, so low browser windows fit without scrolling; SETUP shrinks its rows and gaps
+  `--unit` with a stronger height cap, so low browser windows fit without scrolling; SETTINGS shrinks its rows and gaps
   with the height instead),
   pause on `blur`/`visibilitychange`, highscore, settings and stats persistence, sounds and stats for game transitions
   in `update()` (a hardcore game records no stats and no awards). Settings and stats screens are a `view` in App, not

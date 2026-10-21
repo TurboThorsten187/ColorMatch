@@ -11,16 +11,16 @@ Ein schnelles Reaktionsspiel im Browser: Passt das angezeigte Wort zu seiner Sch
 | Starten, Fortsetzen                   | **Enter**                    | irgendwo tippen                |
 | Zurück zum Menü                       | **Esc** oder **Backspace**   | ◄ / MENU                       |
 
-Mit **FLIP CONTROLS** in SETUP sind die Seiten getauscht: FALSE links (**←**, **A**, linke Hälfte), TRUE rechts.
+Mit **FLIP CONTROLS** in SETTINGS sind die Seiten getauscht: FALSE links (**←**, **A**, linke Hälfte), TRUE rechts.
 
-Jeder Button hat eine Farbe (START GAME gelb, HARDCORE und SETUP rot, STATS und REPLAY blau, RETRY grün; die übrigen
-nehmen Gelb, im Hardcore-Spiel Rot). Im Browser sind die vier Buttons im Menü gleich groß, und Menü, SETUP und Game Over
+Jeder Button hat eine Farbe (START GAME gelb, HARDCORE und SETTINGS rot, STATS und REPLAY blau, RETRY grün; die übrigen
+nehmen Gelb, im Hardcore-Spiel Rot). Im Browser sind die vier Buttons im Menü gleich groß, und Menü, SETTINGS und Game Over
 passen sich der Fensterhöhe an, damit nichts scrollt.
 Alle Menüs lassen sich nur mit der Tastatur bedienen: Beim ausgewählten Button nehmen Rahmen und Schrift seine Farbe an,
 bewegt wird die Auswahl mit den Pfeiltasten oder WASD zum nächsten Button in der Richtung (mit einem leisen Blip). Die
 Hervorhebung erscheint nur beim Spielen mit der Tastatur, dann steht unten auch eine kurze Tastenhilfe; der erste
 Tastendruck zeigt, wo die Auswahl steht. Im Browser wählt die Maus genauso aus: Der Button unter ihr ist ausgewählt, die
-Pfeiltasten machen dort weiter. Im Menü ist START GAME ausgewählt, nach Game Over RETRY, sobald es reagiert. In SETUP
+Pfeiltasten machen dort weiter. Im Menü ist START GAME ausgewählt, nach Game Over RETRY, sobald es reagiert. In SETTINGS
 ändern ← und → die Lautstärke, wenn die Lautstärke-Leiste ausgewählt ist. Ein gedrückter Button (antippen, klicken,
 Enter oder Leertaste) wird kurz etwas kleiner und färbt Rahmen und Schrift, bevor er auslöst.
 
@@ -110,7 +110,7 @@ Reaktionszeit (nur Level mit TRUE/FALSE-Antwort, bei Wait ab NOW) und Spielzeit 
 schaffen, 10 Surges und je 10 Level mit einem Modifier (alle Spiegel zählen zusammen), jeweils über alle Spiele. Badges antippen zeigt Bedingung und
 Fortschritt. Ein neuer Award erscheint sofort kurz unter dem Timer und wird auf dem Game-Over-Screen aufgelistet.
 
-Unter **SETUP** lassen sich Sound (an/aus, Lautstärke in 8 Stufen), die Scanlines, **OLD COLORS** (die bisherigen
+Unter **SETTINGS** lassen sich Sound (an/aus, Lautstärke in 8 Stufen), die Scanlines, **OLD COLORS** (die bisherigen
 Neon-Farben statt der neuen, nur vorübergehend zum Vergleichen während der Design-Überarbeitung), **COLORBLIND**
 und **FLIP CONTROLS** (TRUE und FALSE tauschen die Seiten, auch im Tutorial und auf den Hinweisen) einstellen. Im
 Farbenblind-Modus steht jede Farbe für eine Form (Rot = HEART, Grün = TRIANGLE, Blau = SQUARE, Gelb = STAR, Lila =
