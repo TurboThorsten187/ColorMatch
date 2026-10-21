@@ -21,7 +21,7 @@
 <style>
     .toast {
         position: absolute;
-        top: calc(env(safe-area-inset-top) + max(56px, calc(6 * var(--unit))));
+        top: calc(env(safe-area-inset-top) + max(76px, calc(8.4 * var(--unit))));
         left: 50%;
         width: min(420px, calc(100% - 48px));
         box-sizing: border-box;

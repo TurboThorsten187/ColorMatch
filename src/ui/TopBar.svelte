@@ -22,7 +22,7 @@
 
     let props: Props = $props();
 
-    const SEGMENTS = Array.from({ length: 12 }, (_, i) => i);
+    const SEGMENTS = Array.from({ length: 24 }, (_, i) => i);
     const CENTER = (SEGMENTS.length - 1) / 2;
 
     const share = $derived(Math.min(1, Math.max(0, props.remaining)));
@@ -33,8 +33,16 @@
     const color = $derived(shown > 0.5 ? inkCss("green") : shown > LOW_TIME_SHARE ? inkCss("yellow") : inkCss("red"));
 </script>
 
+<!-- Level and highscore on top, the timer below them over the full width -->
 <div class="bar" class:inline={props.inline} class:paused={props.paused}>
-    <span class="level">LV {props.level}</span>
+    <div class="labels">
+        <span>LV {props.level}</span>
+        {#if props.paused}
+            <span class="status">PAUSED</span>
+        {:else}
+            <span class="hi">HI {String(props.highscore).padStart(3, "0")}</span>
+        {/if}
+    </div>
     <div
         class="timer"
         role="progressbar"
@@ -47,11 +55,6 @@
             <div class="segment" style:background={Math.abs(i - CENTER) < litPairs ? color : null}></div>
         {/each}
     </div>
-    {#if props.paused}
-        <span class="hi status">PAUSED</span>
-    {:else}
-        <span class="hi">HI {String(props.highscore).padStart(3, "0")}</span>
-    {/if}
 </div>
 
 <style>
@@ -60,8 +63,7 @@
         top: 0;
         left: 0;
         right: 0;
-        display: flex;
-        align-items: center;
+        display: grid;
         gap: 10px;
         padding: calc(env(safe-area-inset-top) + 16px) 24px 14px;
         background: #000;
@@ -75,16 +77,14 @@
         background: none;
     }
 
-    /* Both labels get the same room, so the timer stays centered and does not jump when the level gets a digit */
-    .level,
-    .hi {
-        flex: none;
-        min-width: 6em;
+    .labels {
+        display: flex;
+        justify-content: space-between;
+        gap: 10px;
     }
 
     .hi {
         color: var(--red);
-        text-align: right;
     }
 
     .status {
@@ -92,10 +92,9 @@
     }
 
     .timer {
-        flex: 1;
         display: grid;
-        grid-template-columns: repeat(12, minmax(0, 1fr));
-        gap: 3px;
+        grid-template-columns: repeat(24, minmax(0, 1fr));
+        gap: 2px;
     }
 
     .segment {
