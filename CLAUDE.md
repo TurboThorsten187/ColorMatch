@@ -31,7 +31,7 @@ files.
   starts with `SPAM_BANG_MS` of the solved SPAM! (`isSpamBang`), which App draws from `spamDone`, frozen at the last press.
   Shown names may differ from the ids, which stay for saved stats: `blink` is FADE, `splitMirror` SYMMETRY, `countUp`
   REVERSE TIMER, `twoWords` DUO.
-- `src/ui/` – one Svelte component per screen plus `TopBar` (level, timer; the modifier cards reuse it `inline` and `paused`), `TapHints`, `FeedbackFlash`;
+- `src/ui/` – one Svelte component per screen plus `TopBar` (level and highscore over a 24-block timer, which `AwardToast` sits below; the modifier cards reuse it `inline` and `paused`), `TapHints`, `FeedbackFlash`;
   modifiers are rendered with CSS transforms and filters; the rule tags (DON'T CLICK, INVERTED INPUT) sit in the
   word's anchor and get every effect too. The colorblind setting keeps the six colors internally but shows each as a
   shape: `SHAPE_WORDS`/`wordFor` in `src/game/colors.ts` give the words, `src/ui/shapes.ts` fills the letters
