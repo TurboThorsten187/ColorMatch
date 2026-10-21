@@ -102,8 +102,9 @@ Reaktionszeit (nur Level mit TRUE/FALSE-Antwort, bei Wait ab NOW) und Spielzeit 
 schaffen, 10 Surges und je 10 Level mit einem Modifier (alle Spiegel zählen zusammen), jeweils über alle Spiele. Badges antippen zeigt Bedingung und
 Fortschritt. Ein neuer Award erscheint sofort kurz unter dem Timer und wird auf dem Game-Over-Screen aufgelistet.
 
-Unter **SETUP** lassen sich Sound (an/aus, Lautstärke in 8 Stufen), die Scanlines, **COLORBLIND** und **FLIP
-CONTROLS** (TRUE und FALSE tauschen die Seiten, auch im Tutorial und auf den Hinweisen) einstellen. Im
+Unter **SETUP** lassen sich Sound (an/aus, Lautstärke in 8 Stufen), die Scanlines, **OLD COLORS** (die bisherigen
+Neon-Farben statt der neuen, nur vorübergehend zum Vergleichen während der Design-Überarbeitung), **COLORBLIND**
+und **FLIP CONTROLS** (TRUE und FALSE tauschen die Seiten, auch im Tutorial und auf den Hinweisen) einstellen. Im
 Farbenblind-Modus steht jede Farbe für eine Form (Rot = HEART, Grün = TRIANGLE, Blau = SQUARE, Gelb = STAR, Lila =
 PLUS, Cyan = CIRCLE): Die Wörter nennen Formen, und die Buchstaben sind mit den Formen ihrer Farbe gefüllt. Gefragt
 ist dasselbe, nur passt jetzt das Wort zu den Formen in seinen Buchstaben oder nicht. Der Background-Modifier zeigt

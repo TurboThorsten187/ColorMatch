@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { COLOR_CSS, COLORS, SHAPE_WORDS, wordFor } from "./colors.ts";
+import { COLOR_CSS, COLORS, OLD_COLOR_CSS, SHAPE_WORDS, wordFor } from "./colors.ts";
 
 // WCAG relative luminance of a #rrggbb color
 function luminance(hex: string): number {
@@ -16,17 +16,19 @@ function contrastOnBlack(hex: string): number {
     return (luminance(hex) + 0.05) / 0.05;
 }
 
+const PALETTES = { new: COLOR_CSS, old: OLD_COLOR_CSS };
+
 describe("colors", () => {
-    // WCAG AA for large text: the colors are mostly the big color word, and blue was darkened on purpose to keep it
-    // apart from cyan (4.3:1), at the cost of its small uses such as award codes
-    it("are all readable on the black background", () => {
+    // WCAG AA for large text: the colors are mostly the big color word, and blue is kept dark on purpose to stay apart
+    // from cyan, at the cost of its small uses such as award codes
+    it.each(Object.entries(PALETTES))("are all readable on the black background (%s)", (_, palette) => {
         for (const color of COLORS) {
-            expect(contrastOnBlack(COLOR_CSS[color]), color).toBeGreaterThanOrEqual(3);
+            expect(contrastOnBlack(palette[color]), color).toBeGreaterThanOrEqual(3);
         }
     });
 
-    it("are all distinct", () => {
-        expect(new Set(Object.values(COLOR_CSS)).size).toBe(COLORS.length);
+    it.each(Object.entries(PALETTES))("are all distinct (%s)", (_, palette) => {
+        expect(new Set(Object.values(palette)).size).toBe(COLORS.length);
     });
 
     it("each name their own shape in the colorblind mode", () => {
