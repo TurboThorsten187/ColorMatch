@@ -88,8 +88,9 @@ export const MENU: GameState = { phase: "menu" };
 // All transitions below are pure: they take the current time in ms and return a new state,
 // or the same state object when nothing changes.
 
-export function startGame(now: number, rng: Rng, mode: Mode = "normal"): GameState {
-    return playLevel(1, now, rng, createCurriculum(rng), [], mode);
+// `colorblind` leaves out the modifier groups that hide the shapes
+export function startGame(now: number, rng: Rng, mode: Mode = "normal", colorblind = false): GameState {
+    return playLevel(1, now, rng, createCurriculum(rng, colorblind), [], mode);
 }
 
 // The mode of the running game; the menu belongs to none
@@ -136,14 +137,14 @@ export function isTooEarly(state: PlayingState, now: number): boolean {
 }
 
 // The "go on" input outside of a running level: start, continue, or retry after game over
-export function confirm(state: GameState, now: number, rng: Rng): GameState {
+export function confirm(state: GameState, now: number, rng: Rng, colorblind = false): GameState {
     switch (state.phase) {
         case "menu":
-            return startGame(now, rng);
+            return startGame(now, rng, "normal", colorblind);
         case "paused":
             return resume(state, now);
         case "gameOver":
-            return isGameOverLocked(state, now) ? state : startGame(now, rng, state.mode);
+            return isGameOverLocked(state, now) ? state : startGame(now, rng, state.mode, colorblind);
         default:
             return state;
     }

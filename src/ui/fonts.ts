@@ -41,38 +41,40 @@ export interface Font {
 // A FONT FLIP font; the wild ones are hard to read and come more often the stronger the modifier is
 export interface FlipFont extends Font {
     readonly wild: boolean;
+    // Strokes wide enough to show the colorblind shapes, the colorblind mode only uses these
+    readonly thick: boolean;
 }
 
 // FONT FLIP switches every letter between these
 export const FLIP_FONTS: readonly FlipFont[] = [
-    { family: WORD_FONT, weight: WORD_WEIGHT, wild: false },
-    { family: UI_FONT, weight: 400, wild: false },
-    { family: '"Bungee"', weight: 400, wild: false },
-    { family: '"Monoton"', weight: 400, wild: true },
-    { family: '"Creepster"', weight: 400, wild: true },
-    { family: '"Pacifico"', weight: 400, wild: false },
-    { family: '"Lobster"', weight: 400, wild: false },
-    { family: '"Bebas Neue"', weight: 400, wild: false },
-    { family: '"Abril Fatface"', weight: 400, wild: false },
-    { family: '"Black Ops One"', weight: 400, wild: false },
-    { family: '"Permanent Marker"', weight: 400, wild: false },
-    { family: '"Rubik Mono One"', weight: 400, wild: false },
-    { family: '"Silkscreen"', weight: 400, wild: false },
-    { family: '"UnifrakturMaguntia"', weight: 400, wild: true },
-    { family: '"Shrikhand"', weight: 400, wild: false },
-    { family: '"Nosifer"', weight: 400, wild: true },
-    { family: '"Bungee Shade"', weight: 400, wild: true },
-    { family: '"VT323"', weight: 400, wild: false },
-    { family: '"Major Mono Display"', weight: 400, wild: true },
-    { family: '"Codystar"', weight: 400, wild: true },
-    { family: '"Faster One"', weight: 400, wild: true },
-    { family: '"Ewert"', weight: 400, wild: true },
-    { family: '"Wallpoet"', weight: 400, wild: false },
-    { family: '"Audiowide"', weight: 400, wild: false },
-    { family: '"Special Elite"', weight: 400, wild: false },
-    { family: '"Bangers"', weight: 400, wild: false },
-    { family: '"Fredericka the Great"', weight: 400, wild: true },
-    { family: '"Megrim"', weight: 400, wild: true },
+    { family: WORD_FONT, weight: WORD_WEIGHT, wild: false, thick: true },
+    { family: UI_FONT, weight: 400, wild: false, thick: false },
+    { family: '"Bungee"', weight: 400, wild: false, thick: true },
+    { family: '"Monoton"', weight: 400, wild: true, thick: false },
+    { family: '"Creepster"', weight: 400, wild: true, thick: true },
+    { family: '"Pacifico"', weight: 400, wild: false, thick: false },
+    { family: '"Lobster"', weight: 400, wild: false, thick: false },
+    { family: '"Bebas Neue"', weight: 400, wild: false, thick: true },
+    { family: '"Abril Fatface"', weight: 400, wild: false, thick: true },
+    { family: '"Black Ops One"', weight: 400, wild: false, thick: true },
+    { family: '"Permanent Marker"', weight: 400, wild: false, thick: true },
+    { family: '"Rubik Mono One"', weight: 400, wild: false, thick: true },
+    { family: '"Silkscreen"', weight: 400, wild: false, thick: false },
+    { family: '"UnifrakturMaguntia"', weight: 400, wild: true, thick: false },
+    { family: '"Shrikhand"', weight: 400, wild: false, thick: true },
+    { family: '"Nosifer"', weight: 400, wild: true, thick: true },
+    { family: '"Bungee Shade"', weight: 400, wild: true, thick: false },
+    { family: '"VT323"', weight: 400, wild: false, thick: true },
+    { family: '"Major Mono Display"', weight: 400, wild: true, thick: false },
+    { family: '"Codystar"', weight: 400, wild: true, thick: false },
+    { family: '"Faster One"', weight: 400, wild: true, thick: false },
+    { family: '"Ewert"', weight: 400, wild: true, thick: false },
+    { family: '"Wallpoet"', weight: 400, wild: false, thick: false },
+    { family: '"Audiowide"', weight: 400, wild: false, thick: false },
+    { family: '"Special Elite"', weight: 400, wild: false, thick: false },
+    { family: '"Bangers"', weight: 400, wild: false, thick: true },
+    { family: '"Fredericka the Great"', weight: 400, wild: true, thick: false },
+    { family: '"Megrim"', weight: 400, wild: true, thick: false },
 ];
 
 // Text fitting measures glyph widths, so the real fonts have to be loaded before the first frame

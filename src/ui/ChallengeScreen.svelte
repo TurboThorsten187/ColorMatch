@@ -178,6 +178,7 @@
                       fullSize / fitted,
                       maxWidth / fitted,
                       strengthOf("fontFlip"),
+                      colorblind,
                   ).map((letter) => ({
                       ...letter,
                       width: letter.size * emWidth(letter.char, letter.font) * fontSize,

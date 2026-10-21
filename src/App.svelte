@@ -284,7 +284,7 @@
     function finishTutorial(time: number): void {
         tutorial = null;
         if (!progress.done) changeProgress({ ...progress, done: true });
-        update(confirm(game, time, rng), time);
+        update(confirm(game, time, rng, settings.colorblind), time);
     }
 
     function skipTutorial(): void {
@@ -424,13 +424,13 @@
             return;
         }
         const time = performance.now();
-        update(confirm(game, time, rng), time);
+        update(confirm(game, time, rng, settings.colorblind), time);
     }
 
     function startHardcore(): void {
         if (game.phase !== "menu" || !isHardcoreUnlocked(highscore)) return;
         const time = performance.now();
-        update(startGame(time, rng, "hardcore"), time);
+        update(startGame(time, rng, "hardcore", settings.colorblind), time);
     }
 
     function goToMenu(): void {
