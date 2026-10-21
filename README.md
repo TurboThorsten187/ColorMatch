@@ -56,7 +56,7 @@ die schweren; innerhalb einer Stufe wird die Reihenfolge jede Runde neu gemischt
 | Font Flip        | mittel | jeder Buchstabe wechselt alle 200 ms in eine andere von 28 Schriften; je stärker, desto öfter die schwer lesbaren (bis 1,5-mal so oft) |
 | Negative         | mittel | von 10 % bis 50 % der Zeit ist der ganze Bildschirm ein Fotonegativ, danach kurz ein Nachbild                                          |
 | Wait             | schwer | das Schild zeigt in den ersten 40 % der Zeit WAIT, dann NOW; ein Druck vorher ist TOO EARLY!                                           |
-| Double Tap       | mittel | die Antwort zweimal drücken, egal wie schnell; ein falscher Druck ist sofort ein Fehler                                                |
+| Double Tap       | schwer | die Antwort zweimal drücken, egal wie schnell; ein falscher Druck ist sofort ein Fehler                                                |
 | Duo              | schwer | zwei Wörter übereinander: TRUE, wenn beide oder keins zu ihrer Farbe passen (BOTH OR NEITHER); 1,5 s mehr Zeit                         |
 
 Nach dem letzten Druck bei Spam bleibt das ganz erleuchtete SPAM! noch 0,12 s stehen, dann zeigt STOP SPAMMING! 0,5 s
