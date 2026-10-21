@@ -312,7 +312,7 @@
 
     .replay {
         width: 128px;
-        box-shadow: 4px 4px 0 #1765fb;
+        box-shadow: 4px 4px 0 var(--blue);
     }
 
     .reset {
@@ -326,8 +326,8 @@
         position: relative;
         height: 52px;
         overflow: hidden;
-        border-color: #ff3b4e;
-        color: #ff3b4e;
+        border-color: var(--red);
+        color: var(--red);
     }
 
     .fill {
@@ -335,13 +335,13 @@
         inset: 0;
         display: grid;
         place-items: center;
-        background: #ff3b4e;
+        background: var(--red);
         color: #000;
     }
 
     .hold.cleared {
-        border-color: #3dff7a;
-        color: #3dff7a;
+        border-color: var(--green);
+        color: var(--green);
         cursor: default;
     }
 

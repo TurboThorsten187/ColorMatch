@@ -133,7 +133,7 @@
         font-family: Orbitron, sans-serif;
         font-weight: 900;
         font-size: max(64px, calc(10 * var(--unit)));
-        color: #ff3b4e;
+        color: var(--red);
         opacity: 0.35;
     }
 
@@ -156,7 +156,7 @@
         padding: 22px;
         border: 4px solid #fff;
         background: #000;
-        box-shadow: 6px 6px 0 #1765fb;
+        box-shadow: 6px 6px 0 var(--blue);
         font-size: max(11px, calc(1.3 * var(--unit)));
     }
 
@@ -183,7 +183,7 @@
 
     em {
         font-style: normal;
-        color: #ffe14d;
+        color: var(--yellow);
     }
 
     .example {
@@ -200,11 +200,11 @@
     }
 
     .yes {
-        color: #3dff7a;
+        color: var(--green);
     }
 
     .no {
-        color: #ff3b4e;
+        color: var(--red);
     }
 
     .timer {
@@ -219,7 +219,7 @@
     }
 
     .timer span.lit {
-        background: #3dff7a;
+        background: var(--green);
     }
 
     .card-foot {
@@ -300,7 +300,7 @@
         right: 0;
         text-align: center;
         font-size: max(11px, calc(1.4 * var(--unit)));
-        color: #ffe14d;
+        color: var(--yellow);
     }
 
     .explain {
@@ -323,7 +323,7 @@
         top: 77%;
         left: 15%;
         font-size: max(26px, calc(3 * var(--unit)));
-        color: #ffe14d;
+        color: var(--yellow);
         animation: nudge 0.8s ease-in-out infinite;
     }
 

@@ -25,13 +25,13 @@
     .frame {
         position: absolute;
         inset: 0;
-        border: 10px solid #ff3b4e;
+        border: 10px solid var(--red);
         pointer-events: none;
         animation: fade 400ms ease-out forwards;
     }
 
     .frame.hit {
-        border-color: #3dff7a;
+        border-color: var(--green);
     }
 
     .label {
@@ -40,7 +40,7 @@
         top: 68%;
         transform: translate(-50%, -50%);
         font-size: max(22px, calc(4 * var(--unit)));
-        color: #ff3b4e;
+        color: var(--red);
         white-space: nowrap;
         pointer-events: none;
         animation: pop 300ms ease-out forwards;
@@ -49,7 +49,7 @@
     .label.hit {
         top: 30%;
         font-size: max(18px, calc(3 * var(--unit)));
-        color: #3dff7a;
+        color: var(--green);
         animation: rise 500ms ease-out forwards;
     }
 

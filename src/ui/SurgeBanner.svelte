@@ -32,7 +32,7 @@
     .word {
         font-size: min(13vw, 14dvh);
         color: var(--accent);
-        text-shadow: 0.08em 0.08em 0 #ff3b4e;
+        text-shadow: 0.08em 0.08em 0 var(--red);
         animation: slam 180ms steps(4, end) backwards;
     }
 

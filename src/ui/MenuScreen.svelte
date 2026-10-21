@@ -146,7 +146,7 @@
 
     .label,
     .hard {
-        color: #ff3b4e;
+        color: var(--red);
     }
 
     .title {
@@ -173,7 +173,7 @@
         border-color: transparent;
         background: none;
         font-size: max(13px, calc(2.4 * var(--unit)));
-        color: #ffe14d;
+        color: var(--yellow);
     }
 
     /* A selected PRESS START stays visible */
@@ -188,8 +188,8 @@
         justify-items: center;
         gap: 8px;
         padding: 10px 14px;
-        border-color: #ff3b4e;
-        color: #ff3b4e;
+        border-color: var(--red);
+        color: var(--red);
         font-size: max(11px, calc(1.8 * var(--unit)));
         line-height: 1.4;
     }
@@ -225,11 +225,11 @@
     }
 
     .stats {
-        box-shadow: 4px 4px 0 #1765fb;
+        box-shadow: 4px 4px 0 var(--blue);
     }
 
     .setup {
-        box-shadow: 4px 4px 0 #ff3b4e;
+        box-shadow: 4px 4px 0 var(--red);
     }
 
     /* Small and out of the way, it stays clear of the hi-score down to 320 px wide screens */
@@ -239,7 +239,7 @@
         right: calc(env(safe-area-inset-right) + 16px);
         height: 40px;
         padding: 0 8px;
-        border: 3px solid #3dff7a;
-        color: #3dff7a;
+        border: 3px solid var(--green);
+        color: var(--green);
     }
 </style>

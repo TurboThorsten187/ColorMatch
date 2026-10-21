@@ -30,8 +30,8 @@
         gap: 12px;
         padding: 10px;
         background: #000;
-        border: 3px solid #ffe14d;
-        box-shadow: 4px 4px 0 #6b5c1a;
+        border: 3px solid var(--yellow);
+        box-shadow: 4px 4px 0 color-mix(in srgb, var(--yellow) 42%, #000);
         font-size: max(11px, calc(1.5 * var(--unit)));
         pointer-events: none;
         transform: translateX(-50%);
@@ -51,7 +51,7 @@
 
     small {
         font-size: 10px;
-        color: #ffe14d;
+        color: var(--yellow);
     }
 
     @keyframes pop {

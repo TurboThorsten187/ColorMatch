@@ -54,8 +54,10 @@ files.
   highlight only shows while `keyboardMode` puts the `keys` class on the stage),
   pause on `blur`/`visibilitychange`, highscore, settings and stats persistence, sounds and stats for game transitions
   in `update()` (a hardcore game records no stats and no awards). Settings and stats screens are a `view` in App, not
-  a game phase. The stage's `--accent` (yellow, red while a hardcore game runs) colors the highlights of every screen a
-  game shows.
+  a game phase. The stage sets the six game colors from `COLOR_CSS` as CSS variables (`--red` … `--cyan`); components
+  use them, never hex values of their own, so every screen and the icon (`public/favicon.svg`, which has to be updated
+  by hand) show exactly the game's colors. The stage's `--accent` (`--yellow`, `--red` while a hardcore game runs)
+  colors the highlights of every screen a game shows.
 - `public/` – PWA files copied as-is: `manifest.webmanifest`, icons (the PNGs and `favicon.ico` are renders of
   `favicon.svg`, re-render them when it changes) and `sw.js`, a plain JS service worker (network first for the page,
   cache first for files). `main.ts` registers it in production builds only and reports the loaded files, so the cache
