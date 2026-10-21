@@ -3,6 +3,7 @@ import { conflicts, groupById, MODIFIER_GROUPS, type ModifierGroupId, TIERS } fr
 import {
     createCurriculum,
     type Curriculum,
+    DUO_EXTRA_MS,
     EXTRA_TIME_MS,
     FIRST_INTRO_LEVEL,
     INTRO_BONUS_MS,
@@ -307,6 +308,15 @@ describe("timeLimitFor", () => {
             base + EXTRA_TIME_MS.easy + EXTRA_TIME_MS.medium + EXTRA_TIME_MS.hard,
         );
     });
+
+    it("gives DUO 1.5 s on top of its extra time, on a surge and in hardcore too", () => {
+        const base = timeLimitFor(20, [], false);
+
+        expect(DUO_EXTRA_MS).toBe(1500);
+        expect(timeLimitFor(20, ["twoWords"], false)).toBe(base + EXTRA_TIME_MS.hard + DUO_EXTRA_MS);
+        expect(timeLimitFor(SURGE_FIRST_LEVEL, ["rotation", "twoWords"], false)).toBe(SURGE_TIME_MS + DUO_EXTRA_MS);
+        expect(timeLimitFor(2, ["twoWords"], false, "hardcore")).toBe(1000 + EXTRA_TIME_MS.hard + DUO_EXTRA_MS);
+    });
 });
 
 describe("strength", () => {
@@ -325,15 +335,15 @@ describe("strength", () => {
 });
 
 describe("tempo", () => {
-    it("speeds up along with the shrinking time limit, up to 2.5 times as fast from level 80 on", () => {
+    it("speeds up along with the shrinking time limit, up to twice as fast from level 80 on", () => {
         expect(levelTempo(FIRST_INTRO_LEVEL)).toBe(1);
-        expect(levelTempo(40)).toBeGreaterThan(1.4);
-        expect(levelTempo(40)).toBeLessThan(1.7);
-        expect(levelTempo(80)).toBeCloseTo(2.5);
-        expect(levelTempo(150)).toBeCloseTo(2.5);
+        expect(levelTempo(40)).toBeGreaterThan(1.25);
+        expect(levelTempo(40)).toBeLessThan(1.45);
+        expect(levelTempo(80)).toBeCloseTo(2);
+        expect(levelTempo(150)).toBeCloseTo(2);
         for (let level = FIRST_INTRO_LEVEL; level < 150; level++) {
             expect(levelTempo(level + 1)).toBeGreaterThanOrEqual(levelTempo(level));
-            expect(levelTempo(level)).toBeLessThanOrEqual(2.5 + 1e-9);
+            expect(levelTempo(level)).toBeLessThanOrEqual(2 + 1e-9);
         }
     });
 
@@ -401,7 +411,7 @@ describe("hardcore", () => {
             1000 + EXTRA_TIME_MS.easy + EXTRA_TIME_MS.hard,
         );
         expect(timeLimitFor(10, ["rotation"], false, "hardcore")).toBe(SURGE_TIME_MS);
-        expect(tempoFor(1, 50, "hardcore")).toBe(2.5);
+        expect(tempoFor(1, 50, "hardcore")).toBe(2);
         expect(strengthFor(1, 50, "hardcore")).toBe(1);
         expect(zoomSizeFor(1, 50, "hardcore")).toBe(ZOOM_MIN_SIZE);
     });

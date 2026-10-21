@@ -19,6 +19,8 @@ export const INTRO_BONUS_MS = 1000;
 export const EXTRA_TIME_MS: Readonly<Record<Tier, number>> = { easy: 200, medium: 300, hard: 400 };
 // A Don't Click level is only sat out, the full time would just be waiting
 export const NO_CLICK_TIME_SHARE = 0.6;
+// DUO has two words and two inks to read, it gets this on top of its extra time, on a surge too
+export const DUO_EXTRA_MS = 1500;
 
 // Freshly introduced groups are picked more often; the advantage fades over about ten levels
 const FRESH_BOOST = 2;
@@ -117,15 +119,16 @@ export function timeLimitFor(
     intro: boolean,
     mode: Mode = "normal",
 ): number {
-    if (isSurgeLevel(level, mode)) return SURGE_TIME_MS;
+    const duo = groups.includes("twoWords") ? DUO_EXTRA_MS : 0;
+    if (isSurgeLevel(level, mode)) return SURGE_TIME_MS + duo;
     const base = mode === "hardcore" ? BASE_MIN_MS : baseLimit(level);
     const extra = groups.reduce((sum, id) => sum + EXTRA_TIME_MS[groupById(id).tier], 0);
-    return Math.round(base + (intro ? INTRO_BONUS_MS : 0) + extra);
+    return Math.round(base + (intro ? INTRO_BONUS_MS : 0) + extra + duo);
 }
 
 // Animated modifiers (spin, pulse, shake, movement, fade, scramble) speed up along with the shrinking time limit:
 // normal speed at the first intro level, MAX_TEMPO times as fast once the time limit is at its minimum
-export const MAX_TEMPO = 2.5;
+export const MAX_TEMPO = 2;
 const FULL_SHRINK = baseLimit(FIRST_INTRO_LEVEL) / baseLimit(LATE_UNTIL_LEVEL);
 
 export function levelTempo(level: number): number {

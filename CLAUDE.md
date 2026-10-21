@@ -85,11 +85,13 @@ files.
   from mostly one to every count equally likely), surge levels (`isSurgeLevel`,
   announced by the `surgeBanner` phase; `surgeGroupCount` grows by one per surge, the time is a fixed
   `SURGE_TIME_MS`), the time limit (a base that bends from 3 s at level 1 to 1 s at level 80, every group adds
-  `EXTRA_TIME_MS` of its tier, Don't Click levels get `NO_CLICK_TIME_SHARE` of it) and the tempo of animated modifiers
-  (`tempoFor`, following the shrinking base up to `MAX_TEMPO` at level 80, stored in `Challenge.tempo`, applied in
+  `EXTRA_TIME_MS` of its tier, DUO adds `DUO_EXTRA_MS` on top, on a surge too, Don't Click levels get
+  `NO_CLICK_TIME_SHARE` of it) and the tempo of animated modifiers
+  (`tempoFor`, following the shrinking base up to `MAX_TEMPO` (2) at level 80, stored in `Challenge.tempo`, applied in
   `ChallengeScreen` and `effects.ts`), and along with the tempo
   the strength (`strengthFor`, `Challenge.strength`, 0 on the intro level to 1 from level 80) that makes rotation
-  uneven, widens pulse and shake, blurs more and picks the `wild` Font Flip fonts more often. A new modifier needs a
+  uneven, widens pulse and shake, blurs more and picks the `wild` Font Flip fonts more often; at strength 1 every such
+  effect is at most twice what it is at 0. A new modifier needs a
   group, an intro card, an award and, if animated, a function in `src/ui/effects.ts` driven by the level's `seed`, the
   elapsed time and its tempo.
 

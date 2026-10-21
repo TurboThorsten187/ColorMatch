@@ -25,6 +25,7 @@ import {
 } from "./game.ts";
 import { groupsOf, MODIFIER_GROUPS, type ModifierId } from "./modifiers.ts";
 import {
+    DUO_EXTRA_MS,
     introLevel,
     NO_CLICK_TIME_SHARE,
     SURGE_FIRST_LEVEL,
@@ -326,12 +327,13 @@ describe("surge", () => {
 
         const surge = tick(banner, banner.resumeAt, rng);
         if (surge.phase !== "playing") throw new Error("Surge did not start");
-        // One of the stacked groups may be Don't Click, which shortens the time like on any other level
+        // One of the stacked groups may be Don't Click, which shortens the time like on any other level, or DUO, which
+        // adds to it
+        const fixed = SURGE_TIME_MS + (surge.challenge.modifiers.has("twoWords") ? DUO_EXTRA_MS : 0);
         expect(surge).toMatchObject({
             level: SURGE_FIRST_LEVEL,
             startedAt: banner.resumeAt,
-            timeLimit:
-                surge.challenge.expected === "none" ? Math.round(SURGE_TIME_MS * NO_CLICK_TIME_SHARE) : SURGE_TIME_MS,
+            timeLimit: surge.challenge.expected === "none" ? Math.round(fixed * NO_CLICK_TIME_SHARE) : fixed,
         });
         expect(groupsOf(surge.challenge.modifiers)).toHaveLength(surgeGroupCount(SURGE_FIRST_LEVEL));
         expect(Object.keys(surge.challenge.strength).sort()).toEqual(groupsOf(surge.challenge.modifiers).sort());

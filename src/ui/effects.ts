@@ -36,22 +36,22 @@ const MOVING_MARGIN = 10;
 
 const SHAKE_STEP_MS = 60;
 // Share of the free area the word jumps around in, times a factor that grows with the strength, and how far it tilts
-// with every jump
+// with every jump. Like every effect that grows with the strength, at full strength it is twice what it is at none.
 const SHAKE_X = 0.02;
 const SHAKE_Y = 0.05;
 const SHAKE_FACTOR_GENTLE = 0.6;
-const SHAKE_FACTOR_STRONG = 1.8;
+const SHAKE_FACTOR_STRONG = 1.2;
 const SHAKE_TILT_GENTLE_DEG = 4;
-const SHAKE_TILT_STRONG_DEG = 13;
+const SHAKE_TILT_STRONG_DEG = 8;
 // Font size given up per unit of the shake factor, so the shaking word stays on screen
 const SHAKE_FONT_SHRINK = 0.06;
 
-// Pulsing swings between a low and a high scale, both further from 1 with the strength
+// Pulsing swings between a low and a high scale, both further from 1 with the strength, twice as far at full strength
 const PULSE_PERIOD_MS = 350;
 const PULSE_LOW_GENTLE = 0.85;
-const PULSE_LOW_STRONG = 0.55;
+const PULSE_LOW_STRONG = 0.7;
 const PULSE_HIGH_GENTLE = 1.08;
-const PULSE_HIGH_STRONG = 1.2;
+const PULSE_HIGH_STRONG = 1.16;
 
 const SCRAMBLE_STEP_MS = 380;
 // Shifts the seed for every word of a rule text, so it is not mixed in step with the color word

@@ -10,9 +10,9 @@ export interface FlipLetter {
 }
 
 const MEASURE_PX = 100;
-// How often a wild font comes compared to a readable one, from strength 0 to 1
+// How often a wild font comes compared to a readable one, from strength 0 to 1: twice as often at full strength
 const WILD_WEIGHT_GENTLE = 0.5;
-const WILD_WEIGHT_STRONG = 3;
+const WILD_WEIGHT_STRONG = 1;
 
 // FONT FLIP: every letter in its own font, as large as the whole word would be in that font so that it fits, at most
 // `maxSize`. If the letters then add up to more than `maxWidth`, all of them shrink together. Both are in em. The

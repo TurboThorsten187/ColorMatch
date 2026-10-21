@@ -35,29 +35,29 @@ Ende immer weniger), bis 1,0 s ab Level 80. Im letzten Viertel wird er rot, und 
 Rahmen um den Bildschirm leuchtet immer stärker, bis die Zeit abläuft. Ab Level 5 kommt alle 3 Level ein neuer Modifier dazu, zuerst die leichten, dann die mittleren, dann
 die schweren; innerhalb einer Stufe wird die Reihenfolge jede Runde neu gemischt.
 
-| Modifier         | Stufe  | Wirkung                                                                                                           |
-| ---------------- | ------ | ----------------------------------------------------------------------------------------------------------------- |
-| Mirror           | leicht | Text ist senkrecht, waagrecht oder beides gespiegelt (steht dann auf dem Kopf)                                    |
-| Rotation         | leicht | Text dreht sich, eine Umdrehung in 2,5 s; je stärker, desto ungleichmäßiger (mal schneller, mal langsamer)        |
-| Pulsing          | leicht | Text wächst und schrumpft schnell; je stärker, desto weiter (85–108 % bis 55–120 %)                               |
-| Shaky            | leicht | Text zittert und kippt dabei leicht; je stärker, desto weiter (bis dreimal so weit, Kippen 4° bis 13°)            |
-| Background Color | mittel | zufälliger farbiger Hintergrund als Ablenkung                                                                     |
-| Blurred          | mittel | Text ist unscharf; je stärker, desto mehr (6 bis 10 px)                                                           |
-| Moving           | mittel | kleinerer Text gleitet schnell über den Bildschirm                                                                |
-| Don't Click      | mittel | nichts drücken oder tippen, bis die Zeit abläuft                                                                  |
-| Fade             | mittel | Text blendet in 0,9 s aus, Hintergrund bleibt                                                                     |
-| Scrambled        | schwer | Buchstaben werden laufend neu gemischt                                                                            |
-| Inverted Input   | schwer | richtige Antwort ist umgedreht                                                                                    |
-| Spam             | mittel | fünfmal schnell drücken oder tippen (egal wo), jeder Druck lässt ein Zeichen von SPAM! aufleuchten                |
-| Zoom             | leicht | Text ist winzig: ein Fünftel der normalen Größe, mit jedem Level danach kleiner bis zu einem Zehntel              |
-| Symmetry         | leicht | nur die linke Hälfte des Worts ist zu sehen, die rechte ist ihr Spiegelbild (CYAN wird zu CYYC)                   |
-| Reverse Timer    | leicht | der Timer läuft rückwärts: er füllt sich von der Mitte aus, erst rot, dann gelb, dann grün                        |
-| Assemble         | mittel | die Buchstaben fliegen vom Bildschirmrand herein, nach einem Viertel der Zeit ist das Wort komplett               |
-| Font Flip        | mittel | jeder Buchstabe wechselt alle 200 ms in eine andere von 28 Schriften; je stärker, desto öfter die schwer lesbaren |
-| Negative         | mittel | von 10 % bis 50 % der Zeit ist der ganze Bildschirm ein Fotonegativ, danach kurz ein Nachbild                     |
-| Wait             | schwer | das Schild zeigt in den ersten 40 % der Zeit WAIT, dann NOW; ein Druck vorher ist TOO EARLY!                      |
-| Double Tap       | mittel | die Antwort zweimal drücken, egal wie schnell; ein falscher Druck ist sofort ein Fehler                           |
-| Duo              | schwer | zwei Wörter übereinander: TRUE, wenn beide oder keins zu ihrer Farbe passen (BOTH OR NEITHER)                     |
+| Modifier         | Stufe  | Wirkung                                                                                                                                |
+| ---------------- | ------ | -------------------------------------------------------------------------------------------------------------------------------------- |
+| Mirror           | leicht | Text ist senkrecht, waagrecht oder beides gespiegelt (steht dann auf dem Kopf)                                                         |
+| Rotation         | leicht | Text dreht sich, eine Umdrehung in 2,5 s; je stärker, desto ungleichmäßiger (mal schneller, mal langsamer)                             |
+| Pulsing          | leicht | Text wächst und schrumpft schnell; je stärker, desto weiter (85–108 % bis 70–116 %)                                                    |
+| Shaky            | leicht | Text zittert und kippt dabei leicht; je stärker, desto weiter (bis doppelt so weit, Kippen 4° bis 8°)                                  |
+| Background Color | mittel | zufälliger farbiger Hintergrund als Ablenkung                                                                                          |
+| Blurred          | mittel | Text ist unscharf; je stärker, desto mehr (6 bis 10 px)                                                                                |
+| Moving           | mittel | kleinerer Text gleitet schnell über den Bildschirm                                                                                     |
+| Don't Click      | mittel | nichts drücken oder tippen, bis die Zeit abläuft                                                                                       |
+| Fade             | mittel | Text blendet in 0,9 s aus, Hintergrund bleibt                                                                                          |
+| Scrambled        | schwer | Buchstaben werden laufend neu gemischt                                                                                                 |
+| Inverted Input   | schwer | richtige Antwort ist umgedreht                                                                                                         |
+| Spam             | mittel | fünfmal schnell drücken oder tippen (egal wo), jeder Druck lässt ein Zeichen von SPAM! aufleuchten                                     |
+| Zoom             | leicht | Text ist winzig: ein Fünftel der normalen Größe, mit jedem Level danach kleiner bis zu einem Zehntel                                   |
+| Symmetry         | leicht | nur die linke Hälfte des Worts ist zu sehen, die rechte ist ihr Spiegelbild (CYAN wird zu CYYC)                                        |
+| Reverse Timer    | leicht | der Timer läuft rückwärts: er füllt sich von der Mitte aus, erst rot, dann gelb, dann grün                                             |
+| Assemble         | mittel | die Buchstaben fliegen vom Bildschirmrand herein, nach einem Viertel der Zeit ist das Wort komplett                                    |
+| Font Flip        | mittel | jeder Buchstabe wechselt alle 200 ms in eine andere von 28 Schriften; je stärker, desto öfter die schwer lesbaren (bis doppelt so oft) |
+| Negative         | mittel | von 10 % bis 50 % der Zeit ist der ganze Bildschirm ein Fotonegativ, danach kurz ein Nachbild                                          |
+| Wait             | schwer | das Schild zeigt in den ersten 40 % der Zeit WAIT, dann NOW; ein Druck vorher ist TOO EARLY!                                           |
+| Double Tap       | mittel | die Antwort zweimal drücken, egal wie schnell; ein falscher Druck ist sofort ein Fehler                                                |
+| Duo              | schwer | zwei Wörter übereinander: TRUE, wenn beide oder keins zu ihrer Farbe passen (BOTH OR NEITHER); 1,5 s mehr Zeit                         |
 
 Nach dem letzten Druck bei Spam bleibt das ganz erleuchtete SPAM! noch 0,12 s stehen, dann zeigt STOP SPAMMING! 0,5 s
 lang, dass weiteres Tippen nichts bringt.
@@ -68,13 +68,15 @@ Surge-Level, kommt sie ein Level später. Sonst wird gemischt: Alle 12 Level dü
 bis Level 12 höchstens einer, ab Level 13 zwei, ab 25 drei, ab 37 vier und so weiter, und frisch eingeführte kommen
 häufiger. Sobald zwei erlaubt sind, kommt ein neuer Modifier im Level nach seiner Einführung meist gleich noch einmal,
 zusammen mit einem bekannten.
-Jeder Modifier in einem Level bringt Extrazeit, auch schon der erste: leicht 0,2 s, mittel 0,3 s, schwer 0,4 s. Bei Don't Click läuft nur 60 % der Zeit, damit man
+Jeder Modifier in einem Level bringt Extrazeit, auch schon der erste: leicht 0,2 s, mittel 0,3 s, schwer 0,4 s; Duo
+bekommt noch 1,5 s obendrauf, auch im Surge und im Hardcore. Bei Don't Click läuft nur 60 % der Zeit, damit man
 nicht so lange warten muss. Rotation, Pulsing, Shaky, Moving, Fade, Scrambled und Font Flip
-werden mit dem Level schneller, so wie die Zeit pro Level schrumpft (etwa 1,5-mal so schnell bei Level 40, 2,5-mal
-ab Level 80). Jeder
+werden mit dem Level schneller, so wie die Zeit pro Level schrumpft (etwa 1,35-mal so schnell bei Level 40, doppelt so
+schnell ab Level 80). Jeder
 startet bei seiner Einführung im normalen Tempo und holt dann innerhalb von 8 Leveln auf; ein spät eingeführter wird
 also schneller schnell als ein früher. Genauso wachsen Rotation, Pulsing, Shaky, Blurred und Font Flip in ihrer
-**Stärke** (siehe Tabelle): sanft im Einführungslevel, voll ab Level 80. Höchstens einer pro Level ändert die Regeln (Inverted
+**Stärke** (siehe Tabelle): sanft im Einführungslevel, voll ab Level 80, und voll ist höchstens doppelt so stark wie
+sanft. Höchstens einer pro Level ändert die Regeln (Inverted
 Input, Don't Click, Spam, Wait, Double Tap, Duo), und dieselbe Kombination kommt nie zweimal hintereinander.
 Nie zusammen kommen Symmetry mit Scrambled oder Spam, Fade mit Assemble, Negative, Wait, Duo oder Spam und Spam
 mit Background oder Scrambled. Mit Symmetry steht Mirrored nur auf dem Kopf, denn links-rechts gespiegelt sähe das
@@ -88,11 +90,11 @@ seltener und verschwinden dann ganz. Bis Level 40 kommt meist nur ein Modifier, 
 Level 80 ist jede Anzahl bis zum Höchstmaß gleich wahrscheinlich. Ab Level 50 ist jedes
 zehnte Level ein **Surge**: Ein Banner zeigt 0,9 s lang SURGE, dann kommen fünf Modifier gleichzeitig, bei jedem
 weiteren Surge einer mehr, soweit sie zusammenpassen (höchstens eine Regel). Ein Surge dauert immer 1,3 s, ohne
-Extrazeit pro Modifier.
+Extrazeit pro Modifier; nur Duo bringt seine 1,5 s mit.
 
 **HARDCORE** öffnet sich im Menü, sobald ein normales Spiel Level 50 geschafft hat (vorher ist der Button grau mit
 Schloss und zeigt beim Drücken kurz CLEAR LEVEL 50). Es gibt keine Einführungen: Alle Modifier können ab Level 1 kommen, mit voller
-Stärke und 2,5-fachem Tempo, die Grundzeit ist immer 1 s (plus die Extrazeit der Stufen). Ab Level 1 einer, alle 3 Level darf
+Stärke und doppeltem Tempo, die Grundzeit ist immer 1 s (plus die Extrazeit der Stufen). Ab Level 1 einer, alle 3 Level darf
 einer mehr gleichzeitig kommen, nie ein Level ohne Modifier, und jede Anzahl bis zum Höchstmaß ist gleich
 wahrscheinlich. Surges kommen ab Level 10 alle 5 Level (fünf Modifier, bei jedem einer mehr, 1,3 s). Hardcore hat
 einen eigenen Highscore (im Menü neben dem normalen), zählt nicht für Stats und Awards und leuchtet rot statt gelb.
