@@ -30,8 +30,8 @@ export interface AnchorTransform extends Point {
 }
 
 const MOVING_FONT_SCALE = 0.62;
-const MOVING_PERIOD_X_MS = 1500;
-const MOVING_PERIOD_Y_MS = 1100;
+const MOVING_PERIOD_X_MS = 3000;
+const MOVING_PERIOD_Y_MS = 2200;
 const MOVING_MARGIN = 10;
 
 const SHAKE_STEP_MS = 60;

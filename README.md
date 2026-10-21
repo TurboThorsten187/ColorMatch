@@ -43,7 +43,7 @@ die schweren; innerhalb einer Stufe wird die Reihenfolge jede Runde neu gemischt
 | Shaky            | leicht | Text zittert und kippt dabei leicht; je stärker, desto weiter (bis 1,5-mal so weit, Kippen 4° bis 6°)                                  |
 | Background Color | mittel | zufälliger farbiger Hintergrund als Ablenkung                                                                                          |
 | Blurred          | mittel | Text ist unscharf; je stärker, desto mehr (6 bis 9 px)                                                                                 |
-| Moving           | mittel | kleinerer Text gleitet schnell über den Bildschirm                                                                                     |
+| Moving           | mittel | kleinerer Text gleitet über den Bildschirm, quer hin und zurück in 3 s                                                                 |
 | Don't Click      | mittel | nichts drücken oder tippen, bis die Zeit abläuft                                                                                       |
 | Fade             | mittel | Text blendet in 0,9 s aus, Hintergrund bleibt                                                                                          |
 | Scrambled        | schwer | Buchstaben werden laufend neu gemischt                                                                                                 |
