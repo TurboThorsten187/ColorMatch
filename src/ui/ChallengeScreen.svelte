@@ -90,7 +90,7 @@
     // BLURRED grows from BLUR_GENTLE_PX to BLUR_STRONG_PX with its strength. The small tags would vanish with that,
     // they get about the same share of their size.
     const BLUR_GENTLE_PX = 6;
-    const BLUR_STRONG_PX = 10;
+    const BLUR_STRONG_PX = 9;
     const TAG_BLUR_EM_PER_PX = 0.014;
     const WORD_HEIGHT_SHARE = 0.24;
     const WORD_WIDTH_SHARE = 0.9;
