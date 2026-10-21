@@ -130,7 +130,7 @@
     }
 
     dt.hi {
-        color: #ff3b4e;
+        color: var(--red);
     }
 
     dd {
@@ -150,7 +150,7 @@
         margin: 0;
         font-size: inherit;
         font-weight: normal;
-        color: #ffe14d;
+        color: var(--yellow);
     }
 
     .badges {
@@ -190,10 +190,10 @@
     }
 
     .progress {
-        color: #ffe14d;
+        color: var(--yellow);
     }
 
     .done {
-        color: #3dff7a;
+        color: var(--green);
     }
 </style>

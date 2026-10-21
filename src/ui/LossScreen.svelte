@@ -203,7 +203,7 @@
     }
 
     .frame {
-        border: 10px solid #ff3b4e;
+        border: 10px solid var(--red);
     }
 
     .label {
@@ -211,7 +211,7 @@
         left: 50%;
         top: 68%;
         font-size: max(22px, calc(4 * var(--unit)));
-        color: #ff3b4e;
+        color: var(--red);
         white-space: nowrap;
         pointer-events: none;
     }

@@ -1,6 +1,7 @@
 <script lang="ts">
     import { awardById, type AwardId } from "./game/awards.ts";
     import type { Answer } from "./game/challenge.ts";
+    import { COLOR_CSS } from "./game/colors.ts";
     import {
         answer,
         confirm,
@@ -600,6 +601,12 @@
     class="stage"
     class:keys={keyboardMode}
     class:hardcore={mode === "hardcore"}
+    style:--red={COLOR_CSS.red}
+    style:--green={COLOR_CSS.green}
+    style:--blue={COLOR_CSS.blue}
+    style:--yellow={COLOR_CSS.yellow}
+    style:--purple={COLOR_CSS.purple}
+    style:--cyan={COLOR_CSS.cyan}
     bind:this={stage}
     bind:clientWidth={width}
     bind:clientHeight={height}
@@ -715,11 +722,11 @@
         /* Size unit: 1 % of the width, capped by the height and on large screens */
         --unit: min(1vw, 1.8dvh, 10px);
         /* The highlight color of every screen a game shows, red in hardcore */
-        --accent: #ffe14d;
+        --accent: var(--yellow);
     }
 
     .stage.hardcore {
-        --accent: #ff3b4e;
+        --accent: var(--red);
     }
 
     /* Screens focus a button on their own so Enter works at once; the browser's focus ring would show that before
@@ -751,8 +758,8 @@
         inset: 0;
         pointer-events: none;
         box-shadow:
-            inset 0 0 0 6px #ff3b4e,
-            inset 0 0 28px 10px rgb(255 59 78 / 0.75);
+            inset 0 0 0 6px var(--red),
+            inset 0 0 28px 10px color-mix(in srgb, var(--red) 75%, transparent);
     }
 
     /* CRT look */

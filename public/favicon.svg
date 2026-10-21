@@ -6,11 +6,11 @@
         </pattern>
     </defs>
     <rect width="512" height="512" fill="#000" />
-    <rect x="106" y="158" width="92" height="92" fill="#ff3b4e" />
-    <rect x="210" y="158" width="92" height="92" fill="#3dff7a" />
-    <rect x="314" y="158" width="92" height="92" fill="#1765fb" />
-    <rect x="106" y="262" width="92" height="92" fill="#ffe14d" />
-    <rect x="210" y="262" width="92" height="92" fill="#c45cff" />
-    <rect x="314" y="262" width="92" height="92" fill="#22e4ff" />
+    <rect x="106" y="158" width="92" height="92" fill="#ff2238" />
+    <rect x="210" y="158" width="92" height="92" fill="#24ff3c" />
+    <rect x="314" y="158" width="92" height="92" fill="#2d6bff" />
+    <rect x="106" y="262" width="92" height="92" fill="#fff200" />
+    <rect x="210" y="262" width="92" height="92" fill="#b53dff" />
+    <rect x="314" y="262" width="92" height="92" fill="#00f0ff" />
     <rect width="512" height="512" fill="url(#scanlines)" />
 </svg>

@@ -103,7 +103,7 @@
         font-size: max(28px, calc(6 * var(--unit)));
         font-weight: normal;
         line-height: 1.4;
-        color: #ff3b4e;
+        color: var(--red);
         animation: power-on var(--power-on) step-end both;
     }
 
@@ -139,7 +139,7 @@
     }
 
     .hi {
-        color: #ff3b4e;
+        color: var(--red);
     }
 
     .record {
@@ -218,7 +218,7 @@
     .retry {
         background: #fff;
         color: #000;
-        box-shadow: 4px 4px 0 #3dff7a;
+        box-shadow: 4px 4px 0 var(--green);
     }
 
     .menu {

@@ -83,7 +83,7 @@
     }
 
     .hi {
-        color: #ff3b4e;
+        color: var(--red);
         text-align: right;
     }
 
