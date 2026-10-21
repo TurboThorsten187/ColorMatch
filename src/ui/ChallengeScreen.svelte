@@ -3,6 +3,7 @@
     import { type Color, wordFor } from "../game/colors.ts";
     import { SPAM_WORD, WAIT_SHARE } from "../game/game.ts";
     import type { ModifierGroupId, ModifierId } from "../game/modifiers.ts";
+    import { NOW_SIGN, SIGN_CSS, SIGNS, SPAM_COLOR } from "../game/signs.ts";
     import {
         type AnchorTransform,
         afterimageOpacity,
@@ -122,18 +123,23 @@
         has("spam") ? SPAM_WORD : wordFor(challenge.word, colorblind),
         ...(challenge.second ? [wordFor(challenge.second.word, colorblind)] : []),
     ]);
-    const inks = $derived([challenge.color, ...(challenge.second ? [challenge.second.color] : [])]);
+    const inks = $derived(
+        has("spam") ? [SPAM_COLOR] : [challenge.color, ...(challenge.second ? [challenge.second.color] : [])],
+    );
     const shownWords = $derived(
         words.map((text, index) => (has("scrambled") ? scramble(text, lineSeed(index), played("scrambled")) : text)),
     );
+    // The rule signs, each in its rule's color
     const tags = $derived(
         [
-            ...(has("noClick") ? ["DON'T CLICK"] : []),
-            ...(has("invertInput") ? ["INVERTED INPUT"] : []),
-            ...(has("wait") ? [elapsed < timeLimit * WAIT_SHARE ? "WAIT" : "NOW"] : []),
-            ...(has("doubleTap") ? ["DOUBLE TAP"] : []),
-            ...(has("twoWords") ? ["BOTH OR NEITHER"] : []),
-        ].map((tag) => (has("scrambled") ? scrambleWords(tag, challenge.seed, played("scrambled")) : tag)),
+            ...(has("noClick") ? [SIGNS.noClick] : []),
+            ...(has("invertInput") ? [SIGNS.invertInput] : []),
+            ...(has("wait") ? [elapsed < timeLimit * WAIT_SHARE ? SIGNS.wait : NOW_SIGN] : []),
+            ...(has("doubleTap") ? [SIGNS.doubleTap] : []),
+            ...(has("twoWords") ? [SIGNS.twoWords] : []),
+        ].map((sign) =>
+            has("scrambled") ? { ...sign, text: scrambleWords(sign.text, challenge.seed, played("scrambled")) } : sign,
+        ),
     );
     const byLetter = $derived(has("fontFlip") || has("assemble") || has("spam"));
     let tagsWidth = $state(0);
@@ -345,8 +351,11 @@
                     bind:clientHeight={tagsHeight}
                 >
                     {#each tags as tag, index (index)}
-                        <span class="tag" style:filter={has("blur") ? `blur(${TAG_BLUR_EM_PER_PX * blurPx}em)` : null}
-                            >{tag}</span
+                        <span
+                            class="tag"
+                            style:background={SIGN_CSS[tag.color]}
+                            style:filter={has("blur") ? `blur(${TAG_BLUR_EM_PER_PX * blurPx}em)` : null}
+                            >{tag.text}</span
                         >
                     {/each}
                 </div>
@@ -371,9 +380,9 @@
         gap: 8px;
     }
 
+    /* The background is the rule's color */
     .tag {
         padding: 8px 10px;
-        background: #fff;
         color: #000;
         font-size: max(11px, calc(1.5 * var(--unit)));
         white-space: nowrap;

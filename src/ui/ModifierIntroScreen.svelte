@@ -3,6 +3,7 @@
     import { SPAM_WORD } from "../game/game.ts";
     import type { IntroId, ModifierIntro } from "../game/intros.ts";
     import { groupById, type ModifierId } from "../game/modifiers.ts";
+    import { isSignedRule, NOW_SIGN, type Sign, SIGN_CSS, SIGNS } from "../game/signs.ts";
     import {
         afterimageOpacity,
         assembleRemaining,
@@ -131,7 +132,11 @@
     const afterimage = $derived(
         intro.id === "negative" ? afterimageOpacity(elapsed % NEGATIVE_LOOP_MS, NEGATIVE_LOOP_MS) : 0,
     );
-    const waitText = $derived(Math.floor(elapsed / WAIT_STEP_MS) % 2 === 0 ? "WAIT" : "NOW");
+    // A rule card shows the rule's sign, WAIT takes turns with NOW
+    const sign = $derived.by((): Sign | null => {
+        if (intro.id === "wait") return Math.floor(elapsed / WAIT_STEP_MS) % 2 === 0 ? SIGNS.wait : NOW_SIGN;
+        return isSignedRule(intro.id) ? SIGNS[intro.id] : null;
+    });
     // The level waits with its full time; only the COUNT UP card fills the timer to show how it runs
     const remaining = $derived(intro.id === "countUp" ? 1 - (elapsed % COUNT_UP_LOOP_MS) / COUNT_UP_LOOP_MS : 1);
     const transform = $derived.by(() => {
@@ -155,6 +160,10 @@
         return line.split("*").map((text, index) => ({ text, marked: index % 2 === 1 }));
     }
 </script>
+
+{#snippet signTag(shown: Sign)}
+    <span class="tag" style:background={SIGN_CSS[shown.color]}>{shown.text}</span>
+{/snippet}
 
 {#snippet exampleWord()}
     <!-- SPAM! is not about the color, its characters light up in plain ink -->
@@ -213,14 +222,20 @@
             bind:clientWidth={boxWidth}
             bind:clientHeight={boxHeight}
         >
-            {#if intro.id === "noClick" || intro.id === "doubleTap"}
-                <span class="tag">{baseText}</span>
-            {:else if intro.id === "wait"}
-                <span class="tag">{waitText}</span>
+            {#if sign && !("word" in intro.example)}
+                {@render signTag(sign)}
             {:else if intro.second && secondText}
-                <span class="pair">
+                <span class="pair" class:signed={sign} class:double={sign}>
+                    {#if sign}
+                        {@render signTag(sign)}
+                    {/if}
                     {@render exampleWord()}
                     <span class="word" style={inkStyle(intro.second.color, colorblind)}>{secondText}</span>
+                </span>
+            {:else if sign}
+                <span class="pair signed">
+                    {@render signTag(sign)}
+                    {@render exampleWord()}
                 </span>
             {:else if intro.id === "negative"}
                 <!-- The afterimage lies behind the word in its negative colors -->
@@ -350,10 +365,19 @@
         filter: invert(1);
     }
 
+    /* The background is the rule's color */
     .tag {
         padding: 8px 10px;
-        background: #fff;
         color: #000;
+    }
+
+    /* A rule's sign above its example word or words: they shrink so that all of it fits the box */
+    .signed .word {
+        font-size: min(max(30px, calc(3.75 * var(--unit))), var(--fit, 100vw));
+    }
+
+    .signed.double .word {
+        font-size: min(max(22px, calc(2.75 * var(--unit))), var(--fit, 100vw) * 0.8);
     }
 
     .blur {
@@ -404,6 +428,18 @@
 
         .pair .word {
             font-size: min(24px, var(--fit, 100vw) * 0.8);
+        }
+
+        .signed .tag {
+            padding: 4px 8px;
+        }
+
+        .signed .word {
+            font-size: min(22px, var(--fit, 100vw));
+        }
+
+        .signed.double .word {
+            font-size: min(13px, var(--fit, 100vw) * 0.8);
         }
 
         .lines {

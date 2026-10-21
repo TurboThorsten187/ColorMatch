@@ -33,7 +33,8 @@ files.
   REVERSE TIMER, `twoWords` DUO.
 - `src/ui/` – one Svelte component per screen plus `TopBar` (level and highscore over a 24-block timer, which `AwardToast` sits below; the modifier cards reuse it `inline` and `paused`), `TapHints`, `FeedbackFlash`;
   modifiers are rendered with CSS transforms and filters; the rule tags (DON'T CLICK, INVERTED INPUT) sit in the
-  word's anchor and get every effect too. The colorblind setting keeps the six colors internally but shows each as a
+  word's anchor and get every effect too. Every rule has a color of its own (`SIGNS`, `NOW_SIGN` and `SPAM_COLOR` in
+  `src/game/signs.ts`): the tags' background, SPAM!'s lit characters and the highlights (`accent`) of the rule's card. The colorblind setting keeps the six colors internally but shows each as a
   shape: `SHAPE_WORDS`/`wordFor` in `src/game/colors.ts` give the words, `src/ui/shapes.ts` fills the letters
   (`inkStyle`) and the background modifier (`backgroundStyle`) with SVG shape tiles; every screen that shows a color
   word takes a `colorblind` prop. The shapes are about as wide as the letters' strokes on phones, so groups that blur,
