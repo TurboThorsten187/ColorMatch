@@ -78,8 +78,9 @@ also schneller schnell als ein früher. Genauso wachsen Rotation, Pulsing, Shaky
 **Stärke** (siehe Tabelle): sanft im Einführungslevel, voll ab Level 80, und voll ist höchstens 1,5-mal so stark wie
 sanft. Höchstens einer pro Level ändert die Regeln (Inverted
 Input, Don't Click, Spam, Wait, Double Tap, Duo), und dieselbe Kombination kommt nie zweimal hintereinander.
-Nie zusammen kommen Symmetry mit Scrambled oder Spam, Fade mit Assemble, Negative, Wait, Duo oder Spam und Spam
-mit Background oder Scrambled. Mit Symmetry steht Mirrored nur auf dem Kopf, denn links-rechts gespiegelt sähe das
+Nie zusammen kommen Symmetry mit Scrambled oder Spam, Fade mit Assemble, Negative, Wait, Duo oder Spam, Spam
+mit Background oder Scrambled und Zoom mit Blurred (ein winziges unscharfes Wort wäre nur noch ein Fleck). Mit
+Symmetry steht Mirrored nur auf dem Kopf, denn links-rechts gespiegelt sähe das
 Wort gleich aus. Bei Duo wirken Scrambled, Blurred, Symmetry, Assemble, Font Flip und das Nachbild von Negative auf
 beide Wörter. Die
 Hinweise DON'T CLICK, INVERTED INPUT, WAIT/NOW, DOUBLE TAP und BOTH OR NEITHER hängen am Wort und bekommen die meisten Modifier mit: Sie werden mit ihm gespiegelt (stehen dann auch mal

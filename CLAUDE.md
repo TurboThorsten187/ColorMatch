@@ -44,7 +44,7 @@ files.
   draws every word (two for `twoWords`) with one snippet: as one text, or letter by letter for Font Flip, Assemble
   and SPAM!, inside `SplitMirror` (which renders it twice) for Symmetry; the Negative afterimage reuses it. Only the leaves
   carry `data-ink` (the plain word, a Symmetry half of plain text, or each letter), never their wrappers. Assemble's start points lie on the screen edges and are mapped
-  into the transformed anchor with `toAnchor`; blur, the afterimage offset and the shake shrink with Zoom. The loss
+  into the transformed anchor with `toAnchor`; the afterimage offset and the shake shrink with Zoom (Zoom and Blur never share a level). The loss
   animation rasterizes the anchor's first child, every `data-ink` piece with its font, ink and transforms, cut at
   the middle of its closest `data-left-half`; blocks keep the pixel's color. Negative inverts App's `.playfield` (level, timer, hints) while `isNegative`; the low time frame
   (`lowTimeGlow`, from `LOW_TIME_SHARE` of real time left, also on Count Up) lies outside of it so it stays red. `src/main.ts` awaits `loadFonts()` before mounting because
