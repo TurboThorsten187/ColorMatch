@@ -8,6 +8,7 @@ import {
     type GameState,
     isSpamBang,
     MENU,
+    modeOf,
     pause,
     type PlayingState,
     resume,
@@ -44,6 +45,7 @@ function playing(
 ): PlayingState {
     return {
         phase: "playing",
+        mode: "normal",
         level,
         challenge: {
             word: "red",
@@ -74,7 +76,14 @@ describe("game", () => {
     it("starts at level 1 with a fresh timer", () => {
         const state = startGame(1234, rng);
 
-        expect(state).toMatchObject({ phase: "playing", level: 1, startedAt: 1234, timeLimit: 3000, spamCount: 0 });
+        expect(state).toMatchObject({
+            phase: "playing",
+            mode: "normal",
+            level: 1,
+            startedAt: 1234,
+            timeLimit: 3000,
+            spamCount: 0,
+        });
     });
 
     it("advances on a correct true or false answer", () => {
@@ -96,7 +105,11 @@ describe("game", () => {
 
         expect(answer(playing("true"), "true", 500, rng)).toMatchObject({ curriculum: CURRICULUM });
         expect(tick(playing("none"), 1e6, rng)).toMatchObject({ curriculum: CURRICULUM });
-        expect(answer(spam, "true", 0, rng)).toMatchObject({ phase: "spamPause", curriculum: started.curriculum });
+        expect(answer(spam, "true", 0, rng)).toMatchObject({
+            phase: "spamPause",
+            mode: "normal",
+            curriculum: started.curriculum,
+        });
     });
 
     it("speeds up the animated modifiers with the level, each from its own introduction", () => {
@@ -111,7 +124,12 @@ describe("game", () => {
     });
 
     it("ends the game on a wrong answer with the solved levels as score", () => {
-        expect(answer(playing("true", 4), "false", 100, rng)).toEqual({ phase: "gameOver", score: 3, endedAt: 100 });
+        expect(answer(playing("true", 4), "false", 100, rng)).toEqual({
+            phase: "gameOver",
+            mode: "normal",
+            score: 3,
+            endedAt: 100,
+        });
     });
 
     it("ends the game when the time runs out", () => {
@@ -120,6 +138,7 @@ describe("game", () => {
         expect(tick(state, state.timeLimit, rng)).toBe(state);
         expect(tick(state, state.timeLimit + 1, rng)).toEqual({
             phase: "gameOver",
+            mode: "normal",
             score: 0,
             endedAt: state.timeLimit + 1,
         });
@@ -128,7 +147,12 @@ describe("game", () => {
     it("does not accept an answer that comes after the time ran out", () => {
         const late = playing("true").timeLimit + 1;
 
-        expect(answer(playing("true"), "true", late, rng)).toEqual({ phase: "gameOver", score: 0, endedAt: late });
+        expect(answer(playing("true"), "true", late, rng)).toEqual({
+            phase: "gameOver",
+            mode: "normal",
+            score: 0,
+            endedAt: late,
+        });
         expect(levelOf(answer(playing("none"), "true", late, rng))).toBe(2);
         expect(answer(playing("spam"), "true", late, rng).phase).toBe("gameOver");
     });
@@ -176,7 +200,7 @@ describe("game", () => {
         const first = answer(state, "true", 10, rng);
 
         expect(DOUBLE_TAPS).toBe(2);
-        expect(first).toMatchObject({ phase: "playing", level: 1, taps: 1, startedAt: 0 });
+        expect(first).toMatchObject({ phase: "playing", mode: "normal", level: 1, taps: 1, startedAt: 0 });
         expect(levelOf(answer(first, "true", state.timeLimit, rng))).toBe(2);
         expect(answer(first, "false", 20, rng).phase).toBe("gameOver");
         expect(answer(state, "false", 10, rng).phase).toBe("gameOver");
@@ -204,12 +228,13 @@ describe("game", () => {
         let state: GameState = playing("spam");
         for (let i = 1; i < SPAM_PRESSES_NEEDED; i++) {
             state = answer(state, i % 2 ? "true" : "false", 100, rng);
-            expect(state).toMatchObject({ phase: "playing", level: 1, spamCount: i });
+            expect(state).toMatchObject({ phase: "playing", mode: "normal", level: 1, spamCount: i });
         }
 
         state = answer(state, "true", 100, rng);
         expect(state).toEqual({
             phase: "spamPause",
+            mode: "normal",
             level: 1,
             resumeAt: 100 + SPAM_BANG_MS + SPAM_PAUSE_MS,
             curriculum: CURRICULUM,
@@ -226,6 +251,7 @@ describe("game", () => {
         expect(tick(state, end - 1, rng)).toBe(state);
         expect(tick(state, end, rng)).toMatchObject({
             phase: "playing",
+            mode: "normal",
             level: 2,
             startedAt: end,
         });
@@ -234,6 +260,7 @@ describe("game", () => {
     it("does not repeat the SPAM! level's modifiers right after the spam pause", () => {
         const spamPause: GameState = {
             phase: "spamPause",
+            mode: "normal",
             level: 44,
             resumeAt: 0,
             curriculum: CURRICULUM,
@@ -258,7 +285,7 @@ describe("game", () => {
     });
 
     it("ignores answers and time outside of a running level", () => {
-        const over: GameState = { phase: "gameOver", score: 2, endedAt: 0 };
+        const over: GameState = { phase: "gameOver", mode: "normal", score: 2, endedAt: 0 };
 
         expect(answer(MENU, "true", 0, rng)).toBe(MENU);
         expect(answer(over, "true", 0, rng)).toBe(over);
@@ -270,6 +297,7 @@ describe("game", () => {
 describe("surge", () => {
     const banner: SurgeBannerState = {
         phase: "surgeBanner",
+        mode: "normal",
         level: SURGE_FIRST_LEVEL,
         resumeAt: 100 + SURGE_BANNER_MS,
         curriculum: CURRICULUM,
@@ -279,10 +307,12 @@ describe("surge", () => {
         expect(answer(playing("true", SURGE_FIRST_LEVEL - 1), "true", 100, rng)).toEqual(banner);
         expect(tick(playing("none", SURGE_FIRST_LEVEL - 1), 1e6, rng)).toMatchObject({
             phase: "surgeBanner",
+            mode: "normal",
             resumeAt: 1e6 + SURGE_BANNER_MS,
         });
         const spamPause: GameState = {
             phase: "spamPause",
+            mode: "normal",
             level: SURGE_FIRST_LEVEL - 1,
             resumeAt: 100,
             curriculum: CURRICULUM,
@@ -331,14 +361,27 @@ describe("pause", () => {
     });
 
     it("also delays the end of the spam pause", () => {
-        const state: GameState = { phase: "spamPause", level: 3, resumeAt: 1000, curriculum: CURRICULUM, groups: [] };
+        const state: GameState = {
+            phase: "spamPause",
+            mode: "normal",
+            level: 3,
+            resumeAt: 1000,
+            curriculum: CURRICULUM,
+            groups: [],
+        };
         const resumed = resume(pause(state, 500), 10500);
 
         expect(resumed).toEqual({ ...state, resumeAt: 11000 });
     });
 
     it("also delays the end of the surge banner", () => {
-        const state: GameState = { phase: "surgeBanner", level: 50, resumeAt: 1000, curriculum: CURRICULUM };
+        const state: GameState = {
+            phase: "surgeBanner",
+            mode: "normal",
+            level: 50,
+            resumeAt: 1000,
+            curriculum: CURRICULUM,
+        };
         const resumed = resume(pause(state, 500), 10500);
 
         expect(resumed).toEqual({ ...state, resumeAt: 11000 });
@@ -352,7 +395,7 @@ describe("pause", () => {
     });
 
     it("only pauses a running level", () => {
-        const over: GameState = { phase: "gameOver", score: 1, endedAt: 0 };
+        const over: GameState = { phase: "gameOver", mode: "normal", score: 1, endedAt: 0 };
 
         expect(pause(MENU, 0)).toBe(MENU);
         expect(pause(over, 0)).toBe(over);
@@ -364,24 +407,61 @@ describe("pause", () => {
 
 describe("confirm", () => {
     it("starts the game from the menu", () => {
-        expect(confirm(MENU, 50, rng)).toMatchObject({ phase: "playing", level: 1, startedAt: 50 });
+        expect(confirm(MENU, 50, rng)).toMatchObject({ phase: "playing", mode: "normal", level: 1, startedAt: 50 });
     });
 
     it("resumes a paused game", () => {
-        expect(confirm(pause(playing("true"), 100), 400, rng)).toMatchObject({ phase: "playing", startedAt: 300 });
+        expect(confirm(pause(playing("true"), 100), 400, rng)).toMatchObject({
+            phase: "playing",
+            mode: "normal",
+            startedAt: 300,
+        });
     });
 
     it("retries after game over, but not right away", () => {
-        const over: GameState = { phase: "gameOver", score: 4, endedAt: 1000 };
+        const over: GameState = { phase: "gameOver", mode: "normal", score: 4, endedAt: 1000 };
 
         expect(confirm(over, 1000 + GAME_OVER_LOCK_MS - 1, rng)).toBe(over);
-        expect(confirm(over, 1000 + GAME_OVER_LOCK_MS, rng)).toMatchObject({ phase: "playing", level: 1 });
+        expect(confirm(over, 1000 + GAME_OVER_LOCK_MS, rng)).toMatchObject({
+            phase: "playing",
+            mode: "normal",
+            level: 1,
+        });
+    });
+
+    it("plays hardcore from level 1 and retries in hardcore", () => {
+        const state = startGame(0, rng, "hardcore");
+
+        expect(state).toMatchObject({ phase: "playing", mode: "hardcore", level: 1 });
+        if (state.phase !== "playing") throw new Error("Hardcore did not start");
+        expect(groupsOf(state.challenge.modifiers)).toHaveLength(1);
+        const over = answer(state, state.challenge.expected === "true" ? "false" : "true", 10, rng);
+        expect(over).toMatchObject({ phase: "gameOver", mode: "hardcore", score: 0 });
+        expect(confirm(over, 10 + GAME_OVER_LOCK_MS, rng)).toMatchObject({ phase: "playing", mode: "hardcore" });
+    });
+
+    it("knows the mode of the running game, also while paused", () => {
+        const hardcore: PlayingState = { ...playing("true"), mode: "hardcore" };
+
+        expect(modeOf(MENU)).toBeNull();
+        expect(modeOf(playing("true"))).toBe("normal");
+        expect(modeOf(hardcore)).toBe("hardcore");
+        expect(modeOf(pause(hardcore, 10))).toBe("hardcore");
+    });
+
+    it("shows the surge banner before hardcore level 10", () => {
+        const before = playing("true", 9);
+        const hardcore: GameState = { ...before, mode: "hardcore" };
+
+        expect(answer(hardcore, "true", 100, rng)).toMatchObject({ phase: "surgeBanner", mode: "hardcore", level: 10 });
+        expect(answer(before, "true", 100, rng)).toMatchObject({ phase: "playing", mode: "normal", level: 10 });
     });
 
     it("does nothing during a level or the spam pause", () => {
         const state = playing("true");
         const spamPause: GameState = {
             phase: "spamPause",
+            mode: "normal",
             level: 1,
             resumeAt: 100,
             curriculum: CURRICULUM,
@@ -395,7 +475,7 @@ describe("confirm", () => {
 
 describe("toMenu", () => {
     it("leaves the game over screen for the menu, but not right away", () => {
-        const over: GameState = { phase: "gameOver", score: 4, endedAt: 1000 };
+        const over: GameState = { phase: "gameOver", mode: "normal", score: 4, endedAt: 1000 };
 
         expect(toMenu(over, 1000 + GAME_OVER_LOCK_MS - 1)).toBe(over);
         expect(toMenu(over, 1000 + GAME_OVER_LOCK_MS)).toBe(MENU);

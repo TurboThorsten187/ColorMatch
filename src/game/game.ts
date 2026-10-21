@@ -6,6 +6,7 @@ import {
     introducedAt,
     introLevel,
     isSurgeLevel,
+    type Mode,
     NO_CLICK_TIME_SHARE,
     pickGroups,
     tempoFor,
@@ -40,6 +41,7 @@ export type PlayingState = {
     // Right taps so far in a DOUBLE TAP level
     readonly taps: number;
     readonly curriculum: Curriculum;
+    readonly mode: Mode;
 };
 
 export type SpamPauseState = {
@@ -47,6 +49,7 @@ export type SpamPauseState = {
     readonly level: number;
     readonly resumeAt: number;
     readonly curriculum: Curriculum;
+    readonly mode: Mode;
     // The groups of the SPAM! level, the next level must not repeat them
     readonly groups: readonly ModifierGroupId[];
 };
@@ -57,9 +60,16 @@ export type SurgeBannerState = {
     readonly level: number;
     readonly resumeAt: number;
     readonly curriculum: Curriculum;
+    readonly mode: Mode;
 };
 
-export type GameOverState = { readonly phase: "gameOver"; readonly score: number; readonly endedAt: number };
+// RETRY plays the same mode again
+export type GameOverState = {
+    readonly phase: "gameOver";
+    readonly score: number;
+    readonly endedAt: number;
+    readonly mode: Mode;
+};
 
 export type GameState =
     | { readonly phase: "menu" }
@@ -78,8 +88,14 @@ export const MENU: GameState = { phase: "menu" };
 // All transitions below are pure: they take the current time in ms and return a new state,
 // or the same state object when nothing changes.
 
-export function startGame(now: number, rng: Rng): GameState {
-    return playLevel(1, now, rng, createCurriculum(rng), []);
+export function startGame(now: number, rng: Rng, mode: Mode = "normal"): GameState {
+    return playLevel(1, now, rng, createCurriculum(rng), [], mode);
+}
+
+// The mode of the running game; the menu belongs to none
+export function modeOf(state: GameState): Mode | null {
+    if (state.phase === "menu") return null;
+    return state.phase === "paused" ? state.resumeTo.mode : state.mode;
 }
 
 export function answer(state: GameState, input: Answer, now: number, rng: Rng): GameState {
@@ -88,7 +104,7 @@ export function answer(state: GameState, input: Answer, now: number, rng: Rng): 
     if (now - state.startedAt > state.timeLimit) return timeUp(state, now, rng);
 
     const { expected, modifiers } = state.challenge;
-    if (expected === "none" || isTooEarly(state, now)) return gameOver(state.level, now);
+    if (expected === "none" || isTooEarly(state, now)) return gameOver(state, now);
 
     if (expected === "spam") {
         const spamCount = state.spamCount + 1;
@@ -98,12 +114,13 @@ export function answer(state: GameState, input: Answer, now: number, rng: Rng): 
                   level: state.level,
                   resumeAt: now + SPAM_BANG_MS + SPAM_PAUSE_MS,
                   curriculum: state.curriculum,
+                  mode: state.mode,
                   groups: groupsOf(state.challenge.modifiers),
               }
             : { ...state, spamCount };
     }
 
-    if (input !== expected) return gameOver(state.level, now);
+    if (input !== expected) return gameOver(state, now);
     const taps = state.taps + 1;
     return modifiers.has("doubleTap") && taps < DOUBLE_TAPS ? { ...state, taps } : nextLevel(state, now, rng);
 }
@@ -126,7 +143,7 @@ export function confirm(state: GameState, now: number, rng: Rng): GameState {
         case "paused":
             return resume(state, now);
         case "gameOver":
-            return isGameOverLocked(state, now) ? state : startGame(now, rng);
+            return isGameOverLocked(state, now) ? state : startGame(now, rng, state.mode);
         default:
             return state;
     }
@@ -146,11 +163,11 @@ export function tick(state: GameState, now: number, rng: Rng): GameState {
             return now - state.startedAt <= state.timeLimit ? state : timeUp(state, now, rng);
         case "spamPause":
             return now >= state.resumeAt
-                ? enterLevel(state.level + 1, now, rng, state.curriculum, state.groups)
+                ? enterLevel(state.level + 1, now, rng, state.curriculum, state.groups, state.mode)
                 : state;
         case "surgeBanner":
             // The surge stacks more groups than any level before, it cannot repeat the one before
-            return now >= state.resumeAt ? playLevel(state.level, now, rng, state.curriculum, []) : state;
+            return now >= state.resumeAt ? playLevel(state.level, now, rng, state.curriculum, [], state.mode) : state;
         default:
             return state;
     }
@@ -158,7 +175,7 @@ export function tick(state: GameState, now: number, rng: Rng): GameState {
 
 // Waiting out a DON'T CLICK level solves it, every other level is lost
 function timeUp(state: PlayingState, now: number, rng: Rng): GameState {
-    return state.challenge.expected === "none" ? nextLevel(state, now, rng) : gameOver(state.level, now);
+    return state.challenge.expected === "none" ? nextLevel(state, now, rng) : gameOver(state, now);
 }
 
 export function pause(state: GameState, now: number): GameState {
@@ -178,7 +195,7 @@ export function resume(state: GameState, now: number): GameState {
 }
 
 function nextLevel(state: PlayingState, now: number, rng: Rng): GameState {
-    return enterLevel(state.level + 1, now, rng, state.curriculum, groupsOf(state.challenge.modifiers));
+    return enterLevel(state.level + 1, now, rng, state.curriculum, groupsOf(state.challenge.modifiers), state.mode);
 }
 
 // A surge level shows its banner first
@@ -188,10 +205,11 @@ function enterLevel(
     rng: Rng,
     curriculum: Curriculum,
     previous: readonly ModifierGroupId[],
+    mode: Mode,
 ): GameState {
-    return isSurgeLevel(level)
-        ? { phase: "surgeBanner", level, resumeAt: now + SURGE_BANNER_MS, curriculum }
-        : playLevel(level, now, rng, curriculum, previous);
+    return isSurgeLevel(level, mode)
+        ? { phase: "surgeBanner", level, resumeAt: now + SURGE_BANNER_MS, curriculum, mode }
+        : playLevel(level, now, rng, curriculum, previous, mode);
 }
 
 function playLevel(
@@ -200,13 +218,14 @@ function playLevel(
     rng: Rng,
     curriculum: Curriculum,
     previous: readonly ModifierGroupId[],
+    mode: Mode,
 ): PlayingState {
-    const groups = pickGroups(level, curriculum, previous, rng);
-    const tempo = Object.fromEntries(groups.map((id) => [id, tempoFor(level, introLevel(curriculum, id))]));
-    const strength = Object.fromEntries(groups.map((id) => [id, strengthFor(level, introLevel(curriculum, id))]));
-    const size = groups.includes("zoom") ? zoomSizeFor(level, introLevel(curriculum, "zoom")) : 1;
+    const groups = pickGroups(level, curriculum, previous, rng, mode);
+    const tempo = Object.fromEntries(groups.map((id) => [id, tempoFor(level, introLevel(curriculum, id), mode)]));
+    const strength = Object.fromEntries(groups.map((id) => [id, strengthFor(level, introLevel(curriculum, id), mode)]));
+    const size = groups.includes("zoom") ? zoomSizeFor(level, introLevel(curriculum, "zoom"), mode) : 1;
     const challenge = createChallenge(groups, level, rng, tempo, size, strength);
-    const timeLimit = timeLimitFor(level, groups, introducedAt(curriculum, level) !== null);
+    const timeLimit = timeLimitFor(level, groups, introducedAt(curriculum, level, mode) !== null, mode);
     return {
         phase: "playing",
         level,
@@ -216,10 +235,11 @@ function playLevel(
         spamCount: 0,
         taps: 0,
         curriculum,
+        mode,
     };
 }
 
 // The score is the number of solved levels
-function gameOver(level: number, now: number): GameState {
-    return { phase: "gameOver", score: level - 1, endedAt: now };
+function gameOver(state: PlayingState, now: number): GameState {
+    return { phase: "gameOver", score: state.level - 1, endedAt: now, mode: state.mode };
 }

@@ -88,7 +88,7 @@
     }
 
     .status {
-        color: #ffe14d;
+        color: var(--accent);
     }
 
     .timer {

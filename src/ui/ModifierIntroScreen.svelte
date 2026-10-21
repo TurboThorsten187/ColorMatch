@@ -271,7 +271,7 @@
     .headline {
         margin-top: auto;
         font-size: max(18px, calc(2.4 * var(--unit)));
-        color: #ffe14d;
+        color: var(--accent);
     }
 
     .card {
@@ -281,7 +281,7 @@
         flex-direction: column;
         gap: 18px;
         padding: 22px;
-        border: 4px double #ffe14d;
+        border: 4px double var(--accent);
         background: #000;
     }
 
@@ -372,7 +372,7 @@
         color: #000;
         font-family: inherit;
         font-size: 13px;
-        box-shadow: 4px 4px 0 #ffe14d;
+        box-shadow: 4px 4px 0 var(--accent);
         cursor: pointer;
     }
 

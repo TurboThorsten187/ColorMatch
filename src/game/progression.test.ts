@@ -21,6 +21,8 @@ import {
     TEMPO_CATCH_UP_LEVELS,
     tempoFor,
     timeLimitFor,
+    ZOOM_MIN_SIZE,
+    zoomSizeFor,
 } from "./progression.ts";
 import type { Rng } from "./random.ts";
 
@@ -214,7 +216,7 @@ describe("pickGroups", () => {
     });
 
     it("stacks five groups on the first surge and one more on each after it, every 10 levels from level 50", () => {
-        expect([40, 49, 50, 51, 55, 60, 70, 100].map(isSurgeLevel)).toEqual([
+        expect([40, 49, 50, 51, 55, 60, 70, 100].map((level) => isSurgeLevel(level))).toEqual([
             false,
             false,
             true,
@@ -225,7 +227,7 @@ describe("pickGroups", () => {
             true,
         ]);
 
-        expect([SURGE_FIRST_LEVEL, 60, 90, 150].map(surgeGroupCount)).toEqual([5, 6, 9, 15]);
+        expect([SURGE_FIRST_LEVEL, 60, 90, 150].map((level) => surgeGroupCount(level))).toEqual([5, 6, 9, 15]);
 
         const rng = seeded(9);
         for (let game = 0; game < 300; game++) {
@@ -248,7 +250,7 @@ describe("pickGroups", () => {
     });
 
     it("lets one more group share a level every 12 levels, starting with one", () => {
-        expect([1, 12, 13, 24, 25, 37, 49, 100].map(maxGroupCount)).toEqual([1, 1, 2, 2, 3, 4, 5, 9]);
+        expect([1, 12, 13, 24, 25, 37, 49, 100].map((level) => maxGroupCount(level))).toEqual([1, 1, 2, 2, 3, 4, 5, 9]);
     });
 
     it("brings every count up to the maximum about equally often from level 80 on", () => {
@@ -353,5 +355,54 @@ describe("tempo", () => {
                 expect(tempoFor(level, intro)).toBeGreaterThanOrEqual(1);
             }
         }
+    });
+});
+
+describe("hardcore", () => {
+    it("introduces nothing and may bring any group from level 1, never a plain level", () => {
+        const rng = seeded(12);
+        const seen = new Set<ModifierGroupId>();
+        for (let game = 0; game < 300; game++) {
+            const curriculum = createCurriculum(rng);
+            expect(introducedAt(curriculum, FIRST_INTRO_LEVEL, "hardcore")).toBeNull();
+            for (let level = 1; level <= 9; level++) {
+                const groups = pickGroups(level, curriculum, [], rng, "hardcore");
+                expect(groups.length).toBeGreaterThanOrEqual(1);
+                expect(groups.length).toBeLessThanOrEqual(maxGroupCount(level, "hardcore"));
+                groups.forEach((id) => seen.add(id));
+            }
+        }
+
+        expect(seen.size).toBe(MODIFIER_GROUPS.length);
+        expect(plainChance(1, "hardcore")).toBe(0);
+    });
+
+    it("lets one more group share a level every 3 levels", () => {
+        expect([1, 3, 4, 7, 28].map((level) => maxGroupCount(level, "hardcore"))).toEqual([1, 1, 2, 3, 10]);
+    });
+
+    it("surges from level 10 every 5 levels, five groups first and one more on each after it", () => {
+        expect([5, 9, 10, 12, 15, 20, 50].map((level) => isSurgeLevel(level, "hardcore"))).toEqual([
+            false,
+            false,
+            true,
+            false,
+            true,
+            true,
+            true,
+        ]);
+        expect([10, 15, 20, 30].map((level) => surgeGroupCount(level, "hardcore"))).toEqual([5, 6, 7, 9]);
+        expect(pickGroups(10, CURRICULUM, [], seeded(13), "hardcore")).toHaveLength(5);
+    });
+
+    it("gives 1 s plus the extra time of the groups, with tempo, strength and zoom at their full from level 1", () => {
+        expect(timeLimitFor(1, [], false, "hardcore")).toBe(1000);
+        expect(timeLimitFor(2, ["rotation", "scrambled"], false, "hardcore")).toBe(
+            1000 + EXTRA_TIME_MS.easy + EXTRA_TIME_MS.hard,
+        );
+        expect(timeLimitFor(10, ["rotation"], false, "hardcore")).toBe(SURGE_TIME_MS);
+        expect(tempoFor(1, 50, "hardcore")).toBe(2.5);
+        expect(strengthFor(1, 50, "hardcore")).toBe(1);
+        expect(zoomSizeFor(1, 50, "hardcore")).toBe(ZOOM_MIN_SIZE);
     });
 });

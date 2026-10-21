@@ -84,6 +84,14 @@ zehnte Level ein **Surge**: Ein Banner zeigt 0,9 s lang SURGE, dann kommen fünf
 weiteren Surge einer mehr, soweit sie zusammenpassen (höchstens eine Regel). Ein Surge dauert immer 1,3 s, ohne
 Extrazeit pro Modifier.
 
+**HARDCORE** öffnet sich im Menü, sobald ein normales Spiel Level 50 geschafft hat (vorher ist der Button grau und
+zeigt CLEAR LEVEL 50). Es gibt keine Einführungen: Alle Modifier können ab Level 1 kommen, mit voller Stärke und
+2,5-fachem Tempo, die Grundzeit ist immer 1 s (plus die Extrazeit der Stufen). Ab Level 1 einer, alle 3 Level darf
+einer mehr gleichzeitig kommen, nie ein Level ohne Modifier, und jede Anzahl bis zum Höchstmaß ist gleich
+wahrscheinlich. Surges kommen ab Level 10 alle 5 Level (fünf Modifier, bei jedem einer mehr, 1,3 s). Hardcore hat
+einen eigenen Highscore (im Menü unter dem normalen), zählt nicht für Stats und Awards und leuchtet rot statt gelb.
+Karten für noch nie gesehene Modifier erscheinen auch hier.
+
 Beim allerersten Start erklärt ein kurzes Tutorial das Spiel: drei Karten, nach jeder wird sofort geübt (vier Wörter
 ohne Zeitdruck, die richtige Seite blinkt, ein falsches Wort kommt nochmal). **SKIP** oder Esc überspringt es, danach
 startet direkt das Spiel. Taucht ein Modifier zum ersten Mal auf, pausiert das Level mit voller Zeit und eine Karte
@@ -102,7 +110,7 @@ ist dasselbe, nur passt jetzt das Wort zu den Formen in seinen Buchstaben oder n
 dann große, gedämpfte Formen statt einer Farbe; SPAM! bleibt einfarbig. Tutorial und Modifier-Karten zeigen im
 Modus ebenfalls Formen. **REPLAY** zeigt
 das Tutorial nochmal (die Modifier-Karten bleiben dabei gesehen). **HOLD TO RESET** (1,5 s gedrückt halten) löscht
-Highscore, Stats, Awards, Einstellungen und den Tutorial-Fortschritt. Esc führt zurück ins Menü. Alles wird lokal im
+beide Highscores, Stats, Awards, Einstellungen und den Tutorial-Fortschritt. Esc führt zurück ins Menü. Alles wird lokal im
 Browser gespeichert.
 
 Sounds gibt es für Treffer, Fehler, Zeitablauf, jeden Tipp einer Spam-Aufgabe (wird pro Tipp höher), Buttons, das
