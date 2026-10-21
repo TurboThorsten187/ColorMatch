@@ -172,9 +172,8 @@
         gap: 16px;
     }
 
-    /* Where there is room beside them (short screens are wide), the two ways to play sit side by side, so the menu
-       is not taller than before HARDCORE */
-    @media (max-height: 520px), (min-width: 600px) {
+    /* HARDCORE sits below START GAME, only phones in landscape have no room for that and put them side by side */
+    @media (max-height: 520px) {
         .play {
             flex-direction: row;
             gap: 24px;
@@ -261,7 +260,7 @@
         visibility: visible;
     }
 
-    /* Where the two ways to play sit side by side, all four buttons have the same size and form a grid */
+    /* In the browser and on phones in landscape all four buttons have the same size */
     @media (max-height: 520px), (min-width: 600px) {
         .start,
         .hardcore,

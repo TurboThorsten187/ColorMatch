@@ -346,12 +346,11 @@
         gap: 10px;
     }
 
-    /* Red already, so it is selected in the accent */
     .hold {
+        --button-color: var(--red);
         position: relative;
         height: var(--hold);
         overflow: hidden;
-        border-color: var(--red);
         color: var(--red);
     }
 

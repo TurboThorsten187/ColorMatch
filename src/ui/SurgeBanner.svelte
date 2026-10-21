@@ -36,6 +36,11 @@
         animation: slam 180ms steps(4, end) backwards;
     }
 
+    /* In hardcore the word is red like the accent, a red shadow would smear into it */
+    :global(.stage.hardcore) .word {
+        text-shadow: 0.08em 0.08em 0 color-mix(in srgb, var(--red) 45%, #000);
+    }
+
     /* One period of the diagonal stripes along the band, so the loop has no jump */
     @keyframes slide {
         to {
