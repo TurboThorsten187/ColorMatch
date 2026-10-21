@@ -109,7 +109,7 @@
     <div class="head">
         <!-- Focus moves here so keyboard players do not start over at the top of the page -->
         <button class="square" aria-label="Back" onclick={onback} {@attach (node) => node.focus()}>◄</button>
-        <h1 class="title">SETUP</h1>
+        <h1 class="title">SETTINGS</h1>
     </div>
 
     <div class="options">

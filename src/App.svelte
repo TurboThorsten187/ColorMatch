@@ -539,7 +539,7 @@
         unlockAudio();
         keyboardMode = false;
         if (event.button !== 0 || game.phase === "gameOver" || view !== "game" || intros.length > 0) return;
-        // Buttons handle their own clicks, e.g. SETUP in the menu must not start a game
+        // Buttons handle their own clicks, e.g. SETTINGS in the menu must not start a game
         if (event.target instanceof Element && event.target.closest("button")) return;
         if (performance.now() < inputLockedUntil) return;
 
