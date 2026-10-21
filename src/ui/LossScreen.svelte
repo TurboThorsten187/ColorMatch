@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { COLORS } from "../game/colors.ts";
+    import { COLOR_CSS, COLORS } from "../game/colors.ts";
     import type { PlayingState } from "../game/game.ts";
     import ChallengeScreen from "./ChallengeScreen.svelte";
     import { FEEDBACK_LABELS, type FeedbackKind } from "./FeedbackFlash.svelte";
@@ -12,7 +12,6 @@
         SHAKE_OFFSETS,
         wordBlocks,
     } from "./lossAnimation.ts";
-    import { inkCss } from "./palette.svelte.ts";
     import TapHints from "./TapHints.svelte";
     import TopBar from "./TopBar.svelte";
 
@@ -123,7 +122,7 @@
             context.transform(...matrixArgs(placement(piece, target)));
         }
         context.font = `${style.fontWeight} ${style.fontSize} ${style.fontFamily}`;
-        context.fillStyle = inkCss(ink);
+        context.fillStyle = COLOR_CSS[ink];
         context.textAlign = "center";
         context.textBaseline = "middle";
         context.fillText(piece.textContent ?? "", boxWidth / 2, boxHeight / 2);

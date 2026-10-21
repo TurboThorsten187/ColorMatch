@@ -1,7 +1,6 @@
 <script lang="ts">
     import type { Award, AwardKind } from "../game/awards.ts";
-    import type { Color } from "../game/colors.ts";
-    import { inkCss } from "./palette.svelte.ts";
+    import { type Color, COLOR_CSS } from "../game/colors.ts";
 
     interface Props {
         award: Award;
@@ -19,7 +18,7 @@
 </script>
 
 <!-- Fills the width of its container, the font size comes from the parent -->
-<span class="badge" class:locked style:--badge-color={inkCss(KIND_COLORS[award.kind])}>{award.code}</span>
+<span class="badge" class:locked style:--badge-color={COLOR_CSS[KIND_COLORS[award.kind]]}>{award.code}</span>
 
 <style>
     .badge {

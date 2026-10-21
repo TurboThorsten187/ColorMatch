@@ -23,7 +23,6 @@ describe("settings", () => {
             sound: false,
             volume: 2,
             scanlines: false,
-            oldColors: true,
             colorblind: true,
             flipControls: true,
         };
@@ -41,7 +40,6 @@ describe("settings", () => {
                 sound: "yes",
                 volume: 99,
                 scanlines: false,
-                oldColors: "on",
                 colorblind: "on",
                 flipControls: 1,
             }),
@@ -64,7 +62,6 @@ describe("settings", () => {
             sound: false,
             volume: 1,
             scanlines: false,
-            oldColors: true,
             colorblind: true,
             flipControls: true,
         });

@@ -16,17 +16,6 @@ export const COLOR_CSS: Readonly<Record<Color, string>> = {
     cyan: "#00f0ff",
 };
 
-// The neon tones used before, kept only to compare them in the game (the OLD COLORS setting) while the design is
-// reworked
-export const OLD_COLOR_CSS: Readonly<Record<Color, string>> = {
-    red: "#ff3b4e",
-    green: "#3dff7a",
-    blue: "#1765fb",
-    yellow: "#ffe14d",
-    purple: "#c45cff",
-    cyan: "#22e4ff",
-};
-
 // The colorblind mode shows every color as a shape: the word names a shape, the letters are filled with shapes
 export const SHAPE_WORDS: Readonly<Record<Color, string>> = {
     red: "HEART",

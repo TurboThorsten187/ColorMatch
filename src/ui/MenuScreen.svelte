@@ -1,8 +1,7 @@
 <script lang="ts">
-    import { COLORS } from "../game/colors.ts";
+    import { COLOR_CSS, COLORS } from "../game/colors.ts";
     import { HARDCORE_UNLOCK_SCORE } from "../game/highscore.ts";
     import { answerOn } from "../game/settings.ts";
-    import { inkCss } from "./palette.svelte.ts";
 
     interface Props {
         highscore: number;
@@ -74,7 +73,7 @@
         {#each TITLE_LINES as line, row (row)}
             <span class="line">
                 {#each line as letter, col (col)}
-                    <span style:color={inkCss(COLORS[(row * TITLE_LINES[0].length + col + wave) % COLORS.length])}
+                    <span style:color={COLOR_CSS[COLORS[(row * TITLE_LINES[0].length + col + wave) % COLORS.length]]}
                         >{letter}</span
                     >
                 {/each}

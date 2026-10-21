@@ -1,6 +1,6 @@
 <script lang="ts">
     import { changeVolume, type Settings, VOLUME_STEPS } from "../game/settings.ts";
-    import { inkCss } from "./palette.svelte.ts";
+    import { COLOR_CSS } from "../game/colors.ts";
 
     interface Props {
         settings: Settings;
@@ -14,7 +14,7 @@
 
     let { settings, onchange, onreset, onreplay, onback }: Props = $props();
 
-    type Switch = "sound" | "scanlines" | "oldColors" | "colorblind" | "flipControls";
+    type Switch = "sound" | "scanlines" | "colorblind" | "flipControls";
 
     // Deleting everything must not happen by accident: the button has to be held this long
     const HOLD_MS = 1500;
@@ -35,7 +35,7 @@
     let cleared = $state(false);
 
     function stepColor(step: number): string {
-        return step <= 3 ? inkCss("green") : step <= 6 ? inkCss("yellow") : inkCss("red");
+        return step <= 3 ? COLOR_CSS.green : step <= 6 ? COLOR_CSS.yellow : COLOR_CSS.red;
     }
 
     function toggle(key: Switch, value: boolean): void {
@@ -156,11 +156,6 @@
         <div class="row">
             <span id="scanlines-label">SCANLINES</span>
             {@render onOff("scanlines", "scanlines-label")}
-        </div>
-
-        <div class="row">
-            <span id="old-colors-label">OLD COLORS</span>
-            {@render onOff("oldColors", "old-colors-label")}
         </div>
 
         <div class="row">
