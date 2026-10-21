@@ -113,7 +113,7 @@ export const MODIFIER_GROUPS: readonly ModifierGroup[] = [
     group("negative", "medium", ["negative"], { conflictsWith: ["blink"] }),
     // Blink fades the rule tags too, so NOW would never show
     group("wait", "hard", ["wait"], { rule: true, conflictsWith: ["blink"] }),
-    group("doubleTap", "medium", ["doubleTap"], { rule: true }),
+    group("doubleTap", "hard", ["doubleTap"], { rule: true }),
     // Two words and two inks are too much to read before they fade
     group("twoWords", "hard", ["twoWords"], { rule: true, conflictsWith: ["blink"] }),
 ];
