@@ -112,6 +112,8 @@
     // What the selection can land on; the volume buttons are left out because the volume bar takes left and right
     const NAVIGABLE = 'button:not(:disabled):not([tabindex="-1"]), [role="slider"]';
     const FLASH_MS = 150;
+    // A tapped or clicked button lights up this long before it acts
+    const BUTTON_FLASH_MS = 120;
     const FEEDBACK_MS = 700;
     // Every tap of a SPAM! level sounds higher than the one before
     const SPAM_STEP_SEMITONES = 2;
@@ -544,6 +546,22 @@
         }
     }
 
+    // A tap or click on a button is held back until the button has flashed, so the press can be seen even when the
+    // screen changes right after. Keyboard presses and the replayed click have detail 0 and go through at once, the
+    // keyboard selection is white already. Buttons with their own press feedback opt out with data-no-flash.
+    function flashButton(event: MouseEvent): void {
+        if (event.detail === 0 || !(event.target instanceof Element)) return;
+        const button = event.target.closest("button");
+        if (!button || button.dataset.noFlash !== undefined) return;
+        event.stopPropagation();
+        if (button.dataset.flash !== undefined) return;
+        button.dataset.flash = "";
+        setTimeout(() => {
+            delete button.dataset.flash;
+            if (button.isConnected && !button.disabled) button.click();
+        }, BUTTON_FLASH_MS);
+    }
+
     // Leaving the tab or app must not cost the game: the timer stops until the player continues
     function onLeave(): void {
         update(pause(game, performance.now()), performance.now());
@@ -611,6 +629,7 @@
     style:--yellow={inkCss("yellow")}
     style:--purple={inkCss("purple")}
     style:--cyan={inkCss("cyan")}
+    onclickcapture={flashButton}
     bind:this={stage}
     bind:clientWidth={width}
     bind:clientHeight={height}
@@ -734,19 +753,21 @@
     }
 
     /* Screens focus a button on their own so Enter works at once; the browser's focus ring would show that before
-       any key is pressed, the selection only appears as the colored fill below */
+       any key is pressed, the selection only appears as the white fill below */
     .stage :global(:is(button, [role="slider"]):focus) {
         outline: none;
     }
 
-    /* The keyboard selection, moved with the arrow keys, WASD or Tab */
-    .stage.keys :global(:is(button, [role="slider"]):focus) {
-        border-color: var(--accent);
-        background: var(--accent);
+    /* The keyboard selection, moved with the arrow keys, WASD or Tab, and the flash of a tapped or clicked button.
+       No button is white otherwise, so white always means the one that acts. */
+    .stage.keys :global(:is(button, [role="slider"]):focus),
+    .stage :global(button[data-flash]) {
+        border-color: #fff;
+        background: #fff;
         color: #000;
     }
 
-    /* The volume bar keeps its steps visible and only gets the colored border */
+    /* The volume bar keeps its steps visible and only gets the white border */
     .stage.keys :global([role="slider"]:focus) {
         background: none;
     }

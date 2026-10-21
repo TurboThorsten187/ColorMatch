@@ -9,7 +9,7 @@ body {
     background: #000;
 }
 
-/* Arcade style blinking, e.g. "PRESS START" */
+/* Arcade style blinking, e.g. "TAP TO CONTINUE" */
 .blink {
     animation: blink 1s steps(1) infinite;
 }

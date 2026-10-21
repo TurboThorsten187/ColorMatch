@@ -176,7 +176,7 @@
         outline-offset: 3px;
     }
 
-    /* On the yellow of the keyboard selection the badge turns black */
+    /* On the white of the keyboard selection the badge turns black */
     :global(.keys) .badge-button:focus :global(.badge) {
         border-color: #000;
         color: #000;

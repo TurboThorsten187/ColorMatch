@@ -181,9 +181,11 @@
 
     <div class="reset">
         <!-- The button stays after the reset and only changes its label, so keyboard focus is not lost -->
+        <!-- Its fill is the feedback, a flash on release would hide it -->
         <button
             class="hold"
             class:cleared
+            data-no-flash
             onpointerdown={onHoldPointer}
             onpointerup={stopHold}
             onpointerleave={stopHold}
@@ -309,9 +311,10 @@
         color: #777;
     }
 
+    /* Yellow, white is the selection */
     .switch button.on {
-        border-color: #fff;
-        background: #fff;
+        border-color: var(--yellow);
+        background: var(--yellow);
         color: #000;
     }
 
