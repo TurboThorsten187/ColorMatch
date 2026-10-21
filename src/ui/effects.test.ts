@@ -98,7 +98,7 @@ describe("word motion", () => {
         }
     });
 
-    it("shakes and tilts further the stronger it is", () => {
+    it("shakes and tilts further the stronger it is, at most twice as far", () => {
         const shaky = set("shaky");
         const reach = (strength: number, pick: (motion: { x: number; rotation: number }) => number): number =>
             Math.max(
@@ -107,10 +107,10 @@ describe("word motion", () => {
                 ),
             );
 
-        expect(reach(1, (motion) => motion.x)).toBeCloseTo(3 * reach(0, (motion) => motion.x));
+        expect(reach(1, (motion) => motion.x)).toBeCloseTo(2 * reach(0, (motion) => motion.x));
         expect(reach(1, (motion) => motion.rotation)).toBeGreaterThan(reach(0, (motion) => motion.rotation));
         expect(shakeTiltDeg(0)).toBe(4);
-        expect(shakeTiltDeg(1)).toBe(13);
+        expect(shakeTiltDeg(1)).toBe(8);
         expect(effectFontScale(shaky, { shaky: 1 })).toBeLessThan(effectFontScale(shaky, { shaky: 0 }));
     });
 
@@ -145,10 +145,10 @@ describe("word motion", () => {
         expect(fadeOpacity(5000)).toBe(0);
     });
 
-    it("pulses between 85 % and 108 %, and between 55 % and 120 % at full strength", () => {
+    it("pulses between 85 % and 108 %, and twice as far from 100 % at full strength", () => {
         for (const [strength, low, high] of [
             [0, 0.85, 1.08],
-            [1, 0.55, 1.2],
+            [1, 0.7, 1.16],
         ]) {
             const scales = Array.from({ length: 100 }, (_, i) => pulseScale(0.5, i * 13, strength));
 
