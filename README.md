@@ -42,27 +42,27 @@ die schweren; innerhalb einer Stufe wird die Reihenfolge jede Runde neu gemischt
 | Fade             | mittel | Text blendet in 0,9 s aus, Hintergrund bleibt                                                                     |
 | Scrambled        | schwer | Buchstaben werden laufend neu gemischt                                                                            |
 | Inverted Input   | schwer | richtige Antwort ist umgedreht                                                                                    |
-| Spam             | schwer | fünfmal schnell drücken oder tippen (egal wo), jeder Druck lässt ein Zeichen von SPAM! aufleuchten                |
+| Spam             | mittel | fünfmal schnell drücken oder tippen (egal wo), jeder Druck lässt ein Zeichen von SPAM! aufleuchten                |
 | Zoom             | leicht | Text ist winzig: ein Fünftel der normalen Größe, mit jedem Level danach kleiner bis zu einem Zehntel              |
 | Symmetry         | leicht | nur die linke Hälfte des Worts ist zu sehen, die rechte ist ihr Spiegelbild (CYAN wird zu CYYC)                   |
 | Reverse Timer    | leicht | der Timer läuft rückwärts: er füllt sich von der Mitte aus, erst rot, dann gelb, dann grün                        |
 | Assemble         | mittel | die Buchstaben fliegen vom Bildschirmrand herein, nach einem Viertel der Zeit ist das Wort komplett               |
 | Font Flip        | mittel | jeder Buchstabe wechselt alle 200 ms in eine andere von 28 Schriften; je stärker, desto öfter die schwer lesbaren |
 | Negative         | mittel | von 10 % bis 50 % der Zeit ist der ganze Bildschirm ein Fotonegativ, danach kurz ein Nachbild                     |
-| Wait             | mittel | das Schild zeigt in den ersten 40 % der Zeit WAIT, dann NOW; ein Druck vorher ist TOO EARLY!                      |
+| Wait             | schwer | das Schild zeigt in den ersten 40 % der Zeit WAIT, dann NOW; ein Druck vorher ist TOO EARLY!                      |
 | Double Tap       | mittel | die Antwort zweimal drücken, egal wie schnell; ein falscher Druck ist sofort ein Fehler                           |
 | Duo              | schwer | zwei Wörter übereinander: TRUE, wenn beide oder keins zu ihrer Farbe passen (BOTH OR NEITHER)                     |
 
 Nach dem letzten Druck bei Spam bleibt das ganz erleuchtete SPAM! noch 0,12 s stehen, dann zeigt STOP SPAMMING! 0,5 s
 lang, dass weiteres Tippen nichts bringt.
 
-Ein neuer Modifier kommt in seinem Einführungslevel allein und mit 1 s Extrazeit (dazu die 0,3 s, die jeder
-Modifier bringt); fällt die Einführung auf ein
+Ein neuer Modifier kommt in seinem Einführungslevel allein und mit 1 s Extrazeit (dazu die Extrazeit seiner Stufe);
+fällt die Einführung auf ein
 Surge-Level, kommt sie ein Level später. Sonst wird gemischt: Alle 12 Level dürfen mehr Modifier gleichzeitig kommen,
 bis Level 12 höchstens einer, ab Level 13 zwei, ab 25 drei, ab 37 vier und so weiter, und frisch eingeführte kommen
 häufiger. Sobald zwei erlaubt sind, kommt ein neuer Modifier im Level nach seiner Einführung meist gleich noch einmal,
 zusammen mit einem bekannten.
-Jeder Modifier in einem Level bringt 0,3 s Extrazeit, auch schon der erste. Bei Don't Click läuft nur 60 % der Zeit, damit man
+Jeder Modifier in einem Level bringt Extrazeit, auch schon der erste: leicht 0,2 s, mittel 0,3 s, schwer 0,4 s. Bei Don't Click läuft nur 60 % der Zeit, damit man
 nicht so lange warten muss. Rotation, Pulsing, Shaky, Moving, Fade, Scrambled und Font Flip
 werden mit dem Level schneller, so wie die Zeit pro Level schrumpft (etwa 1,5-mal so schnell bei Level 40, 2,5-mal
 ab Level 80). Jeder

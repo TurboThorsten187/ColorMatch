@@ -3,7 +3,7 @@ import { conflicts, groupById, MODIFIER_GROUPS, type ModifierGroupId, TIERS } fr
 import {
     createCurriculum,
     type Curriculum,
-    EXTRA_GROUP_BONUS_MS,
+    EXTRA_TIME_MS,
     FIRST_INTRO_LEVEL,
     INTRO_BONUS_MS,
     INTRO_EVERY,
@@ -270,35 +270,40 @@ describe("pickGroups", () => {
 
 describe("timeLimitFor", () => {
     it("starts at 3 s and gets shorter every level, flattening out, down to 1 s at level 80", () => {
-        expect(timeLimitFor(1, 0, false)).toBe(3000);
-        expect(timeLimitFor(10, 0, false)).toBeLessThan(timeLimitFor(9, 0, false));
-        expect(timeLimitFor(30, 0, false)).toBe(2007);
-        expect(timeLimitFor(1, 0, false) - timeLimitFor(10, 0, false)).toBeGreaterThan(
-            timeLimitFor(40, 0, false) - timeLimitFor(49, 0, false),
+        expect(timeLimitFor(1, [], false)).toBe(3000);
+        expect(timeLimitFor(10, [], false)).toBeLessThan(timeLimitFor(9, [], false));
+        expect(timeLimitFor(30, [], false)).toBe(2007);
+        expect(timeLimitFor(1, [], false) - timeLimitFor(10, [], false)).toBeGreaterThan(
+            timeLimitFor(40, [], false) - timeLimitFor(49, [], false),
         );
         // Surge levels have their own fixed time
         const levels = Array.from({ length: 150 }, (_, index) => index + 1).filter((level) => !isSurgeLevel(level));
         for (let index = 1; index < levels.length; index++) {
-            expect(timeLimitFor(levels[index], 0, false)).toBeLessThanOrEqual(
-                timeLimitFor(levels[index - 1], 0, false),
+            expect(timeLimitFor(levels[index], [], false)).toBeLessThanOrEqual(
+                timeLimitFor(levels[index - 1], [], false),
             );
         }
-        expect(timeLimitFor(79, 0, false)).toBeGreaterThan(1000);
-        expect(timeLimitFor(81, 0, false)).toBe(1000);
-        expect(timeLimitFor(201, 0, false)).toBe(1000);
+        expect(timeLimitFor(79, [], false)).toBeGreaterThan(1000);
+        expect(timeLimitFor(81, [], false)).toBe(1000);
+        expect(timeLimitFor(201, [], false)).toBe(1000);
     });
 
     it("gives a surge its fixed time, however many groups it stacks", () => {
-        expect(timeLimitFor(SURGE_FIRST_LEVEL, surgeGroupCount(SURGE_FIRST_LEVEL), false)).toBe(SURGE_TIME_MS);
-        expect(timeLimitFor(120, surgeGroupCount(120), false)).toBe(SURGE_TIME_MS);
+        const stacked = (level: number): ModifierGroupId[] => CURRICULUM.slice(0, surgeGroupCount(level));
+
+        expect(timeLimitFor(SURGE_FIRST_LEVEL, stacked(SURGE_FIRST_LEVEL), false)).toBe(SURGE_TIME_MS);
+        expect(timeLimitFor(120, stacked(120), false)).toBe(SURGE_TIME_MS);
     });
 
-    it("gives extra time for an introduction and for every group, the first one too", () => {
-        const base = timeLimitFor(20, 0, false);
+    it("gives extra time for an introduction and for every group by its tier, the first one too", () => {
+        const base = timeLimitFor(20, [], false);
 
-        expect(timeLimitFor(20, 1, false)).toBe(base + EXTRA_GROUP_BONUS_MS);
-        expect(timeLimitFor(20, 1, true)).toBe(base + INTRO_BONUS_MS + EXTRA_GROUP_BONUS_MS);
-        expect(timeLimitFor(20, 3, false)).toBe(base + 3 * EXTRA_GROUP_BONUS_MS);
+        expect(EXTRA_TIME_MS).toEqual({ easy: 200, medium: 300, hard: 400 });
+        expect(timeLimitFor(20, ["rotation"], false)).toBe(base + EXTRA_TIME_MS.easy);
+        expect(timeLimitFor(20, ["rotation"], true)).toBe(base + INTRO_BONUS_MS + EXTRA_TIME_MS.easy);
+        expect(timeLimitFor(20, ["rotation", "blur", "scrambled"], false)).toBe(
+            base + EXTRA_TIME_MS.easy + EXTRA_TIME_MS.medium + EXTRA_TIME_MS.hard,
+        );
     });
 });
 

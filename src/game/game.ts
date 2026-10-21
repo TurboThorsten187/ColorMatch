@@ -206,7 +206,7 @@ function playLevel(
     const strength = Object.fromEntries(groups.map((id) => [id, strengthFor(level, introLevel(curriculum, id))]));
     const size = groups.includes("zoom") ? zoomSizeFor(level, introLevel(curriculum, "zoom")) : 1;
     const challenge = createChallenge(groups, level, rng, tempo, size, strength);
-    const timeLimit = timeLimitFor(level, groups.length, introducedAt(curriculum, level) !== null);
+    const timeLimit = timeLimitFor(level, groups, introducedAt(curriculum, level) !== null);
     return {
         phase: "playing",
         level,

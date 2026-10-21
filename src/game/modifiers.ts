@@ -96,7 +96,7 @@ export const MODIFIER_GROUPS: readonly ModifierGroup[] = [
     group("scrambled", "hard", ["scrambled"]),
     group("invertInput", "hard", ["invertInput"], { rule: true }),
     // SPAM! replaces the word, so nothing that is about the word or its color makes sense with it
-    group("spam", "hard", ["spam"], {
+    group("spam", "medium", ["spam"], {
         rule: true,
         conflictsWith: ["background", "blink", "scrambled", "splitMirror"],
     }),
@@ -110,7 +110,7 @@ export const MODIFIER_GROUPS: readonly ModifierGroup[] = [
     // The word would be gone before the negative is over, so it would show almost only in the wrong colors
     group("negative", "medium", ["negative"], { conflictsWith: ["blink"] }),
     // Blink fades the rule tags too, so NOW would never show
-    group("wait", "medium", ["wait"], { rule: true, conflictsWith: ["blink"] }),
+    group("wait", "hard", ["wait"], { rule: true, conflictsWith: ["blink"] }),
     group("doubleTap", "medium", ["doubleTap"], { rule: true }),
     // Two words and two inks are too much to read before they fade
     group("twoWords", "hard", ["twoWords"], { rule: true, conflictsWith: ["blink"] }),

@@ -59,7 +59,7 @@ function playing(
             size: 1,
         },
         startedAt: 0,
-        timeLimit: timeLimitFor(level, 0, false),
+        timeLimit: timeLimitFor(level, [], false),
         spamCount: 0,
         taps: 0,
         curriculum: CURRICULUM,
@@ -85,7 +85,7 @@ describe("game", () => {
     it("restarts the timer for the next level", () => {
         expect(answer(playing("true"), "true", 500, rng)).toMatchObject({
             startedAt: 500,
-            timeLimit: timeLimitFor(2, 0, false),
+            timeLimit: timeLimitFor(2, [], false),
         });
     });
 
@@ -146,7 +146,7 @@ describe("game", () => {
             const next = answer(playing("true", 41), "true", 100, rng);
             if (next.phase !== "playing") throw new Error("Level 42 did not start");
 
-            const limit = timeLimitFor(42, groupsOf(next.challenge.modifiers).length, false);
+            const limit = timeLimitFor(42, groupsOf(next.challenge.modifiers), false);
             if (next.challenge.expected === "none") {
                 noClickLevels++;
                 expect(next.timeLimit).toBe(Math.round(limit * NO_CLICK_TIME_SHARE));
@@ -254,7 +254,7 @@ describe("game", () => {
     it("ends the game when a spam challenge is not finished in time", () => {
         const state = answer(playing("spam"), "true", 100, rng);
 
-        expect(tick(state, timeLimitFor(1, 0, false) + 1, rng).phase).toBe("gameOver");
+        expect(tick(state, timeLimitFor(1, [], false) + 1, rng).phase).toBe("gameOver");
     });
 
     it("ignores answers and time outside of a running level", () => {
