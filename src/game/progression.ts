@@ -1,4 +1,4 @@
-import { conflicts, MODIFIER_GROUPS, type ModifierGroupId, TIERS } from "./modifiers.ts";
+import { conflicts, groupById, MODIFIER_GROUPS, type ModifierGroupId, type Tier, TIERS } from "./modifiers.ts";
 import type { Rng } from "./random.ts";
 
 // The order in which one game introduces the modifier groups: shuffled per game, but easy before medium before hard
@@ -15,7 +15,8 @@ const BASE_MIN_MS = 1000;
 const BASE_RANGE_MS = 2000;
 const BASE_BEND = 1.5;
 export const INTRO_BONUS_MS = 1000;
-export const EXTRA_GROUP_BONUS_MS = 300;
+// Every group of a level brings extra time, the harder its tier the more
+export const EXTRA_TIME_MS: Readonly<Record<Tier, number>> = { easy: 200, medium: 300, hard: 400 };
 // A Don't Click level is only sat out, the full time would just be waiting
 export const NO_CLICK_TIME_SHARE = 0.6;
 
@@ -91,10 +92,11 @@ export function plainChance(level: number): number {
     return Math.max(0.15, 0.45 - 0.01 * (level - FIRST_INTRO_LEVEL)) * (1 - lateShare(level));
 }
 
-// Every group brings extra time, the first one too; a surge has its fixed time instead
-export function timeLimitFor(level: number, groupCount: number, intro: boolean): number {
+// Every group brings the extra time of its tier, the first one too; a surge has its fixed time instead
+export function timeLimitFor(level: number, groups: readonly ModifierGroupId[], intro: boolean): number {
     if (isSurgeLevel(level)) return SURGE_TIME_MS;
-    return Math.round(baseLimit(level) + (intro ? INTRO_BONUS_MS : 0) + EXTRA_GROUP_BONUS_MS * groupCount);
+    const extra = groups.reduce((sum, id) => sum + EXTRA_TIME_MS[groupById(id).tier], 0);
+    return Math.round(baseLimit(level) + (intro ? INTRO_BONUS_MS : 0) + extra);
 }
 
 // Animated modifiers (spin, pulse, shake, movement, fade, scramble) speed up along with the shrinking time limit:

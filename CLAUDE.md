@@ -59,7 +59,8 @@ files.
   modifier never seen before is stored paused in `update()` until its intro cards (`src/game/intros.ts`) are confirmed.
 - Awards are defined in `src/game/awards.ts`; `src/game/stats.ts` counts cleared levels per award, is saved after every
   cleared level and reports newly unlocked awards (toast in game, list on game over).
-- Modifiers belong to groups (`MODIFIER_GROUPS` in `src/game/modifiers.ts`, all mirrors are one group) with a tier.
+- Modifiers belong to groups (`MODIFIER_GROUPS` in `src/game/modifiers.ts`, all mirrors are one group) with a tier
+  (easy, medium, hard: the intro order and the group's extra time).
   Groups that must not share a level name each other in `conflictsWith` (only one of them needs to), and a level
   has at most one `rule` group. With Symmetry the mirror group only turns the word upside down.
   `src/game/progression.ts` holds the per-game curriculum (`PlayingState.curriculum`: a new group every 3 levels from
@@ -68,7 +69,7 @@ files.
   from mostly one to every count equally likely), surge levels (`isSurgeLevel`,
   announced by the `surgeBanner` phase; `surgeGroupCount` grows by one per surge, the time is a fixed
   `SURGE_TIME_MS`), the time limit (a base that bends from 3 s at level 1 to 1 s at level 80, every group adds
-  `EXTRA_GROUP_BONUS_MS`, Don't Click levels get `NO_CLICK_TIME_SHARE` of it) and the tempo of animated modifiers
+  `EXTRA_TIME_MS` of its tier, Don't Click levels get `NO_CLICK_TIME_SHARE` of it) and the tempo of animated modifiers
   (`tempoFor`, following the shrinking base up to `MAX_TEMPO` at level 80, stored in `Challenge.tempo`, applied in
   `ChallengeScreen` and `effects.ts`), and along with the tempo
   the strength (`strengthFor`, `Challenge.strength`, 0 on the intro level to 1 from level 80) that makes rotation
