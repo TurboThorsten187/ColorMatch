@@ -254,8 +254,8 @@
         height: 44px;
         padding: 0 16px;
         border: 3px solid #fff;
-        background: #fff;
-        color: #000;
+        background: #000;
+        color: #fff;
         font-size: 11px;
     }
 

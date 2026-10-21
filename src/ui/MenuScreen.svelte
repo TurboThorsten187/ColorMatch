@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { randomColor } from "../game/colors.ts";
+    import { COLORS } from "../game/colors.ts";
     import { HARDCORE_UNLOCK_SCORE } from "../game/highscore.ts";
     import { answerOn } from "../game/settings.ts";
     import { inkCss } from "./palette.svelte.ts";
@@ -32,21 +32,18 @@
     }: Props = $props();
 
     const TITLE_LINES = ["COLOR", "MATCH"];
-    const LETTER_COUNT = TITLE_LINES.join("").length;
-    const COLOR_CHANGE_MS = 150;
+    const WAVE_STEP_MS = 300;
 
-    // Every letter has its own color, one random letter changes regularly
-    const titleColors = $state(Array.from({ length: LETTER_COUNT }, () => randomColor(Math.random)));
+    // The letters show the colors in their order, and the colors move on by one letter every step
+    let wave = $state(0);
 
     $effect(() => {
-        const interval = setInterval(() => {
-            titleColors[Math.floor(Math.random() * LETTER_COUNT)] = randomColor(Math.random);
-        }, COLOR_CHANGE_MS);
+        const interval = setInterval(() => wave++, WAVE_STEP_MS);
         return () => clearInterval(interval);
     });
 </script>
 
-<div class="menu">
+<div class="menu" class:crowded={oninstall !== undefined && hardcoreUnlocked}>
     {#if oninstall}
         <button class="install" onclick={oninstall}>INSTALL</button>
     {/if}
@@ -68,7 +65,9 @@
         {#each TITLE_LINES as line, row (row)}
             <span class="line">
                 {#each line as letter, col (col)}
-                    <span style:color={inkCss(titleColors[row * TITLE_LINES[0].length + col])}>{letter}</span>
+                    <span style:color={inkCss(COLORS[(row * TITLE_LINES[0].length + col + wave) % COLORS.length])}
+                        >{letter}</span
+                    >
                 {/each}
             </span>
         {/each}
@@ -80,10 +79,22 @@
     </div>
     <div class="play">
         <!-- Selected from the start, so Enter and the arrow keys begin here -->
-        <button class="start blink" onclick={onstart} {@attach (node) => node.focus()}>PRESS START</button>
+        <button class="start" onclick={onstart} {@attach (node) => node.focus()}>START GAME</button>
         <button class="hardcore" onclick={onhardcore} disabled={!hardcoreUnlocked}>
-            HARDCORE
-            {#if !hardcoreUnlocked}<span class="lock">CLEAR LEVEL {HARDCORE_UNLOCK_SCORE}</span>{/if}
+            {#if hardcoreUnlocked}
+                HARDCORE
+            {:else}
+                <span class="name">
+                    <svg class="lock" viewBox="0 0 10 12" aria-hidden="true">
+                        <rect x="2" width="6" height="2" />
+                        <rect x="1" y="1" width="2" height="5" />
+                        <rect x="7" y="1" width="2" height="5" />
+                        <rect y="5" width="10" height="7" />
+                    </svg>
+                    HARDCORE
+                </span>
+                <span class="hint">LEVEL {HARDCORE_UNLOCK_SCORE}</span>
+            {/if}
         </button>
     </div>
 
@@ -110,7 +121,7 @@
 
     @media (max-height: 520px) {
         .menu {
-            gap: 16px;
+            gap: 12px;
             padding-top: calc(env(safe-area-inset-top) + 16px);
             padding-bottom: calc(env(safe-area-inset-bottom) + 16px);
         }
@@ -118,10 +129,17 @@
 
     .hiscore {
         display: flex;
-        flex-direction: column;
+        gap: 32px;
         text-align: center;
         font-size: max(11px, calc(1.8 * var(--unit)));
         line-height: 1.8;
+    }
+
+    /* Both hi-scores side by side reach under INSTALL on narrow screens, there they move down below it */
+    @media (max-width: 459px) {
+        .crowded .hiscore {
+            margin-top: 48px;
+        }
     }
 
     .play {
@@ -131,14 +149,9 @@
         gap: 16px;
     }
 
-    /* Where there is room beside them (short screens are wide), the two hi-scores and the two ways to play sit side
-       by side, so the menu is not taller than before HARDCORE */
+    /* Where there is room beside them (short screens are wide), the two ways to play sit side by side, so the menu
+       is not taller than before HARDCORE */
     @media (max-height: 520px), (min-width: 600px) {
-        .hiscore {
-            flex-direction: row;
-            gap: 32px;
-        }
-
         .play {
             flex-direction: row;
             gap: 24px;
@@ -170,16 +183,12 @@
     .start {
         flex: none;
         height: auto;
-        padding: 10px 14px;
-        border-color: transparent;
-        background: none;
+        padding: 14px 22px;
+        border-color: var(--yellow);
+        background: var(--yellow);
+        color: #000;
         font-size: max(13px, calc(2.4 * var(--unit)));
-        color: var(--yellow);
-    }
-
-    /* A selected PRESS START stays visible */
-    :global(.keys) .start:focus {
-        animation: none;
+        box-shadow: 4px 4px 0 var(--red);
     }
 
     .hardcore {
@@ -201,7 +210,20 @@
         cursor: default;
     }
 
+    .name {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
     .lock {
+        width: 0.9em;
+        height: 1.1em;
+        fill: currentColor;
+        shape-rendering: crispEdges;
+    }
+
+    .hint {
         font-size: 10px;
     }
 
@@ -233,7 +255,7 @@
         box-shadow: 4px 4px 0 var(--red);
     }
 
-    /* Small and out of the way, it stays clear of the hi-score down to 320 px wide screens */
+    /* Small and out of the way in the top right corner */
     .install {
         position: absolute;
         top: calc(env(safe-area-inset-top) + 16px);

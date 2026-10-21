@@ -369,8 +369,8 @@
         flex: none;
         border: 4px solid #fff;
         border-radius: 0;
-        background: #fff;
-        color: #000;
+        background: #000;
+        color: #fff;
         font-family: inherit;
         font-size: 13px;
         box-shadow: 4px 4px 0 var(--accent);

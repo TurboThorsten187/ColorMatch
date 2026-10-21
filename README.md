@@ -13,10 +13,11 @@ Ein schnelles Reaktionsspiel im Browser: Passt das angezeigte Wort zu seiner Sch
 
 Mit **FLIP CONTROLS** in SETUP sind die Seiten getauscht: FALSE links (**←**, **A**, linke Hälfte), TRUE rechts.
 
-Alle Menüs lassen sich nur mit der Tastatur bedienen: Der ausgewählte Button ist gelb gefüllt, bewegt wird er mit den
+Alle Menüs lassen sich nur mit der Tastatur bedienen: Der ausgewählte Button ist weiß gefüllt, bewegt wird er mit den
 Pfeiltasten oder WASD zum nächsten Button in der Richtung (mit einem leisen Blip). Die Hervorhebung erscheint nur beim
-Spielen mit der Tastatur; der erste Tastendruck zeigt, wo die Auswahl steht. Im Menü ist PRESS START ausgewählt, nach
+Spielen mit der Tastatur; der erste Tastendruck zeigt, wo die Auswahl steht. Im Menü ist START GAME ausgewählt, nach
 Game Over RETRY, sobald es reagiert. In SETUP ändern ← und → die Lautstärke, wenn die Lautstärke-Leiste ausgewählt ist.
+Ein angetippter oder angeklickter Button blitzt kurz weiß auf, bevor er auslöst; sonst ist kein Button weiß.
 
 Wechselt man den Tab oder die App, pausiert das Spiel; danach geht es mit derselben Aufgabe und der Restzeit weiter.
 
@@ -85,11 +86,11 @@ weiteren Surge einer mehr, soweit sie zusammenpassen (höchstens eine Regel). Ei
 Extrazeit pro Modifier.
 
 **HARDCORE** öffnet sich im Menü, sobald ein normales Spiel Level 50 geschafft hat (vorher ist der Button grau und
-zeigt CLEAR LEVEL 50). Es gibt keine Einführungen: Alle Modifier können ab Level 1 kommen, mit voller Stärke und
-2,5-fachem Tempo, die Grundzeit ist immer 1 s (plus die Extrazeit der Stufen). Ab Level 1 einer, alle 3 Level darf
+zeigt ein Schloss und LEVEL 50). Es gibt keine Einführungen: Alle Modifier können ab Level 1 kommen, mit voller
+Stärke und 2,5-fachem Tempo, die Grundzeit ist immer 1 s (plus die Extrazeit der Stufen). Ab Level 1 einer, alle 3 Level darf
 einer mehr gleichzeitig kommen, nie ein Level ohne Modifier, und jede Anzahl bis zum Höchstmaß ist gleich
 wahrscheinlich. Surges kommen ab Level 10 alle 5 Level (fünf Modifier, bei jedem einer mehr, 1,3 s). Hardcore hat
-einen eigenen Highscore (im Menü unter dem normalen), zählt nicht für Stats und Awards und leuchtet rot statt gelb.
+einen eigenen Highscore (im Menü neben dem normalen), zählt nicht für Stats und Awards und leuchtet rot statt gelb.
 Karten für noch nie gesehene Modifier erscheinen auch hier.
 
 Beim allerersten Start erklärt ein kurzes Tutorial das Spiel: drei Karten, nach jeder wird sofort geübt (vier Wörter
