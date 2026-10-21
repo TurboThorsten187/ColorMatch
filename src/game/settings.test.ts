@@ -23,6 +23,7 @@ describe("settings", () => {
             sound: false,
             volume: 2,
             scanlines: false,
+            oldColors: true,
             colorblind: true,
             flipControls: true,
         };
@@ -36,7 +37,14 @@ describe("settings", () => {
         const storage = memoryStorage();
         storage.setItem(
             "colormatch_settings",
-            JSON.stringify({ sound: "yes", volume: 99, scanlines: false, colorblind: "on", flipControls: 1 }),
+            JSON.stringify({
+                sound: "yes",
+                volume: 99,
+                scanlines: false,
+                oldColors: "on",
+                colorblind: "on",
+                flipControls: 1,
+            }),
         );
 
         expect(loadSettings(storage)).toEqual({ ...DEFAULT_SETTINGS, scanlines: false });
@@ -52,7 +60,14 @@ describe("settings", () => {
 
     it("go back to the defaults when cleared", () => {
         const storage = memoryStorage();
-        saveSettings(storage, { sound: false, volume: 1, scanlines: false, colorblind: true, flipControls: true });
+        saveSettings(storage, {
+            sound: false,
+            volume: 1,
+            scanlines: false,
+            oldColors: true,
+            colorblind: true,
+            flipControls: true,
+        });
 
         clearSettings(storage);
 

@@ -54,9 +54,11 @@ files.
   highlight only shows while `keyboardMode` puts the `keys` class on the stage),
   pause on `blur`/`visibilitychange`, highscore, settings and stats persistence, sounds and stats for game transitions
   in `update()` (a hardcore game records no stats and no awards). Settings and stats screens are a `view` in App, not
-  a game phase. The stage sets the six game colors from `COLOR_CSS` as CSS variables (`--red` … `--cyan`); components
-  use them, never hex values of their own, so every screen and the icon (`public/favicon.svg`, which has to be updated
-  by hand) show exactly the game's colors. The stage's `--accent` (`--yellow`, `--red` while a hardcore game runs)
+  a game phase. The stage sets the six game colors as CSS variables (`--red` … `--cyan`); components use them, or
+  `inkCss` from `src/ui/palette.svelte.ts` where they need the value in script, never hex values of their own, so every
+  screen and the icon (`public/favicon.svg`, which has to be updated by hand) show exactly the game's colors. `inkCss`
+  gives `COLOR_CSS`, or `OLD_COLOR_CSS` while the OLD COLORS setting is on; that setting only exists to compare the
+  palettes while the design is reworked and goes again afterwards. The stage's `--accent` (`--yellow`, `--red` while a hardcore game runs)
   colors the highlights of every screen a game shows.
 - `public/` – PWA files copied as-is: `manifest.webmanifest`, icons (the PNGs and `favicon.ico` are renders of
   `favicon.svg`, re-render them when it changes) and `sw.js`, a plain JS service worker (network first for the page,

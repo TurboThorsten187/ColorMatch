@@ -4,7 +4,7 @@
 </script>
 
 <script lang="ts">
-    import { COLOR_CSS } from "../game/colors.ts";
+    import { inkCss } from "./palette.svelte.ts";
 
     type Props = {
         level: number;
@@ -30,7 +30,7 @@
     const shown = $derived(props.countUp ? 1 - share : share);
     // The segments go out in pairs from both ends towards the middle
     const litPairs = $derived(Math.ceil((shown * SEGMENTS.length) / 2));
-    const color = $derived(shown > 0.5 ? COLOR_CSS.green : shown > LOW_TIME_SHARE ? COLOR_CSS.yellow : COLOR_CSS.red);
+    const color = $derived(shown > 0.5 ? inkCss("green") : shown > LOW_TIME_SHARE ? inkCss("yellow") : inkCss("red"));
 </script>
 
 <div class="bar" class:inline={props.inline} class:paused={props.paused}>
