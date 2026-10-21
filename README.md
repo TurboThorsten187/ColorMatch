@@ -62,6 +62,10 @@ die schweren; innerhalb einer Stufe wird die Reihenfolge jede Runde neu gemischt
 Nach dem letzten Druck bei Spam bleibt das ganz erleuchtete SPAM! noch 0,12 s stehen, dann zeigt STOP SPAMMING! 0,5 s
 lang, dass weiteres Tippen nichts bringt.
 
+Jede Regel hat ihre eigene Farbe. Die Schilder über dem Wort sind DON'T CLICK rot, INVERTED INPUT lila, WAIT weiß
+(NOW grün), DOUBLE TAP cyan und BOTH OR NEITHER gelb; SPAM! leuchtet immer blau auf. Die Modifier-Karten der Regeln
+zeigen ihr Schild und heben in seiner Farbe hervor (auf der WAIT-Karte das NOW in Grün).
+
 Ein neuer Modifier kommt in seinem Einführungslevel allein und mit 1 s Extrazeit (dazu die Extrazeit seiner Stufe);
 fällt die Einführung auf ein
 Surge-Level, kommt sie ein Level später. Sonst wird gemischt: Alle 12 Level dürfen mehr Modifier gleichzeitig kommen,
