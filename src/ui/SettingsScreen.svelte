@@ -181,11 +181,11 @@
 
     <div class="reset">
         <!-- The button stays after the reset and only changes its label, so keyboard focus is not lost -->
-        <!-- Its fill is the feedback, a flash on release would hide it -->
+        <!-- Its fill is the feedback, so it does not sink in like the other buttons -->
         <button
             class="hold"
             class:cleared
-            data-no-flash
+            data-no-press
             onpointerdown={onHoldPointer}
             onpointerup={stopHold}
             onpointerleave={stopHold}
@@ -306,21 +306,21 @@
     }
 
     .switch button {
+        --shade: #555;
         width: 64px;
         border-color: #555;
         color: #777;
     }
 
-    /* Yellow, white is the selection */
     .switch button.on {
-        border-color: var(--yellow);
-        background: var(--yellow);
-        color: #000;
+        --shade: #fff;
+        border-color: #fff;
+        color: #fff;
     }
 
     .replay {
+        --button-color: var(--blue);
         width: 128px;
-        box-shadow: 4px 4px 0 var(--blue);
     }
 
     .reset {
@@ -330,7 +330,9 @@
         gap: 10px;
     }
 
+    /* Red already, so it is selected in the accent */
     .hold {
+        --shade: var(--red);
         position: relative;
         height: 52px;
         overflow: hidden;
@@ -348,6 +350,7 @@
     }
 
     .hold.cleared {
+        --shade: var(--green);
         border-color: var(--green);
         color: var(--green);
         cursor: default;

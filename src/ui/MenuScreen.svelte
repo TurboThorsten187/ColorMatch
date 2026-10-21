@@ -7,7 +7,7 @@
     interface Props {
         highscore: number;
         hardcoreHighscore: number;
-        // Locked, the HARDCORE button shows what opens it
+        // Locked, a press of HARDCORE shows what opens it
         hardcoreUnlocked: boolean;
         // FALSE on the left, TRUE on the right
         flipControls: boolean;
@@ -33,13 +33,22 @@
 
     const TITLE_LINES = ["COLOR", "MATCH"];
     const WAVE_STEP_MS = 300;
+    // How long a press of the locked HARDCORE shows what opens it
+    const LOCK_HINT_MS = 2000;
 
     // The letters show the colors in their order, and the colors move on by one letter every step
     let wave = $state(0);
+    let lockHint = $state(false);
 
     $effect(() => {
         const interval = setInterval(() => wave++, WAVE_STEP_MS);
         return () => clearInterval(interval);
+    });
+
+    $effect(() => {
+        if (!lockHint) return;
+        const timeout = setTimeout(() => (lockHint = false), LOCK_HINT_MS);
+        return () => clearTimeout(timeout);
     });
 </script>
 
@@ -80,22 +89,28 @@
     <div class="play">
         <!-- Selected from the start, so Enter and the arrow keys begin here -->
         <button class="start" onclick={onstart} {@attach (node) => node.focus()}>START GAME</button>
-        <button class="hardcore" onclick={onhardcore} disabled={!hardcoreUnlocked}>
-            {#if hardcoreUnlocked}
-                HARDCORE
-            {:else}
-                <span class="name">
+        <!-- Locked it can still be selected and pressed, and then tells what opens it -->
+        <div class="slot">
+            <button
+                class="hardcore"
+                aria-disabled={!hardcoreUnlocked}
+                aria-describedby={hardcoreUnlocked ? undefined : "hardcore-hint"}
+                onclick={hardcoreUnlocked ? onhardcore : () => (lockHint = true)}
+            >
+                {#if !hardcoreUnlocked}
                     <svg class="lock" viewBox="0 0 10 12" aria-hidden="true">
                         <rect x="2" width="6" height="2" />
                         <rect x="1" y="1" width="2" height="5" />
                         <rect x="7" y="1" width="2" height="5" />
                         <rect y="5" width="10" height="7" />
                     </svg>
-                    HARDCORE
-                </span>
-                <span class="hint">LEVEL {HARDCORE_UNLOCK_SCORE}</span>
+                {/if}
+                HARDCORE
+            </button>
+            {#if !hardcoreUnlocked}
+                <span id="hardcore-hint" class="hint" class:shown={lockHint}>CLEAR LEVEL {HARDCORE_UNLOCK_SCORE}</span>
             {/if}
-        </button>
+        </div>
     </div>
 
     <div class="buttons">
@@ -180,51 +195,73 @@
         font-size: max(12px, calc(2.2 * var(--unit)));
     }
 
-    .start {
+    /* The two ways to play, the same size whether HARDCORE is locked or not */
+    .start,
+    .hardcore {
         flex: none;
-        height: auto;
-        padding: 14px 22px;
-        border-color: var(--yellow);
-        background: var(--yellow);
-        color: #000;
-        font-size: max(13px, calc(2.4 * var(--unit)));
-        box-shadow: 4px 4px 0 var(--red);
+        width: max(240px, calc(30 * var(--unit)));
+        height: max(56px, calc(6.4 * var(--unit)));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        font-size: max(13px, calc(1.6 * var(--unit)));
+    }
+
+    .start {
+        --button-color: var(--yellow);
+        color: var(--yellow);
     }
 
     .hardcore {
-        flex: none;
-        height: auto;
-        display: grid;
-        justify-items: center;
-        gap: 8px;
-        padding: 10px 14px;
-        border-color: var(--red);
+        --button-color: var(--red);
         color: var(--red);
-        font-size: max(11px, calc(1.8 * var(--unit)));
-        line-height: 1.4;
     }
 
-    .hardcore:disabled {
+    /* Locked it is gray, but selected and pressed in red like when it is open */
+    .hardcore[aria-disabled="true"] {
+        --shade: #444;
         border-color: #444;
         color: #666;
         cursor: default;
     }
 
-    .name {
-        display: flex;
-        align-items: center;
-        gap: 8px;
+    .slot {
+        position: relative;
     }
 
     .lock {
         width: 0.9em;
         height: 1.1em;
+        flex: none;
         fill: currentColor;
         shape-rendering: crispEdges;
     }
 
+    /* Below the button and out of the flow, so showing it does not move the menu */
     .hint {
+        position: absolute;
+        top: calc(100% + 10px);
+        left: 0;
+        right: 0;
+        text-align: center;
         font-size: 10px;
+        color: #bbb;
+        visibility: hidden;
+    }
+
+    .hint.shown {
+        visibility: visible;
+    }
+
+    /* Short screens have no room below it, there the hint covers the label inside the border */
+    @media (max-height: 520px) {
+        .hint {
+            inset: 4px;
+            display: grid;
+            place-items: center;
+            background: #000;
+        }
     }
 
     .buttons {
@@ -248,15 +285,16 @@
     }
 
     .stats {
-        box-shadow: 4px 4px 0 var(--blue);
+        --button-color: var(--blue);
     }
 
     .setup {
-        box-shadow: 4px 4px 0 var(--red);
+        --button-color: var(--red);
     }
 
-    /* Small and out of the way in the top right corner */
+    /* Small and out of the way in the top right corner; green already, so it is selected in the accent */
     .install {
+        --shade: var(--green);
         position: absolute;
         top: calc(env(safe-area-inset-top) + 16px);
         right: calc(env(safe-area-inset-right) + 16px);

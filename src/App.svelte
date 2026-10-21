@@ -112,8 +112,8 @@
     // What the selection can land on; the volume buttons are left out because the volume bar takes left and right
     const NAVIGABLE = 'button:not(:disabled):not([tabindex="-1"]), [role="slider"]';
     const FLASH_MS = 150;
-    // A tapped or clicked button lights up this long before it acts
-    const BUTTON_FLASH_MS = 120;
+    // A pressed button sinks into its shadow this long before it acts
+    const BUTTON_PRESS_MS = 120;
     const FEEDBACK_MS = 700;
     // Every tap of a SPAM! level sounds higher than the one before
     const SPAM_STEP_SEMITONES = 2;
@@ -162,6 +162,8 @@
     let gameStartedAt = 0;
     let pausedMs = 0;
     let inputLockedUntil = 0;
+    // Set while a held back click is replayed, so it is not held back again
+    let replayingPress = false;
     // The last level that beeped for low time, and the last award whose toast sounded
     let warnedLevel = 0;
     let announcedAward: AwardId | null = null;
@@ -171,6 +173,13 @@
     const gameHighscore = $derived(mode === "hardcore" ? hardcoreHighscore : highscore);
     const flash = $derived(lastAnswer && now - lastAnswer.at < FLASH_MS ? lastAnswer.answer : null);
     const showLoss = $derived(game.phase === "gameOver" && loss !== null && now - loss.at < LOSS_ANIMATION_MS);
+    // The keys hint only shows on screens with buttons, never while a word waits for an answer
+    const showsButtons = $derived.by(() => {
+        if (view !== "game") return true;
+        if (tutorial) return currentStep(tutorial)?.kind === "card";
+        if (game.phase === "gameOver") return !showLoss;
+        return game.phase === "menu" || (game.phase === "paused" && intros.length > 0);
+    });
     const toast = $derived.by(() => {
         const shown = game.phase === "playing" || game.phase === "spamPause" || game.phase === "surgeBanner";
         return shown ? visible(toasts, now) : null;
@@ -546,20 +555,37 @@
         }
     }
 
-    // A tap or click on a button is held back until the button has flashed, so the press can be seen even when the
-    // screen changes right after. Keyboard presses and the replayed click have detail 0 and go through at once, the
-    // keyboard selection is white already. Buttons with their own press feedback opt out with data-no-flash.
-    function flashButton(event: MouseEvent): void {
-        if (event.detail === 0 || !(event.target instanceof Element)) return;
+    // A press of a button, by tap, click, Enter or Space, is held back until the button has sunk into its shadow, so
+    // the press can be seen even when the screen changes right after. Buttons with their own press feedback opt out
+    // with data-no-press.
+    function pressButton(event: MouseEvent): void {
+        if (replayingPress || !(event.target instanceof Element)) return;
         const button = event.target.closest("button");
-        if (!button || button.dataset.noFlash !== undefined) return;
+        if (!button || button.dataset.noPress !== undefined) return;
         event.stopPropagation();
-        if (button.dataset.flash !== undefined) return;
-        button.dataset.flash = "";
+        if (button.dataset.press !== undefined) return;
+        button.dataset.press = "";
         setTimeout(() => {
-            delete button.dataset.flash;
-            if (button.isConnected && !button.disabled) button.click();
-        }, BUTTON_FLASH_MS);
+            delete button.dataset.press;
+            if (!button.isConnected || button.disabled) return;
+            replayingPress = true;
+            try {
+                button.click();
+            } finally {
+                replayingPress = false;
+            }
+        }, BUTTON_PRESS_MS);
+    }
+
+    // With a mouse the button under it is selected like with the keys, and the arrow keys go on from there. Only a
+    // moved mouse counts: a new screen appearing under a resting one must not take the selection away from the keys.
+    function selectHovered(event: PointerEvent): void {
+        if (event.pointerType !== "mouse" || (event.movementX === 0 && event.movementY === 0)) return;
+        if (!(event.target instanceof Element)) return;
+        const item = event.target.closest<HTMLElement>(NAVIGABLE);
+        if (!item || !stage?.contains(item)) return;
+        if (item !== document.activeElement) item.focus({ preventScroll: true });
+        keyboardMode = true;
     }
 
     // Leaving the tab or app must not cost the game: the timer stops until the player continues
@@ -609,6 +635,7 @@
 <svelte:window
     onkeydown={onKeydown}
     onpointerdown={onPointerdown}
+    onpointermove={selectHovered}
     onpointerup={unlockAudio}
     onblur={onLeave}
     onstorage={onStorage}
@@ -629,7 +656,7 @@
     style:--yellow={inkCss("yellow")}
     style:--purple={inkCss("purple")}
     style:--cyan={inkCss("cyan")}
-    onclickcapture={flashButton}
+    onclickcapture={pressButton}
     bind:this={stage}
     bind:clientWidth={width}
     bind:clientHeight={height}
@@ -722,6 +749,10 @@
         {/key}
     {/if}
 
+    {#if keyboardMode && showsButtons}
+        <div class="key-help" aria-hidden="true">ARROWS SELECT · ENTER OK · ESC BACK</div>
+    {/if}
+
     {#if settings.scanlines}
         <div class="scanlines" aria-hidden="true"></div>
     {/if}
@@ -753,23 +784,52 @@
     }
 
     /* Screens focus a button on their own so Enter works at once; the browser's focus ring would show that before
-       any key is pressed, the selection only appears as the white fill below */
+       any key is pressed, the selection only appears as the colors below */
     .stage :global(:is(button, [role="slider"]):focus) {
         outline: none;
     }
 
-    /* The keyboard selection, moved with the arrow keys, WASD or Tab, and the flash of a tapped or clicked button.
-       No button is white otherwise, so white always means the one that acts. */
-    .stage.keys :global(:is(button, [role="slider"]):focus),
-    .stage :global(button[data-flash]) {
-        border-color: #fff;
-        background: #fff;
-        color: #000;
+    /* A button sets --button-color for its selection and its shadow; without one it is selected in the accent and
+       its shadow is gray. --shade sets the shadow alone, for a button whose border shows its color already. */
+    .stage :global(:is(button, [role="slider"])) {
+        --select: var(--button-color, var(--accent));
     }
 
-    /* The volume bar keeps its steps visible and only gets the white border */
-    .stage.keys :global([role="slider"]:focus) {
-        background: none;
+    /* Every button has a shadow in a dark shade of its color */
+    .stage :global(button) {
+        box-shadow: 4px 4px 0 color-mix(in srgb, var(--shade, var(--button-color, #fff)) 58%, #000);
+    }
+
+    /* The selection, moved with the arrow keys, WASD, Tab or the mouse, and a pressed button: border and text take
+       the button's color */
+    .stage.keys :global(:is(button, [role="slider"]):focus),
+    .stage :global(button[data-press]) {
+        border-color: var(--select);
+        color: var(--select);
+    }
+
+    /* translate, not transform, which some buttons use to position themselves */
+    .stage :global(button[data-press]) {
+        translate: 4px 4px;
+        box-shadow: none;
+    }
+
+    .key-help {
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: calc(env(safe-area-inset-bottom) + 12px);
+        text-align: center;
+        font-size: 10px;
+        color: #777;
+        pointer-events: none;
+    }
+
+    /* Short screens have no room below their buttons */
+    @media (max-height: 520px) {
+        .key-help {
+            display: none;
+        }
     }
 
     .playfield {
