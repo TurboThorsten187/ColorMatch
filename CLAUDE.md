@@ -5,7 +5,7 @@ Browser reaction game (Stroop effect): does the word match its ink color? Deploy
 
 ## Stack
 
-Svelte 5 (runes) + TypeScript, Vite 8, Vitest, ESLint (flat config) + Prettier. Runtime dependencies besides Svelte:
+Svelte 5 (runes) + TypeScript, Vite 8, Vitest, Playwright, ESLint (flat config) + Prettier. Runtime dependencies besides Svelte:
 self-hosted fonts via `@fontsource` (Press Start 2P for the UI, Orbitron 900 for the color word, plus 26 display fonts
 for the Font Flip modifier, `FLIP_FONTS` in `src/ui/fonts.ts`; latin subsets only). `main.ts` awaits only the first two;
 `loadFlipFonts()` runs in the background, and the service worker report waits for it so they are cached offline.
@@ -15,7 +15,11 @@ files.
 ## Commands
 
 - `npm run dev` – dev server
-- `npm run check` – lint, typecheck (svelte-check), tests, build; the same as CI, run before every commit
+- `npm run check` – lint, typecheck (svelte-check, `tsc -p e2e`), unit tests, build; run before every commit
+- `npm run test:e2e` – Playwright browser tests (`e2e/`) against `npm run build:e2e`; CI runs them besides `check`
+  and deploys only when both pass. Run them too when a change touches the UI or `App.svelte`. They need a Chromium:
+  `npx playwright install chromium`, or `CHROMIUM_PATH` pointing to an installed one (in Claude Code cloud sessions
+  `CHROMIUM_PATH=/opt/pw-browsers/chromium`)
 - `npm run format` – Prettier (4 spaces, 120 columns)
 
 ## Structure
@@ -105,4 +109,8 @@ files.
   https://claude.ai/artifact/VKJWcc8fSgcsMTnLPURYGH (page "2 · Arcade details"). Sizes use `--unit` (1 % of the
   width, capped) with a px minimum for phones. No text below 10 px, card and button text at least 11 px; text that
   may wrap needs a `line-height` (the pixel font's default is too tight).
+- `e2e/` – browser tests that play the game like a player: they find things by role, label and text, and read the
+  word's answer from its text and `data-ink`, never from CSS classes or component internals. Keep those stable, or
+  change the helpers in `e2e/helpers.ts` with them. The e2e build and the dev server take a fixed random seed from the
+  URL (`?seed=42`, `src/testRng.ts`), so a game can be played again exactly; production builds leave that out.
 - `vite.config.ts` uses `base: "./"` so the build works under the `/ColorMatch/` Pages path.

@@ -61,6 +61,7 @@
         type TutorialProgress,
         type TutorialState,
     } from "./game/tutorial.ts";
+    import { testRng } from "./testRng.ts";
     import AwardToast from "./ui/AwardToast.svelte";
     import ChallengeScreen from "./ui/ChallengeScreen.svelte";
     import { isNegative, lowTimeGlow } from "./ui/effects.ts";
@@ -123,7 +124,7 @@
     const AFTER_HIT_MS = 120;
 
     const storage = browserStorage();
-    const rng = Math.random;
+    const rng = testRng() ?? Math.random;
     const initialSettings = loadSettings(storage);
     configureSound(initialSettings);
     const initialHighscore = loadHighscore(storage);
