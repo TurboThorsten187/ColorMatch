@@ -10,8 +10,6 @@ export interface Settings {
     // 1 (quietest) to VOLUME_STEPS (loudest)
     readonly volume: number;
     readonly scanlines: boolean;
-    // OLD_COLOR_CSS instead of COLOR_CSS, only while the design is reworked
-    readonly oldColors: boolean;
     // Shapes instead of colors, see SHAPE_WORDS
     readonly colorblind: boolean;
     // FALSE on the left and TRUE on the right: screen halves, arrow keys and A / D
@@ -22,7 +20,6 @@ export const DEFAULT_SETTINGS: Settings = {
     sound: true,
     volume: 5,
     scanlines: true,
-    oldColors: false,
     colorblind: false,
     flipControls: false,
 };
@@ -56,14 +53,12 @@ export function loadSettings(storage: KeyValueStore | null): Settings {
     const sound = "sound" in stored ? stored.sound : undefined;
     const volume = "volume" in stored ? stored.volume : undefined;
     const scanlines = "scanlines" in stored ? stored.scanlines : undefined;
-    const oldColors = "oldColors" in stored ? stored.oldColors : undefined;
     const colorblind = "colorblind" in stored ? stored.colorblind : undefined;
     const flipControls = "flipControls" in stored ? stored.flipControls : undefined;
     return {
         sound: typeof sound === "boolean" ? sound : DEFAULT_SETTINGS.sound,
         volume: isVolume(volume) ? volume : DEFAULT_SETTINGS.volume,
         scanlines: typeof scanlines === "boolean" ? scanlines : DEFAULT_SETTINGS.scanlines,
-        oldColors: typeof oldColors === "boolean" ? oldColors : DEFAULT_SETTINGS.oldColors,
         colorblind: typeof colorblind === "boolean" ? colorblind : DEFAULT_SETTINGS.colorblind,
         flipControls: typeof flipControls === "boolean" ? flipControls : DEFAULT_SETTINGS.flipControls,
     };

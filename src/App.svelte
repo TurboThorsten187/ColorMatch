@@ -67,7 +67,7 @@
     import FeedbackFlash, { type FeedbackKind } from "./ui/FeedbackFlash.svelte";
     import GameOverScreen from "./ui/GameOverScreen.svelte";
     import { canInstall, install } from "./ui/install.svelte.ts";
-    import { configurePalette, inkCss } from "./ui/palette.svelte.ts";
+    import { COLOR_CSS } from "./game/colors.ts";
     import { LOSS_ANIMATION_MS, SQUASH_AT_MS } from "./ui/lossAnimation.ts";
     import LossScreen from "./ui/LossScreen.svelte";
     import MenuScreen from "./ui/MenuScreen.svelte";
@@ -126,7 +126,6 @@
     const rng = Math.random;
     const initialSettings = loadSettings(storage);
     configureSound(initialSettings);
-    configurePalette(initialSettings);
     const initialHighscore = loadHighscore(storage);
 
     // Game states are immutable, so raw state is enough: reactivity only on reassignment
@@ -343,7 +342,6 @@
         hardcoreHighscore = loadHighscore(storage, "hardcore");
         settings = loadSettings(storage);
         configureSound(settings);
-        configurePalette(settings);
         stats = unlockMilestones(loadStats(storage), highscore);
         progress = loadTutorialProgress(storage);
     }
@@ -352,7 +350,6 @@
         settings = next;
         saveSettings(storage, next);
         configureSound(next);
-        configurePalette(next);
         playSound("click");
     }
 
@@ -367,7 +364,6 @@
         stats = EMPTY_STATS;
         progress = NEW_PLAYER;
         configureSound(DEFAULT_SETTINGS);
-        configurePalette(DEFAULT_SETTINGS);
         playSound("click");
     }
 
@@ -650,12 +646,12 @@
     class="stage"
     class:keys={keyboardMode}
     class:hardcore={mode === "hardcore"}
-    style:--red={inkCss("red")}
-    style:--green={inkCss("green")}
-    style:--blue={inkCss("blue")}
-    style:--yellow={inkCss("yellow")}
-    style:--purple={inkCss("purple")}
-    style:--cyan={inkCss("cyan")}
+    style:--red={COLOR_CSS.red}
+    style:--green={COLOR_CSS.green}
+    style:--blue={COLOR_CSS.blue}
+    style:--yellow={COLOR_CSS.yellow}
+    style:--purple={COLOR_CSS.purple}
+    style:--cyan={COLOR_CSS.cyan}
     onclickcapture={pressButton}
     bind:this={stage}
     bind:clientWidth={width}

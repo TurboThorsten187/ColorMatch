@@ -1,5 +1,4 @@
-import type { Color } from "../game/colors.ts";
-import { inkCss } from "./palette.svelte.ts";
+import { type Color, COLOR_CSS } from "../game/colors.ts";
 
 // The colorblind mode fills the letters with small shapes, one shape per color (see SHAPE_WORDS)
 
@@ -50,10 +49,10 @@ function tileSize(shape: string): string {
 
 // Inline style for text in `color`: plain ink, or in the colorblind mode letters filled with the color's shapes
 export function inkStyle(color: Color, colorblind: boolean): string {
-    if (!colorblind) return `color: ${inkCss(color)}`;
+    if (!colorblind) return `color: ${COLOR_CSS[color]}`;
     return [
         "color: transparent",
-        `background-image: ${tile(color, inkCss(color), `${inkCss(color)}${LETTER_ALPHA}`)}`,
+        `background-image: ${tile(color, COLOR_CSS[color], `${COLOR_CSS[color]}${LETTER_ALPHA}`)}`,
         `background-size: ${tileSize(INK_SHAPE)}`,
         "-webkit-background-clip: text",
         "background-clip: text",
@@ -65,5 +64,5 @@ export function inkStyle(color: Color, colorblind: boolean): string {
 export function backgroundStyle(color: Color, colorblind: boolean, small = false): string {
     return colorblind
         ? `#000 ${tile(color, BACKGROUND_SHAPE_COLOR, "transparent")} 0 0 / ${tileSize(small ? INK_SHAPE : BACKGROUND_SHAPE)}`
-        : inkCss(color);
+        : COLOR_CSS[color];
 }

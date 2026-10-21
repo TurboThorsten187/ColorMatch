@@ -1,6 +1,6 @@
 <script lang="ts">
     import type { Answer, Challenge } from "../game/challenge.ts";
-    import { type Color, wordFor } from "../game/colors.ts";
+    import { type Color, COLOR_CSS, wordFor } from "../game/colors.ts";
     import { type Side, sideOf } from "../game/settings.ts";
     import {
         currentStep,
@@ -10,7 +10,6 @@
         type TutorialState,
     } from "../game/tutorial.ts";
     import ChallengeScreen from "./ChallengeScreen.svelte";
-    import { inkCss } from "./palette.svelte.ts";
     import { inkStyle } from "./shapes.ts";
     import TapHints from "./TapHints.svelte";
 
@@ -62,7 +61,7 @@
 </script>
 
 {#snippet colorName(color: Color)}
-    <span style:color={inkCss(color)}>{wordFor(color, colorblind)}</span>
+    <span style:color={COLOR_CSS[color]}>{wordFor(color, colorblind)}</span>
 {/snippet}
 
 {#if step?.kind === "card"}

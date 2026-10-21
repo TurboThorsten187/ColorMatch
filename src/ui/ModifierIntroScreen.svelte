@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { type Color, wordFor } from "../game/colors.ts";
+    import { type Color, COLOR_CSS, wordFor } from "../game/colors.ts";
     import { SPAM_WORD } from "../game/game.ts";
     import type { IntroId, ModifierIntro } from "../game/intros.ts";
     import { groupById, type ModifierId } from "../game/modifiers.ts";
@@ -16,7 +16,6 @@
     import { textWidth } from "./fitText.ts";
     import { emWidth, flipLetters } from "./fontFlip.ts";
     import { WORD_FONT, WORD_WEIGHT } from "./fonts.ts";
-    import { inkCss } from "./palette.svelte.ts";
     import { backgroundStyle, inkStyle } from "./shapes.ts";
     import SplitMirror from "./SplitMirror.svelte";
     import TopBar from "./TopBar.svelte";
@@ -239,7 +238,7 @@
             {#each lines as line, row (row)}
                 {#each parts(line) as part, index (index)}
                     {#if part.marked}
-                        <span style:color={inkCss(intro.accent)}>{part.text}</span>
+                        <span style:color={COLOR_CSS[intro.accent]}>{part.text}</span>
                     {:else}
                         {part.text}
                     {/if}
