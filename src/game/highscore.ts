@@ -1,4 +1,17 @@
-const HIGHSCORE_KEY = "colormatch_highscore";
+import type { Mode } from "./progression.ts";
+
+// Every mode keeps its own highscore
+const HIGHSCORE_KEYS: Readonly<Record<Mode, string>> = {
+    normal: "colormatch_highscore",
+    hardcore: "colormatch_highscore_hardcore",
+};
+
+// HARDCORE opens once a normal game has cleared this level, like the LEVEL 50 award
+export const HARDCORE_UNLOCK_SCORE = 50;
+
+export function isHardcoreUnlocked(normalHighscore: number): boolean {
+    return normalHighscore >= HARDCORE_UNLOCK_SCORE;
+}
 
 export type KeyValueStore = Pick<Storage, "getItem" | "setItem" | "removeItem">;
 
@@ -13,28 +26,29 @@ export function browserStorage(): KeyValueStore | null {
     }
 }
 
-export function loadHighscore(storage: KeyValueStore | null): number {
+export function loadHighscore(storage: KeyValueStore | null, mode: Mode = "normal"): number {
     try {
-        const stored = Number.parseInt(storage?.getItem(HIGHSCORE_KEY) ?? "", 10);
+        const stored = Number.parseInt(storage?.getItem(HIGHSCORE_KEYS[mode]) ?? "", 10);
         return Number.isNaN(stored) ? 0 : stored;
     } catch {
         return 0;
     }
 }
 
-export function saveHighscore(storage: KeyValueStore | null, score: number): void {
-    if (score <= loadHighscore(storage)) return;
+export function saveHighscore(storage: KeyValueStore | null, score: number, mode: Mode = "normal"): void {
+    if (score <= loadHighscore(storage, mode)) return;
 
     try {
-        storage?.setItem(HIGHSCORE_KEY, String(score));
+        storage?.setItem(HIGHSCORE_KEYS[mode], String(score));
     } catch {
         // See above: not persisting is acceptable
     }
 }
 
+// Clears the highscores of all modes
 export function clearHighscore(storage: KeyValueStore | null): void {
     try {
-        storage?.removeItem(HIGHSCORE_KEY);
+        for (const key of Object.values(HIGHSCORE_KEYS)) storage?.removeItem(key);
     } catch {
         // See above: storage that cannot be written holds no highscore either
     }

@@ -25,6 +25,7 @@ import {
 function playing(level: number, modifiers: ModifierId[]): PlayingState {
     return {
         phase: "playing",
+        mode: "normal",
         level,
         challenge: {
             word: "red",
@@ -117,7 +118,14 @@ describe("modifier intros", () => {
 
         expect(introsForLevel(MENU, playing(1, ["mirrorVertical"]), [])).toEqual(["mirror"]);
         expect(introsForLevel(playing(5, []), blurred, [])).toEqual(["blur"]);
-        const spamPause: GameState = { phase: "spamPause", level: 5, resumeAt: 0, curriculum: [], groups: ["spam"] };
+        const spamPause: GameState = {
+            phase: "spamPause",
+            mode: "normal",
+            level: 5,
+            resumeAt: 0,
+            curriculum: [],
+            groups: ["spam"],
+        };
 
         expect(introsForLevel(spamPause, blurred, [])).toEqual(["blur"]);
         expect(introsForLevel(playing(5, []), blurred, ["blur"])).toEqual([]);

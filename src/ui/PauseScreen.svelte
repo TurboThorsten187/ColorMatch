@@ -22,6 +22,6 @@
 
     .hint {
         font-size: max(12px, calc(2.2 * var(--unit)));
-        color: #ffe14d;
+        color: var(--accent);
     }
 </style>

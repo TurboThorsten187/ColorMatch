@@ -1,19 +1,34 @@
 <script lang="ts">
     import { COLOR_CSS, randomColor } from "../game/colors.ts";
+    import { HARDCORE_UNLOCK_SCORE } from "../game/highscore.ts";
     import { answerOn } from "../game/settings.ts";
 
     interface Props {
         highscore: number;
+        hardcoreHighscore: number;
+        // Locked, the HARDCORE button shows what opens it
+        hardcoreUnlocked: boolean;
         // FALSE on the left, TRUE on the right
         flipControls: boolean;
         onstart: () => void;
+        onhardcore: () => void;
         onstats: () => void;
         onsetup: () => void;
         // Only while the browser offers to install the game
         oninstall?: () => void;
     }
 
-    let { highscore, flipControls, onstart, onstats, onsetup, oninstall }: Props = $props();
+    let {
+        highscore,
+        hardcoreHighscore,
+        hardcoreUnlocked,
+        flipControls,
+        onstart,
+        onhardcore,
+        onstats,
+        onsetup,
+        oninstall,
+    }: Props = $props();
 
     const TITLE_LINES = ["COLOR", "MATCH"];
     const LETTER_COUNT = TITLE_LINES.join("").length;
@@ -36,8 +51,16 @@
     {/if}
 
     <div class="hiscore">
-        <div class="label">HI-SCORE</div>
-        <div>{String(highscore).padStart(6, "0")}</div>
+        <div>
+            <div class="label">HI-SCORE</div>
+            <div>{String(highscore).padStart(6, "0")}</div>
+        </div>
+        {#if hardcoreUnlocked}
+            <div>
+                <div class="label">HARDCORE</div>
+                <div class="hard">{String(hardcoreHighscore).padStart(6, "0")}</div>
+            </div>
+        {/if}
     </div>
 
     <h1 class="title">
@@ -54,8 +77,14 @@
         <span>◄ {answerOn("left", flipControls).toUpperCase()}</span>
         <span>{answerOn("right", flipControls).toUpperCase()} ►</span>
     </div>
-    <!-- Selected from the start, so Enter and the arrow keys begin here -->
-    <button class="start blink" onclick={onstart} {@attach (node) => node.focus()}>PRESS START</button>
+    <div class="play">
+        <!-- Selected from the start, so Enter and the arrow keys begin here -->
+        <button class="start blink" onclick={onstart} {@attach (node) => node.focus()}>PRESS START</button>
+        <button class="hardcore" onclick={onhardcore} disabled={!hardcoreUnlocked}>
+            HARDCORE
+            {#if !hardcoreUnlocked}<span class="lock">CLEAR LEVEL {HARDCORE_UNLOCK_SCORE}</span>{/if}
+        </button>
+    </div>
 
     <div class="buttons">
         <button class="stats" onclick={onstats}>STATS</button>
@@ -87,12 +116,36 @@
     }
 
     .hiscore {
+        display: flex;
+        flex-direction: column;
         text-align: center;
         font-size: max(11px, calc(1.8 * var(--unit)));
         line-height: 1.8;
     }
 
-    .label {
+    .play {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 16px;
+    }
+
+    /* Where there is room beside them (short screens are wide), the two hi-scores and the two ways to play sit side
+       by side, so the menu is not taller than before HARDCORE */
+    @media (max-height: 520px), (min-width: 600px) {
+        .hiscore {
+            flex-direction: row;
+            gap: 32px;
+        }
+
+        .play {
+            flex-direction: row;
+            gap: 24px;
+        }
+    }
+
+    .label,
+    .hard {
         color: #ff3b4e;
     }
 
@@ -126,6 +179,29 @@
     /* A selected PRESS START stays visible */
     :global(.keys) .start:focus {
         animation: none;
+    }
+
+    .hardcore {
+        flex: none;
+        height: auto;
+        display: grid;
+        justify-items: center;
+        gap: 8px;
+        padding: 10px 14px;
+        border-color: #ff3b4e;
+        color: #ff3b4e;
+        font-size: max(11px, calc(1.8 * var(--unit)));
+        line-height: 1.4;
+    }
+
+    .hardcore:disabled {
+        border-color: #444;
+        color: #666;
+        cursor: default;
+    }
+
+    .lock {
+        font-size: 10px;
     }
 
     .buttons {

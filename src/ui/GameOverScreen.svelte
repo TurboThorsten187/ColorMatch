@@ -145,7 +145,7 @@
     .record {
         min-height: 1em;
         font-size: max(12px, calc(2 * var(--unit)));
-        color: #ffe14d;
+        color: var(--accent);
     }
 
     .awards {
@@ -154,7 +154,7 @@
         display: grid;
         gap: 10px;
         padding: 12px;
-        border: 3px solid #ffe14d;
+        border: 3px solid var(--accent);
         font-size: 10px;
     }
 
@@ -162,7 +162,7 @@
         margin: 0;
         font-size: inherit;
         font-weight: normal;
-        color: #ffe14d;
+        color: var(--accent);
     }
 
     ul {

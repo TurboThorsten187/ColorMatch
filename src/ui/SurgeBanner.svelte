@@ -22,7 +22,7 @@
         height: max(16px, calc(5 * var(--unit)));
         background: repeating-linear-gradient(
             -45deg,
-            #ffe14d 0 var(--stripe),
+            var(--accent) 0 var(--stripe),
             #000 var(--stripe) calc(2 * var(--stripe))
         );
         animation: slide 500ms linear infinite;
@@ -31,7 +31,7 @@
     /* 5 characters of a monospace pixel font: sized so the word always fits the width */
     .word {
         font-size: min(13vw, 14dvh);
-        color: #ffe14d;
+        color: var(--accent);
         text-shadow: 0.08em 0.08em 0 #ff3b4e;
         animation: slam 180ms steps(4, end) backwards;
     }

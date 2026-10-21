@@ -9,15 +9,23 @@
         isSpamBang,
         isTooEarly,
         MENU,
+        modeOf,
         pause,
         type PlayingState,
         resume,
         SPAM_PRESSES_NEEDED,
+        startGame,
         tick,
         toMenu,
         WAIT_SHARE,
     } from "./game/game.ts";
-    import { browserStorage, clearHighscore, loadHighscore, saveHighscore } from "./game/highscore.ts";
+    import {
+        browserStorage,
+        clearHighscore,
+        isHardcoreUnlocked,
+        loadHighscore,
+        saveHighscore,
+    } from "./game/highscore.ts";
     import { introById, type IntroId, introsForLevel } from "./game/intros.ts";
     import {
         answerOn,
@@ -121,6 +129,7 @@
     let game = $state.raw<GameState>(MENU);
     let now = $state(performance.now());
     let highscore = $state(initialHighscore);
+    let hardcoreHighscore = $state(loadHighscore(storage, "hardcore"));
     let newRecord = $state(false);
     let lastAnswer = $state.raw<{ answer: Answer; at: number } | null>(null);
     let feedback = $state.raw<{ kind: FeedbackKind; at: number } | null>(null);
@@ -153,6 +162,9 @@
     let warnedLevel = 0;
     let announcedAward: AwardId | null = null;
 
+    const mode = $derived(modeOf(game));
+    // A game shows the highscore of its own mode
+    const gameHighscore = $derived(mode === "hardcore" ? hardcoreHighscore : highscore);
     const flash = $derived(lastAnswer && now - lastAnswer.at < FLASH_MS ? lastAnswer.answer : null);
     const showLoss = $derived(game.phase === "gameOver" && loss !== null && now - loss.at < LOSS_ANIMATION_MS);
     const toast = $derived.by(() => {
@@ -194,17 +206,20 @@
         if (game.phase === "playing" && solved) {
             feedback = { kind: "hit", at: time };
             playSound("hit");
-            const { expected, modifiers } = game.challenge;
-            // A WAIT level only asks for a reaction once it says NOW
-            const asked = game.startedAt + (modifiers.has("wait") ? game.timeLimit * WAIT_SHARE : 0);
-            recordClear(
-                {
-                    level: game.level,
-                    modifiers,
-                    reactionMs: expected === "true" || expected === "false" ? time - asked : null,
-                },
-                time,
-            );
+            // Hardcore counts for no award and no stat
+            if (game.mode === "normal") {
+                const { expected, modifiers } = game.challenge;
+                // A WAIT level only asks for a reaction once it says NOW
+                const asked = game.startedAt + (modifiers.has("wait") ? game.timeLimit * WAIT_SHARE : 0);
+                recordClear(
+                    {
+                        level: game.level,
+                        modifiers,
+                        reactionMs: expected === "true" || expected === "false" ? time - asked : null,
+                    },
+                    time,
+                );
+            }
         } else if (next.phase === "playing" && game.phase === "playing" && next.spamCount > game.spamCount) {
             playSound("spamTap", { semitones: (next.spamCount - 1) * SPAM_STEP_SEMITONES });
         }
@@ -219,16 +234,19 @@
             feedback = null;
             loss = { level: game, kind, at: time };
             // Re-read first: another tab may have stored a better score meanwhile
-            const best = Math.max(highscore, loadHighscore(storage));
+            const best = Math.max(gameHighscore, loadHighscore(storage, next.mode));
             newRecord = next.score > best;
-            saveHighscore(storage, next.score);
-            highscore = Math.max(best, next.score);
+            saveHighscore(storage, next.score, next.mode);
+            if (next.mode === "hardcore") hardcoreHighscore = Math.max(best, next.score);
+            else highscore = Math.max(best, next.score);
             playSound(kind === "early" ? "miss" : kind);
             playSound("crt", { delayMs: SQUASH_AT_MS });
             // The jingle belongs to the game over screen, which appears after the loss animation
             playSound(newRecord ? "record" : "gameOver", { delayMs: LOSS_ANIMATION_MS });
-            stats = finishGame(stats, game.level, time - gameStartedAt - pausedMs);
-            saveStats(storage, stats);
+            if (next.mode === "normal") {
+                stats = finishGame(stats, game.level, time - gameStartedAt - pausedMs);
+                saveStats(storage, stats);
+            }
         }
         game = shown;
     }
@@ -309,6 +327,7 @@
     // Another tab of the game saved something: take it over, so this tab does not overwrite it later
     function onStorage(): void {
         highscore = loadHighscore(storage);
+        hardcoreHighscore = loadHighscore(storage, "hardcore");
         settings = loadSettings(storage);
         configureSound(settings);
         stats = unlockMilestones(loadStats(storage), highscore);
@@ -328,6 +347,7 @@
         clearStats(storage);
         clearTutorialProgress(storage);
         highscore = 0;
+        hardcoreHighscore = 0;
         settings = DEFAULT_SETTINGS;
         stats = EMPTY_STATS;
         progress = NEW_PLAYER;
@@ -393,6 +413,12 @@
         }
         const time = performance.now();
         update(confirm(game, time, rng), time);
+    }
+
+    function startHardcore(): void {
+        if (game.phase !== "menu" || !isHardcoreUnlocked(highscore)) return;
+        const time = performance.now();
+        update(startGame(time, rng, "hardcore"), time);
     }
 
     function goToMenu(): void {
@@ -542,7 +568,7 @@
         />
         <TopBar
             level={level.level}
-            {highscore}
+            highscore={gameHighscore}
             remaining={remainingShare(level, time)}
             countUp={level.challenge.modifiers.has("countUp")}
         />
@@ -570,7 +596,14 @@
     }}
 />
 
-<main class="stage" class:keys={keyboardMode} bind:this={stage} bind:clientWidth={width} bind:clientHeight={height}>
+<main
+    class="stage"
+    class:keys={keyboardMode}
+    class:hardcore={mode === "hardcore"}
+    bind:this={stage}
+    bind:clientWidth={width}
+    bind:clientHeight={height}
+>
     {#if view === "settings"}
         <SettingsScreen
             {settings}
@@ -595,8 +628,11 @@
     {:else if game.phase === "menu"}
         <MenuScreen
             {highscore}
+            {hardcoreHighscore}
+            hardcoreUnlocked={isHardcoreUnlocked(highscore)}
             flipControls={settings.flipControls}
             onstart={goOn}
+            onhardcore={startHardcore}
             onstats={() => showView("stats")}
             onsetup={() => showView("settings")}
             oninstall={canInstall() ? installGame : undefined}
@@ -609,7 +645,7 @@
             lostAt={loss.at}
             kind={loss.kind}
             elapsed={now - loss.at}
-            {highscore}
+            highscore={gameHighscore}
             {width}
             {height}
             colorblind={settings.colorblind}
@@ -635,7 +671,7 @@
     {:else if game.phase === "gameOver"}
         <GameOverScreen
             score={game.score}
-            {highscore}
+            highscore={gameHighscore}
             {newRecord}
             awards={gameAwards}
             locked={isGameOverLocked(game, now)}
@@ -678,22 +714,28 @@
         -webkit-tap-highlight-color: transparent;
         /* Size unit: 1 % of the width, capped by the height and on large screens */
         --unit: min(1vw, 1.8dvh, 10px);
+        /* The highlight color of every screen a game shows, red in hardcore */
+        --accent: #ffe14d;
+    }
+
+    .stage.hardcore {
+        --accent: #ff3b4e;
     }
 
     /* Screens focus a button on their own so Enter works at once; the browser's focus ring would show that before
-       any key is pressed, the selection only appears as the yellow fill below */
+       any key is pressed, the selection only appears as the colored fill below */
     .stage :global(:is(button, [role="slider"]):focus) {
         outline: none;
     }
 
     /* The keyboard selection, moved with the arrow keys, WASD or Tab */
     .stage.keys :global(:is(button, [role="slider"]):focus) {
-        border-color: #ffe14d;
-        background: #ffe14d;
+        border-color: var(--accent);
+        background: var(--accent);
         color: #000;
     }
 
-    /* The volume bar keeps its steps visible and only gets the yellow border */
+    /* The volume bar keeps its steps visible and only gets the colored border */
     .stage.keys :global([role="slider"]:focus) {
         background: none;
     }

@@ -22,6 +22,10 @@ files.
 
 - `src/game/` – pure game logic, no DOM and no Svelte: immutable `GameState` union and transitions
   `answer`/`confirm`/`toMenu`/`tick`/`pause`/`resume` that take `now` (ms) and an injected `Rng`. All gameplay rules live here and are unit tested.
+  Every running state carries its `Mode` (`normal` or `hardcore`, `modeOf`); RETRY keeps it. Hardcore's rules are
+  `mode` branches in `progression.ts` (no intros, base time 1 s, full tempo/strength/zoom, count every 3 levels, no
+  plain levels, surges from `HARDCORE_SURGE_FIRST_LEVEL`); it opens at `HARDCORE_UNLOCK_SCORE` and keeps its own
+  highscore key in `highscore.ts`.
   Wait (`isTooEarly`, `WAIT_SHARE`) and Double Tap (`PlayingState.taps`) are rules in `game.ts`; `twoWords` builds its
   second word in `createChallenge` (`Challenge.second`), Zoom's shrinking size is `Challenge.size`. The spam pause
   starts with `SPAM_BANG_MS` of the solved SPAM! (`isSpamBang`), which App draws from `spamDone`, frozen at the last press.
@@ -49,7 +53,9 @@ files.
   of a level arrow keys and WASD move the focus between buttons by position, `src/ui/spatialNav.ts`; the yellow
   highlight only shows while `keyboardMode` puts the `keys` class on the stage),
   pause on `blur`/`visibilitychange`, highscore, settings and stats persistence, sounds and stats for game transitions
-  in `update()`. Settings and stats screens are a `view` in App, not a game phase.
+  in `update()` (a hardcore game records no stats and no awards). Settings and stats screens are a `view` in App, not
+  a game phase. The stage's `--accent` (yellow, red while a hardcore game runs) colors the highlights of every screen a
+  game shows.
 - `public/` – PWA files copied as-is: `manifest.webmanifest`, icons (the PNGs and `favicon.ico` are renders of
   `favicon.svg`, re-render them when it changes) and `sw.js`, a plain JS service worker (network first for the page,
   cache first for files). `main.ts` registers it in production builds only and reports the loaded files, so the cache

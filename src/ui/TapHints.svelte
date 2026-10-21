@@ -57,8 +57,8 @@
     }
 
     .highlight {
-        border-color: #ffe14d;
-        color: #ffe14d;
+        border-color: var(--accent);
+        color: var(--accent);
         animation: blink 1s steps(1) infinite;
     }
 
