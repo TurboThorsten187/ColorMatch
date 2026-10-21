@@ -14,7 +14,7 @@ export interface ModifierIntro {
     readonly example: ColorWord | { readonly text: string; readonly color: Color };
     // A second color word below the example, for the two words modifier
     readonly second?: ColorWord;
-    // Words between * are highlighted in the accent color; on a rule card it is the rule's color from signs.ts
+    // Words between * are highlighted in the accent color
     readonly lines: readonly string[];
     // Replaces `lines` in the colorblind mode where they talk about colors
     readonly colorblindLines?: readonly string[];
@@ -30,7 +30,7 @@ export const INTROS: readonly ModifierIntro[] = [
         example: { word: "blue", color: "blue" },
         lines: ["IT MATCHES, BUT...", "ANSWER THE *OPPOSITE*", "TAP RIGHT · FALSE"],
         flippedLines: ["IT MATCHES, BUT...", "ANSWER THE *OPPOSITE*", "TAP LEFT · FALSE"],
-        accent: "purple",
+        accent: "red",
     },
     {
         id: "noClick",
@@ -42,9 +42,9 @@ export const INTROS: readonly ModifierIntro[] = [
     {
         id: "spam",
         title: "SPAM",
-        example: { text: "SPAM!", color: "blue" },
+        example: { text: "SPAM!", color: "yellow" },
         lines: ["TAP *5 TIMES*,", "ANYWHERE, FAST"],
-        accent: "blue",
+        accent: "yellow",
     },
     {
         id: "mirror",
@@ -158,14 +158,14 @@ export const INTROS: readonly ModifierIntro[] = [
         title: "WAIT",
         example: { text: "WAIT", color: "red" },
         lines: ["ANSWER ONLY", "ONCE IT SAYS *NOW*", "EARLIER IS A MISS"],
-        accent: "green",
+        accent: "red",
     },
     {
         id: "doubleTap",
         title: "DOUBLE TAP",
         example: { text: "DOUBLE TAP", color: "red" },
         lines: ["TAP YOUR ANSWER *TWICE*", "ONE WRONG TAP IS A MISS"],
-        accent: "cyan",
+        accent: "red",
     },
     {
         id: "twoWords",
@@ -173,7 +173,7 @@ export const INTROS: readonly ModifierIntro[] = [
         example: { word: "green", color: "green" },
         second: { word: "red", color: "blue" },
         lines: ["TRUE IF *BOTH OR NEITHER*", "OF THE WORDS MATCH"],
-        accent: "yellow",
+        accent: "red",
     },
 ];
 
