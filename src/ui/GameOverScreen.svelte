@@ -78,11 +78,19 @@
         /* "safe" keeps the title reachable when the content is taller than the screen, which then scrolls */
         justify-content: safe center;
         gap: max(28px, calc(4 * var(--unit)));
-        padding: env(safe-area-inset-top) 0 env(safe-area-inset-bottom);
+        /* The bottom keeps room for App's keys hint, the top the same so the content stays centered */
+        padding: calc(env(safe-area-inset-top) + 40px) 0 calc(env(safe-area-inset-bottom) + 40px);
         overflow-y: auto;
         touch-action: pan-y;
         scrollbar-width: thin;
         scrollbar-color: #555 #000;
+    }
+
+    /* Browser windows are wider than high: there the sizes follow the height, like in the menu */
+    @media (min-height: 521px) {
+        .over {
+            --unit: min(1vw, 1.05dvh, 10px);
+        }
     }
 
     /* Phones in landscape */

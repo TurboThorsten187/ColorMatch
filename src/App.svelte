@@ -112,7 +112,7 @@
     // What the selection can land on; the volume buttons are left out because the volume bar takes left and right
     const NAVIGABLE = 'button:not(:disabled):not([tabindex="-1"]), [role="slider"]';
     const FLASH_MS = 150;
-    // A pressed button sinks into its shadow this long before it acts
+    // A pressed button gives way this long before it acts
     const BUTTON_PRESS_MS = 120;
     const FEEDBACK_MS = 700;
     // Every tap of a SPAM! level sounds higher than the one before
@@ -555,9 +555,9 @@
         }
     }
 
-    // A press of a button, by tap, click, Enter or Space, is held back until the button has sunk into its shadow, so
-    // the press can be seen even when the screen changes right after. Buttons with their own press feedback opt out
-    // with data-no-press.
+    // A press of a button, by tap, click, Enter or Space, is held back until the button has given way, so the press
+    // can be seen even when the screen changes right after. Buttons with their own press feedback opt out with
+    // data-no-press.
     function pressButton(event: MouseEvent): void {
         if (replayingPress || !(event.target instanceof Element)) return;
         const button = event.target.closest("button");
@@ -789,15 +789,9 @@
         outline: none;
     }
 
-    /* A button sets --button-color for its selection and its shadow; without one it is selected in the accent and
-       its shadow is gray. --shade sets the shadow alone, for a button whose border shows its color already. */
+    /* A button sets --button-color to be selected in it; without one it is selected in the accent */
     .stage :global(:is(button, [role="slider"])) {
         --select: var(--button-color, var(--accent));
-    }
-
-    /* Every button has a shadow in a dark shade of its color */
-    .stage :global(button) {
-        box-shadow: 4px 4px 0 color-mix(in srgb, var(--shade, var(--button-color, #fff)) 58%, #000);
     }
 
     /* The selection, moved with the arrow keys, WASD, Tab or the mouse, and a pressed button: border and text take
@@ -808,17 +802,19 @@
         color: var(--select);
     }
 
-    /* translate, not transform, which some buttons use to position themselves */
+    /* scale, not transform, which some buttons use to position themselves */
     .stage :global(button[data-press]) {
-        translate: 4px 4px;
-        box-shadow: none;
+        scale: 0.92;
     }
 
+    /* A black strip, so scrolled content passes under it; screens keep 40 px free at the bottom for it */
     .key-help {
         position: absolute;
         left: 0;
         right: 0;
-        bottom: calc(env(safe-area-inset-bottom) + 12px);
+        bottom: 0;
+        padding: 12px 0 calc(env(safe-area-inset-bottom) + 12px);
+        background: #000;
         text-align: center;
         font-size: 10px;
         color: #777;

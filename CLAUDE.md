@@ -52,10 +52,12 @@ files.
   `flipControls` prop; outside
   of a level arrow keys and WASD move the focus between buttons by position, `src/ui/spatialNav.ts`, and a moved
   mouse focuses the button under it (`selectHovered`); the selection only shows while `keyboardMode` puts the `keys`
-  class on the stage, together with the `key-help` line. App's global button CSS gives every button a shadow in a dark
-  shade of its `--button-color` (gray without one, `--shade` sets the shadow alone) and colors border and text of the
-  selected one in it (the accent without one); a pressed button (tap, click, Enter, Space) sinks into its shadow first,
-  `pressButton` holds the click back for `BUTTON_PRESS_MS` and replays it, `data-no-press` opts out),
+  class on the stage, together with the `key-help` strip, for which every screen with buttons keeps 40 px free at the
+  bottom. App's global button CSS colors border and text of the selected button in its `--button-color` (the accent
+  without one); a pressed button (tap, click, Enter, Space) shrinks a little first, `pressButton` holds the click back
+  for `BUTTON_PRESS_MS` and replays it, `data-no-press` opts out. Buttons have no shadows. Menu and game over redefine
+  `--unit` with a stronger height cap, so low browser windows fit without scrolling; SETUP shrinks its rows and gaps
+  with the height instead),
   pause on `blur`/`visibilitychange`, highscore, settings and stats persistence, sounds and stats for game transitions
   in `update()` (a hardcore game records no stats and no awards). Settings and stats screens are a `view` in App, not
   a game phase. The stage sets the six game colors as CSS variables (`--red` … `--cyan`); components use them, or

@@ -14,14 +14,15 @@ Ein schnelles Reaktionsspiel im Browser: Passt das angezeigte Wort zu seiner Sch
 Mit **FLIP CONTROLS** in SETUP sind die Seiten getauscht: FALSE links (**←**, **A**, linke Hälfte), TRUE rechts.
 
 Jeder Button hat eine Farbe (START GAME gelb, HARDCORE und SETUP rot, STATS und REPLAY blau, RETRY grün; die übrigen
-nehmen Gelb, im Hardcore-Spiel Rot) und darunter einen Schatten in einer dunklen Stufe davon, bei weißen Buttons grau.
+nehmen Gelb, im Hardcore-Spiel Rot). Im Browser sind die vier Buttons im Menü gleich groß, und Menü, SETUP und Game Over
+passen sich der Fensterhöhe an, damit nichts scrollt.
 Alle Menüs lassen sich nur mit der Tastatur bedienen: Beim ausgewählten Button nehmen Rahmen und Schrift seine Farbe an,
 bewegt wird die Auswahl mit den Pfeiltasten oder WASD zum nächsten Button in der Richtung (mit einem leisen Blip). Die
 Hervorhebung erscheint nur beim Spielen mit der Tastatur, dann steht unten auch eine kurze Tastenhilfe; der erste
 Tastendruck zeigt, wo die Auswahl steht. Im Browser wählt die Maus genauso aus: Der Button unter ihr ist ausgewählt, die
 Pfeiltasten machen dort weiter. Im Menü ist START GAME ausgewählt, nach Game Over RETRY, sobald es reagiert. In SETUP
 ändern ← und → die Lautstärke, wenn die Lautstärke-Leiste ausgewählt ist. Ein gedrückter Button (antippen, klicken,
-Enter oder Leertaste) rutscht kurz in seinen Schatten und färbt Rahmen und Schrift, bevor er auslöst.
+Enter oder Leertaste) wird kurz etwas kleiner und färbt Rahmen und Schrift, bevor er auslöst.
 
 Wechselt man den Tab oder die App, pausiert das Spiel; danach geht es mit derselben Aufgabe und der Restzeit weiter.
 
