@@ -130,7 +130,7 @@ export function timeLimitFor(
 
 // Animated modifiers (spin, pulse, shake, movement, fade, scramble) speed up along with the shrinking time limit:
 // normal speed at the first intro level, MAX_TEMPO times as fast once the time limit is at its minimum
-export const MAX_TEMPO = 2;
+export const MAX_TEMPO = 1.5;
 const FULL_SHRINK = baseLimit(FIRST_INTRO_LEVEL) / baseLimit(LATE_UNTIL_LEVEL);
 
 export function levelTempo(level: number): number {

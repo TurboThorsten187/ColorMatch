@@ -353,15 +353,15 @@ describe("strength", () => {
 });
 
 describe("tempo", () => {
-    it("speeds up along with the shrinking time limit, up to twice as fast from level 80 on", () => {
+    it("speeds up along with the shrinking time limit, up to 1.5 times as fast from level 80 on", () => {
         expect(levelTempo(FIRST_INTRO_LEVEL)).toBe(1);
-        expect(levelTempo(40)).toBeGreaterThan(1.25);
-        expect(levelTempo(40)).toBeLessThan(1.45);
-        expect(levelTempo(80)).toBeCloseTo(2);
-        expect(levelTempo(150)).toBeCloseTo(2);
+        expect(levelTempo(40)).toBeGreaterThan(1.15);
+        expect(levelTempo(40)).toBeLessThan(1.2);
+        expect(levelTempo(80)).toBeCloseTo(1.5);
+        expect(levelTempo(150)).toBeCloseTo(1.5);
         for (let level = FIRST_INTRO_LEVEL; level < 150; level++) {
             expect(levelTempo(level + 1)).toBeGreaterThanOrEqual(levelTempo(level));
-            expect(levelTempo(level)).toBeLessThanOrEqual(2 + 1e-9);
+            expect(levelTempo(level)).toBeLessThanOrEqual(1.5 + 1e-9);
         }
     });
 
@@ -429,7 +429,7 @@ describe("hardcore", () => {
             1000 + EXTRA_TIME_MS.easy + EXTRA_TIME_MS.hard,
         );
         expect(timeLimitFor(10, ["rotation"], false, "hardcore")).toBe(SURGE_TIME_MS);
-        expect(tempoFor(1, 50, "hardcore")).toBe(2);
+        expect(tempoFor(1, 50, "hardcore")).toBe(1.5);
         expect(strengthFor(1, 50, "hardcore")).toBe(1);
         expect(zoomSizeFor(1, 50, "hardcore")).toBe(ZOOM_MIN_SIZE);
     });
