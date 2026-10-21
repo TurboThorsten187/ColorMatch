@@ -24,8 +24,8 @@ Ein Fehler oder abgelaufene Zeit beendet das Spiel: Der Bildschirm wackelt, das 
 geht aus wie ein alter Röhrenfernseher. RETRY und MENU (Enter / Esc) reagieren erst nach 2 s, damit hektisches
 Weitertippen das Ergebnis nicht überspringt.
 
-Der Balken oben zeigt die verbleibende Zeit: 3 s in Level 1, mit jedem Level etwas weniger, bis es sich bei gut
-1,2 s einpendelt; ab Level 40 sinkt sie weiter bis 1,0 s bei Level 80. Im letzten Viertel wird er rot, und ein roter
+Der Balken oben zeigt die verbleibende Zeit: 3 s in Level 1, mit jedem Level etwas weniger (anfangs etwas mehr, gegen
+Ende immer weniger), bis 1,0 s ab Level 80. Im letzten Viertel wird er rot, und ein roter
 Rahmen um den Bildschirm leuchtet immer stärker, bis die Zeit abläuft. Ab Level 5 kommt alle 3 Level ein neuer Modifier dazu, zuerst die leichten, dann die mittleren, dann
 die schweren; innerhalb einer Stufe wird die Reihenfolge jede Runde neu gemischt.
 
@@ -58,12 +58,13 @@ lang, dass weiteres Tippen nichts bringt.
 
 Ein neuer Modifier kommt in seinem Einführungslevel allein und mit 1 s Extrazeit (dazu die 0,3 s, die jeder
 Modifier bringt); fällt die Einführung auf ein
-Surge-Level, kommt sie ein Level später. Sonst wird gemischt: bis Level 14
-höchstens ein Modifier gleichzeitig, bis Level 29 zwei, danach drei, und frisch eingeführte kommen häufiger. Ab Level
-15 kommt ein neuer Modifier im Level nach seiner Einführung meist gleich noch einmal, zusammen mit einem bekannten.
+Surge-Level, kommt sie ein Level später. Sonst wird gemischt: Alle 12 Level dürfen mehr Modifier gleichzeitig kommen,
+bis Level 12 höchstens einer, ab Level 13 zwei, ab 25 drei, ab 37 vier und so weiter, und frisch eingeführte kommen
+häufiger. Sobald zwei erlaubt sind, kommt ein neuer Modifier im Level nach seiner Einführung meist gleich noch einmal,
+zusammen mit einem bekannten.
 Jeder Modifier in einem Level bringt 0,3 s Extrazeit, auch schon der erste. Bei Don't Click läuft nur 60 % der Zeit, damit man
 nicht so lange warten muss. Rotation, Pulsing, Shaky, Moving, Fade, Scrambled und Font Flip
-werden mit dem Level schneller, so wie die Zeit pro Level schrumpft (gut doppelt so schnell bei Level 40, 2,5-mal
+werden mit dem Level schneller, so wie die Zeit pro Level schrumpft (etwa 1,5-mal so schnell bei Level 40, 2,5-mal
 ab Level 80). Jeder
 startet bei seiner Einführung im normalen Tempo und holt dann innerhalb von 8 Leveln auf; ein spät eingeführter wird
 also schneller schnell als ein früher. Genauso wachsen Rotation, Pulsing, Shaky, Blurred und Font Flip in ihrer
@@ -77,7 +78,8 @@ Hinweise DON'T CLICK, INVERTED INPUT, WAIT/NOW, DOUBLE TAP und BOTH OR NEITHER h
 darunter), gedreht, bewegt und unscharf, blenden mit aus und ihre Buchstaben werden gemischt.
 
 Nach der letzten Einführung (Level 65) wird es weiter härter: Von Level 40 bis 80 werden Level ohne Modifier immer
-seltener und verschwinden dann ganz, und zwei oder drei Modifier auf einmal werden häufiger. Ab Level 50 ist jedes
+seltener und verschwinden dann ganz. Bis Level 40 kommt meist nur ein Modifier, danach werden mehrere häufiger, und ab
+Level 80 ist jede Anzahl bis zum Höchstmaß gleich wahrscheinlich. Ab Level 50 ist jedes
 zehnte Level ein **Surge**: Ein Banner zeigt 0,9 s lang SURGE, dann kommen fünf Modifier gleichzeitig, bei jedem
 weiteren Surge einer mehr, soweit sie zusammenpassen (höchstens eine Regel). Ein Surge dauert immer 1,3 s, ohne
 Extrazeit pro Modifier.
