@@ -181,7 +181,7 @@
 
     <div class="reset">
         <!-- The button stays after the reset and only changes its label, so keyboard focus is not lost -->
-        <!-- Its fill is the feedback, so it does not sink in like the other buttons -->
+        <!-- Its fill is the feedback, so it does not give way like the other buttons -->
         <button
             class="hold"
             class:cleared
@@ -210,6 +210,12 @@
 
 <style>
     .setup {
+        --row: 44px;
+        --row-gap: 26px;
+        --volume-gap: 12px;
+        --space: max(32px, calc(4 * var(--unit)));
+        --top: max(40px, calc(5 * var(--unit)));
+        --hold: 52px;
         position: absolute;
         inset: 0;
         width: min(100%, 460px);
@@ -222,10 +228,22 @@
         scrollbar-color: #555 #000;
         display: flex;
         flex-direction: column;
-        gap: max(32px, calc(4 * var(--unit)));
-        padding: calc(env(safe-area-inset-top) + max(40px, calc(5 * var(--unit)))) 24px
-            calc(env(safe-area-inset-bottom) + max(40px, calc(5 * var(--unit))));
+        gap: var(--space);
+        /* The bottom keeps room for App's keys hint */
+        padding: calc(env(safe-area-inset-top) + var(--top)) 24px calc(env(safe-area-inset-bottom) + 40px);
         font-size: max(11px, calc(1.6 * var(--unit)));
+    }
+
+    /* Lower browser windows: rows and spacing shrink with the height, so the page fits without scrolling down to a
+       height of about 560 px */
+    @media (max-height: 820px) {
+        .setup {
+            --row: clamp(38px, 6.6dvh, 44px);
+            --row-gap: clamp(6px, 1.8dvh, 26px);
+            --volume-gap: clamp(6px, 1.2dvh, 12px);
+            --space: clamp(10px, 3dvh, 32px);
+            --top: clamp(14px, 3.4dvh, 40px);
+        }
     }
 
     .head {
@@ -243,7 +261,7 @@
     .options {
         display: flex;
         flex-direction: column;
-        gap: 26px;
+        gap: var(--row-gap);
     }
 
     .row {
@@ -255,7 +273,7 @@
     .volume {
         display: flex;
         flex-direction: column;
-        gap: 12px;
+        gap: var(--volume-gap);
     }
 
     .volume-row {
@@ -280,7 +298,7 @@
     }
 
     button {
-        height: 44px;
+        height: var(--row);
         border: 3px solid #fff;
         border-radius: 0;
         background: #000;
@@ -296,7 +314,7 @@
     }
 
     .square {
-        width: 44px;
+        width: var(--row);
         flex: none;
         font-size: 12px;
     }
@@ -306,14 +324,12 @@
     }
 
     .switch button {
-        --shade: #555;
         width: 64px;
         border-color: #555;
         color: #777;
     }
 
     .switch button.on {
-        --shade: #fff;
         border-color: #fff;
         color: #fff;
     }
@@ -332,9 +348,8 @@
 
     /* Red already, so it is selected in the accent */
     .hold {
-        --shade: var(--red);
         position: relative;
-        height: 52px;
+        height: var(--hold);
         overflow: hidden;
         border-color: var(--red);
         color: var(--red);
@@ -350,7 +365,6 @@
     }
 
     .hold.cleared {
-        --shade: var(--green);
         border-color: var(--green);
         color: var(--green);
         cursor: default;
@@ -366,29 +380,14 @@
     /* Phones in landscape: the reset button has to stay on screen */
     @media (max-height: 520px) {
         .setup {
-            gap: 12px;
-            padding-top: calc(env(safe-area-inset-top) + 16px);
+            --row: 38px;
+            --row-gap: 10px;
+            --volume-gap: 8px;
+            --space: 12px;
+            --top: 16px;
+            --hold: 44px;
+            /* App shows no keys hint here */
             padding-bottom: calc(env(safe-area-inset-bottom) + 16px);
-        }
-
-        .options {
-            gap: 10px;
-        }
-
-        .volume {
-            gap: 8px;
-        }
-
-        button {
-            height: 38px;
-        }
-
-        .square {
-            width: 38px;
-        }
-
-        .hold {
-            height: 44px;
         }
     }
 </style>

@@ -49,7 +49,7 @@
 
     <div class="badges">
         {#each AWARDS as award (award.id)}
-            <!-- Only selects, so it does not sink in like the buttons that act -->
+            <!-- Only selects, so it does not give way like the buttons that act -->
             <button
                 class="badge-button"
                 data-no-press
@@ -87,8 +87,9 @@
         touch-action: pan-y;
         scrollbar-width: thin;
         scrollbar-color: #555 #000;
+        /* The bottom keeps room for App's keys hint */
         padding: calc(env(safe-area-inset-top) + max(32px, calc(4 * var(--unit)))) 24px
-            calc(env(safe-area-inset-bottom) + 32px);
+            calc(env(safe-area-inset-bottom) + 40px);
         font-size: max(11px, calc(1.3 * var(--unit)));
     }
 
@@ -164,16 +165,14 @@
         font-size: 12px;
     }
 
-    /* A tile, not a framed button: the badge is its frame, the outline around it the selection. .badges outweighs
-       App's shadow for every button. */
-    .badges .badge-button {
+    /* A tile, not a framed button: the badge is its frame, the outline around it the selection */
+    .badge-button {
         padding: 0;
         border: none;
         border-radius: 0;
         background: none;
         font: inherit;
         cursor: pointer;
-        box-shadow: none;
     }
 
     /* On the badge, App removes the focus outline of buttons */

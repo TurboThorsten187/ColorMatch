@@ -261,7 +261,8 @@
         flex-direction: column;
         align-items: center;
         gap: max(18px, calc(2.4 * var(--unit)));
-        padding: calc(env(safe-area-inset-top) + 16px) 24px calc(env(safe-area-inset-bottom) + 32px);
+        /* The bottom keeps room for App's keys hint */
+        padding: calc(env(safe-area-inset-top) + 16px) 24px calc(env(safe-area-inset-bottom) + 40px);
         overflow-y: auto;
         touch-action: pan-y;
         scrollbar-width: thin;

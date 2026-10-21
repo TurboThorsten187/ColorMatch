@@ -134,6 +134,14 @@
             calc(env(safe-area-inset-bottom) + max(48px, calc(7 * var(--unit))));
     }
 
+    /* Browser windows are wider than high: there the menu's sizes follow the height, so it fits without scrolling
+       and leaves the bottom free for App's keys hint. Phones in landscape have their own spacing below. */
+    @media (min-height: 521px) {
+        .menu {
+            --unit: min(1vw, 1.05dvh, 10px);
+        }
+    }
+
     @media (max-height: 520px) {
         .menu {
             gap: 12px;
@@ -220,7 +228,6 @@
 
     /* Locked it is gray, but selected and pressed in red like when it is open */
     .hardcore[aria-disabled="true"] {
-        --shade: #444;
         border-color: #444;
         color: #666;
         cursor: default;
@@ -252,6 +259,22 @@
 
     .hint.shown {
         visibility: visible;
+    }
+
+    /* Where the two ways to play sit side by side, all four buttons have the same size and form a grid */
+    @media (max-height: 520px), (min-width: 600px) {
+        .start,
+        .hardcore,
+        .buttons button {
+            flex: none;
+            width: max(200px, calc(24 * var(--unit)));
+            height: max(52px, calc(5.8 * var(--unit)));
+            font-size: max(12px, calc(1.3 * var(--unit)));
+        }
+
+        .buttons {
+            gap: 24px;
+        }
     }
 
     /* Short screens have no room below it, there the hint covers the label inside the border */
@@ -294,7 +317,6 @@
 
     /* Small and out of the way in the top right corner; green already, so it is selected in the accent */
     .install {
-        --shade: var(--green);
         position: absolute;
         top: calc(env(safe-area-inset-top) + 16px);
         right: calc(env(safe-area-inset-right) + 16px);
