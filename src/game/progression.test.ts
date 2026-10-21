@@ -62,6 +62,24 @@ describe("curriculum", () => {
         }
     });
 
+    it("leaves out the groups that hide the shapes in colorblind games", () => {
+        const rng = seeded(2);
+        const shown = CURRICULUM.filter((id) => !groupById(id).hidesShapes);
+        for (let game = 0; game < 20; game++) {
+            const curriculum = createCurriculum(rng, true);
+            const tiers = curriculum.map((id) => TIERS.indexOf(groupById(id).tier));
+
+            expect([...curriculum].sort()).toEqual([...shown].sort());
+            expect(tiers).toEqual([...tiers].sort((a, b) => a - b));
+        }
+        expect(CURRICULUM.filter((id) => groupById(id).hidesShapes).sort()).toEqual([
+            "blur",
+            "moving",
+            "shaky",
+            "zoom",
+        ]);
+    });
+
     it("varies the order between games", () => {
         const rng = seeded(2);
         const orders = new Set(Array.from({ length: 20 }, () => createCurriculum(rng).join()));

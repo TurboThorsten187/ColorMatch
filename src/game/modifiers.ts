@@ -70,6 +70,8 @@ export interface ModifierGroup {
     // Changes which input is correct; a level has at most one of these
     readonly rule: boolean;
     readonly conflictsWith: readonly ModifierGroupId[];
+    // Blurs, shrinks or shakes the shapes in the letters past recognition, so colorblind games leave the group out
+    readonly hidesShapes: boolean;
 }
 
 export const TIERS: readonly Tier[] = ["easy", "medium", "hard"];
@@ -78,19 +80,19 @@ function group(
     id: ModifierGroupId,
     tier: Tier,
     variants: readonly ModifierId[],
-    { rule = false, conflictsWith = [] as readonly ModifierGroupId[] } = {},
+    { rule = false, conflictsWith = [] as readonly ModifierGroupId[], hidesShapes = false } = {},
 ): ModifierGroup {
-    return { id, tier, variants, rule, conflictsWith };
+    return { id, tier, variants, rule, conflictsWith, hidesShapes };
 }
 
 export const MODIFIER_GROUPS: readonly ModifierGroup[] = [
     group("mirror", "easy", ["mirrorVertical", "mirrorHorizontal", "mirrorBoth"]),
     group("rotation", "easy", ["rotation"]),
     group("pulsing", "easy", ["pulsing"]),
-    group("shaky", "easy", ["shaky"]),
+    group("shaky", "easy", ["shaky"], { hidesShapes: true }),
     group("background", "medium", ["background"]),
-    group("blur", "medium", ["blur"]),
-    group("moving", "medium", ["moving"]),
+    group("blur", "medium", ["blur"], { hidesShapes: true }),
+    group("moving", "medium", ["moving"], { hidesShapes: true }),
     group("noClick", "medium", ["noClick"], { rule: true }),
     group("blink", "medium", ["blink"]),
     group("scrambled", "hard", ["scrambled"]),
@@ -100,7 +102,7 @@ export const MODIFIER_GROUPS: readonly ModifierGroup[] = [
         rule: true,
         conflictsWith: ["background", "blink", "scrambled", "splitMirror"],
     }),
-    group("zoom", "easy", ["zoom"]),
+    group("zoom", "easy", ["zoom"], { hidesShapes: true }),
     // Half of a scrambled word is too few letters to recognize it
     group("splitMirror", "easy", ["splitMirror"], { conflictsWith: ["scrambled"] }),
     group("countUp", "easy", ["countUp"]),

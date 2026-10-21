@@ -58,10 +58,12 @@ export const ZOOM_SIZE = 0.2;
 export const ZOOM_MIN_SIZE = 0.1;
 const ZOOM_SHRINK_PER_LEVEL = 0.04;
 
-export function createCurriculum(rng: Rng): Curriculum {
+export function createCurriculum(rng: Rng, colorblind = false): Curriculum {
     return TIERS.flatMap((tier) =>
         shuffle(
-            MODIFIER_GROUPS.filter((group) => group.tier === tier).map((group) => group.id),
+            MODIFIER_GROUPS.filter((group) => group.tier === tier && !(colorblind && group.hidesShapes)).map(
+                (group) => group.id,
+            ),
             rng,
         ),
     );

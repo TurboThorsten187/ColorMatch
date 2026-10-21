@@ -23,7 +23,7 @@ import {
     toMenu,
     WAIT_SHARE,
 } from "./game.ts";
-import { groupsOf, MODIFIER_GROUPS, type ModifierId } from "./modifiers.ts";
+import { groupById, groupsOf, MODIFIER_GROUPS, type ModifierId } from "./modifiers.ts";
 import {
     DUO_EXTRA_MS,
     introLevel,
@@ -429,6 +429,17 @@ describe("confirm", () => {
             mode: "normal",
             level: 1,
         });
+    });
+
+    it("leaves out the groups that hide the shapes when started or retried colorblind", () => {
+        const hidden = (state: GameState): string[] =>
+            state.phase === "playing" ? state.curriculum.filter((id) => groupById(id).hidesShapes) : ["not playing"];
+        const over: GameState = { phase: "gameOver", mode: "hardcore", score: 4, endedAt: 1000 };
+
+        expect(hidden(confirm(MENU, 50, rng, true))).toEqual([]);
+        expect(hidden(confirm(over, 1000 + GAME_OVER_LOCK_MS, rng, true))).toEqual([]);
+        expect(hidden(startGame(0, rng, "hardcore", true))).toEqual([]);
+        expect(hidden(confirm(MENU, 50, rng))).not.toEqual([]);
     });
 
     it("plays hardcore from level 1 and retries in hardcore", () => {

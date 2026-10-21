@@ -100,7 +100,15 @@
     // FONT FLIP: no letter makes the word wider than it is in Orbitron
     const flipped = $derived(
         intro.id === "fontFlip"
-            ? flipLetters(exampleText, EXAMPLE_SEED, elapsed % FONT_FLIP_LOOP_MS, 1, emWidth(exampleText, ORBITRON))
+            ? flipLetters(
+                  exampleText,
+                  EXAMPLE_SEED,
+                  elapsed % FONT_FLIP_LOOP_MS,
+                  1,
+                  emWidth(exampleText, ORBITRON),
+                  0,
+                  colorblind,
+              )
             : [],
     );
     // ASSEMBLE: the letters fly in from the edges of the example box to their place, in em from the word's middle

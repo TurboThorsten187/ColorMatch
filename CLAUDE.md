@@ -36,7 +36,9 @@ files.
   word's anchor and get every effect too. The colorblind setting keeps the six colors internally but shows each as a
   shape: `SHAPE_WORDS`/`wordFor` in `src/game/colors.ts` give the words, `src/ui/shapes.ts` fills the letters
   (`inkStyle`) and the background modifier (`backgroundStyle`) with SVG shape tiles; every screen that shows a color
-  word takes a `colorblind` prop. `LossScreen` plays the loss animation (timeline in
+  word takes a `colorblind` prop. The shapes are about as wide as the letters' strokes on phones, so groups that blur,
+  shrink or shake them (`hidesShapes` in `MODIFIER_GROUPS`) are left out of a colorblind game's curriculum
+  (`startGame`/`confirm` take the setting), and Font Flip only uses the `thick` fonts there. `LossScreen` plays the loss animation (timeline in
   `lossAnimation.ts`, driven by the time since the loss) before `GameOverScreen` switches on. `ChallengeScreen`
   draws every word (two for `twoWords`) with one snippet: as one text, or letter by letter for Font Flip, Assemble
   and SPAM!, inside `SplitMirror` (which renders it twice) for Symmetry; the Negative afterimage reuses it. Only the leaves

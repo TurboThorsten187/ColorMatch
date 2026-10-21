@@ -116,7 +116,9 @@ Farbenblind-Modus steht jede Farbe für eine Form (Rot = HEART, Grün = TRIANGLE
 PLUS, Cyan = CIRCLE): Die Wörter nennen Formen, und die Buchstaben sind mit den Formen ihrer Farbe gefüllt. Gefragt
 ist dasselbe, nur passt jetzt das Wort zu den Formen in seinen Buchstaben oder nicht. Der Background-Modifier zeigt
 dann große, gedämpfte Formen statt einer Farbe; SPAM! bleibt einfarbig. Tutorial und Modifier-Karten zeigen im
-Modus ebenfalls Formen. **REPLAY** zeigt
+Modus ebenfalls Formen. BLUR, ZOOM, MOVING und SHAKY machen die kleinen Formen unkenntlich und kommen in Spielen mit
+diesem Modus nicht vor (ihre Awards gibt es nur ohne ihn), und FONT FLIP wechselt dort nur zwischen dicken Schriften,
+in denen die Formen Platz haben. Der Highscore gilt für beide Modi. **REPLAY** zeigt
 das Tutorial nochmal (die Modifier-Karten bleiben dabei gesehen). **HOLD TO RESET** (1,5 s gedrückt halten) löscht
 beide Highscores, Stats, Awards, Einstellungen und den Tutorial-Fortschritt. Esc führt zurück ins Menü. Alles wird lokal im
 Browser gespeichert.
