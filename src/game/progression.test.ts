@@ -246,13 +246,36 @@ describe("pickGroups", () => {
             }
         }
     });
+
+    it("lets one more group share a level every 12 levels, starting with one", () => {
+        expect([1, 12, 13, 24, 25, 37, 49, 100].map(maxGroupCount)).toEqual([1, 1, 2, 2, 3, 4, 5, 9]);
+    });
+
+    it("brings every count up to the maximum about equally often from level 80 on", () => {
+        const rng = seeded(11);
+        const picks = 3000;
+        const counts = new Map<number, number>();
+        for (let i = 0; i < picks; i++) {
+            const count = pickGroups(101, CURRICULUM, [], rng).length;
+            counts.set(count, (counts.get(count) ?? 0) + 1);
+        }
+
+        expect([...counts.keys()].sort((a, b) => a - b)).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9]);
+        for (const times of counts.values()) {
+            expect(times / picks).toBeGreaterThan(0.08);
+            expect(times / picks).toBeLessThan(0.15);
+        }
+    });
 });
 
 describe("timeLimitFor", () => {
-    it("starts at 3 s and gets shorter every level, flattening out, down to 1 s in the late game", () => {
+    it("starts at 3 s and gets shorter every level, flattening out, down to 1 s at level 80", () => {
         expect(timeLimitFor(1, 0, false)).toBe(3000);
         expect(timeLimitFor(10, 0, false)).toBeLessThan(timeLimitFor(9, 0, false));
-        expect(timeLimitFor(30, 0, false)).toBe(1419);
+        expect(timeLimitFor(30, 0, false)).toBe(2007);
+        expect(timeLimitFor(1, 0, false) - timeLimitFor(10, 0, false)).toBeGreaterThan(
+            timeLimitFor(40, 0, false) - timeLimitFor(49, 0, false),
+        );
         // Surge levels have their own fixed time
         const levels = Array.from({ length: 150 }, (_, index) => index + 1).filter((level) => !isSurgeLevel(level));
         for (let index = 1; index < levels.length; index++) {
@@ -260,7 +283,8 @@ describe("timeLimitFor", () => {
                 timeLimitFor(levels[index - 1], 0, false),
             );
         }
-        expect(timeLimitFor(81, 0, false)).toBe(1005);
+        expect(timeLimitFor(79, 0, false)).toBeGreaterThan(1000);
+        expect(timeLimitFor(81, 0, false)).toBe(1000);
         expect(timeLimitFor(201, 0, false)).toBe(1000);
     });
 
@@ -285,8 +309,8 @@ describe("strength", () => {
         expect(strengthFor(80, FIRST_INTRO_LEVEL)).toBe(1);
         expect(strengthFor(200, 60)).toBe(1);
         const middle = strengthFor(40, FIRST_INTRO_LEVEL);
-        expect(middle).toBeGreaterThan(0.4);
-        expect(middle).toBeLessThan(0.9);
+        expect(middle).toBeGreaterThan(0.25);
+        expect(middle).toBeLessThan(0.5);
         for (let level = 30; level < 120; level++) {
             expect(strengthFor(level + 1, 30)).toBeGreaterThanOrEqual(strengthFor(level, 30));
         }
@@ -294,12 +318,15 @@ describe("strength", () => {
 });
 
 describe("tempo", () => {
-    it("speeds up with the level as much as the time limit shrinks, up to about 2.5 times as fast", () => {
+    it("speeds up along with the shrinking time limit, up to 2.5 times as fast from level 80 on", () => {
         expect(levelTempo(FIRST_INTRO_LEVEL)).toBe(1);
-        expect(levelTempo(40)).toBeCloseTo(timeLimitFor(FIRST_INTRO_LEVEL, 0, false) / timeLimitFor(40, 0, false), 2);
+        expect(levelTempo(40)).toBeGreaterThan(1.4);
+        expect(levelTempo(40)).toBeLessThan(1.7);
+        expect(levelTempo(80)).toBeCloseTo(2.5);
+        expect(levelTempo(150)).toBeCloseTo(2.5);
         for (let level = FIRST_INTRO_LEVEL; level < 150; level++) {
             expect(levelTempo(level + 1)).toBeGreaterThanOrEqual(levelTempo(level));
-            expect(levelTempo(level)).toBeLessThan(2.6);
+            expect(levelTempo(level)).toBeLessThanOrEqual(2.5 + 1e-9);
         }
     });
 

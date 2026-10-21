@@ -10,10 +10,10 @@ export const INTRO_EVERY = 3;
 // would repeat the introduction level, which no level may do, so there is no practice while levels hold one group.
 export const PRACTICE_CHANCE = 0.7;
 
-// Time per level: 3 s at level 1, flattening out towards 1.2 s, then down to 1.0 s in the late game
-const BASE_MIN_MS = 1200;
-const BASE_RANGE_MS = 1800;
-const BASE_DECAY = 0.93;
+// Time per level: 3 s at level 1, down to 1 s at LATE_UNTIL_LEVEL along a gentle bend that flattens out towards the end
+const BASE_MIN_MS = 1000;
+const BASE_RANGE_MS = 2000;
+const BASE_BEND = 1.5;
 export const INTRO_BONUS_MS = 1000;
 export const EXTRA_GROUP_BONUS_MS = 300;
 // A Don't Click level is only sat out, the full time would just be waiting
@@ -22,16 +22,17 @@ export const NO_CLICK_TIME_SHARE = 0.6;
 // Freshly introduced groups are picked more often; the advantage fades over about ten levels
 const FRESH_BOOST = 2;
 const FRESH_FADE_LEVELS = 6;
-// How likely 1, 2 or 3 groups are on a level with modifiers, cut off at the level's maximum
-const COUNT_WEIGHTS = [0.6, 0.3, 0.1];
+// Every COUNT_GROWS_EVERY levels one more group may share a level, starting with one
+const COUNT_GROWS_EVERY = 12;
+// How likely 1, 2, 3 or more groups are early on, cut off at the level's maximum; above three each count is half as
+// likely as the one before
+const EARLY_COUNT_WEIGHTS = [0.6, 0.3, 0.1];
 const PICK_ATTEMPTS = 6;
 
-// After the last introduction the levels keep getting harder until LATE_UNTIL_LEVEL: less time, no more plain
-// levels and more groups at once
+// From LATE_FROM_LEVEL the levels get harder until LATE_UNTIL_LEVEL: plain levels die out and every count up to the
+// maximum becomes as likely as any other
 const LATE_FROM_LEVEL = 40;
 const LATE_UNTIL_LEVEL = 80;
-const LATE_MIN_DROP_MS = 200;
-const LATE_COUNT_WEIGHTS = [0.2, 0.4, 0.4];
 
 // Every few levels a surge stacks more groups than any other level, announced by a banner: five on the first, one
 // more on each after it, as many as go together. It always lasts the same time, however many groups it stacks.
@@ -73,7 +74,7 @@ export function introducedAt(curriculum: Curriculum, level: number): ModifierGro
 }
 
 export function maxGroupCount(level: number): number {
-    return level < 15 ? 1 : level < 30 ? 2 : 3;
+    return 1 + Math.floor((level - 1) / COUNT_GROWS_EVERY);
 }
 
 export function isSurgeLevel(level: number): boolean {
@@ -96,10 +97,14 @@ export function timeLimitFor(level: number, groupCount: number, intro: boolean):
     return Math.round(baseLimit(level) + (intro ? INTRO_BONUS_MS : 0) + EXTRA_GROUP_BONUS_MS * groupCount);
 }
 
-// Animated modifiers (spin, pulse, shake, movement, fade, scramble) speed up as much as the time limit shrinks:
-// normal speed at the first intro level, about twice as fast at level 40 and 2.5 times from level 80 on
+// Animated modifiers (spin, pulse, shake, movement, fade, scramble) speed up along with the shrinking time limit:
+// normal speed at the first intro level, MAX_TEMPO times as fast once the time limit is at its minimum
+const MAX_TEMPO = 2.5;
+const FULL_SHRINK = baseLimit(FIRST_INTRO_LEVEL) / baseLimit(LATE_UNTIL_LEVEL);
+
 export function levelTempo(level: number): number {
-    return Math.max(1, baseLimit(FIRST_INTRO_LEVEL) / baseLimit(level));
+    const shrink = Math.max(1, baseLimit(FIRST_INTRO_LEVEL) / baseLimit(level));
+    return 1 + ((MAX_TEMPO - 1) * (shrink - 1)) / (FULL_SHRINK - 1);
 }
 
 export const TEMPO_CATCH_UP_LEVELS = 8;
@@ -111,12 +116,9 @@ export function tempoFor(level: number, introducedOn: number): number {
     return 1 - catchUp + catchUp * levelTempo(level);
 }
 
-// Growing modifiers get stronger along with the tempo: 0 on their intro level, 1 once the tempo is at its level 80
-// value
-const FULL_STRENGTH_TEMPO = levelTempo(LATE_UNTIL_LEVEL);
-
+// Growing modifiers get stronger along with the tempo: 0 on their intro level, 1 once the tempo is at its maximum
 export function strengthFor(level: number, introducedOn: number): number {
-    return Math.min(1, (tempoFor(level, introducedOn) - 1) / (FULL_STRENGTH_TEMPO - 1));
+    return Math.min(1, (tempoFor(level, introducedOn) - 1) / (MAX_TEMPO - 1));
 }
 
 export function zoomSizeFor(level: number, introducedOn: number): number {
@@ -125,7 +127,8 @@ export function zoomSizeFor(level: number, introducedOn: number): number {
 }
 
 function baseLimit(level: number): number {
-    return BASE_MIN_MS - LATE_MIN_DROP_MS * lateShare(level) + BASE_RANGE_MS * BASE_DECAY ** (level - 1);
+    const left = Math.max(0, (LATE_UNTIL_LEVEL - level) / (LATE_UNTIL_LEVEL - 1));
+    return BASE_MIN_MS + BASE_RANGE_MS * left ** BASE_BEND;
 }
 
 // How far the late game has progressed: 0 up to LATE_FROM_LEVEL, 1 from LATE_UNTIL_LEVEL on
@@ -184,9 +187,15 @@ function pick(
 }
 
 function randomCount(level: number, rng: Rng): number {
+    const max = maxGroupCount(level);
     const late = lateShare(level);
-    const weights = COUNT_WEIGHTS.map((weight, i) => weight + (LATE_COUNT_WEIGHTS[i] - weight) * late);
-    return weightedIndex(weights.slice(0, maxGroupCount(level)), rng) + 1;
+    const early = Array.from(
+        { length: max },
+        (_, i) => EARLY_COUNT_WEIGHTS[i] ?? EARLY_COUNT_WEIGHTS[2] * 0.5 ** (i - 2),
+    );
+    const earlySum = early.reduce((sum, weight) => sum + weight, 0);
+    const weights = early.map((weight) => ((1 - late) * weight) / earlySum + late / max);
+    return weightedIndex(weights, rng) + 1;
 }
 
 function weightedIndex(weights: readonly number[], rng: Rng): number {
