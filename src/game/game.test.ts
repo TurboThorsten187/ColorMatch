@@ -435,7 +435,8 @@ describe("confirm", () => {
         expect(state).toMatchObject({ phase: "playing", mode: "hardcore", level: 1 });
         if (state.phase !== "playing") throw new Error("Hardcore did not start");
         expect(groupsOf(state.challenge.modifiers)).toHaveLength(1);
-        const over = answer(state, state.challenge.expected === "true" ? "false" : "true", 10, rng);
+        // The group of that level is random and SPAM! has no wrong answer, so the loss is played on a plain level
+        const over = answer({ ...playing("true"), mode: "hardcore" }, "false", 10, rng);
         expect(over).toMatchObject({ phase: "gameOver", mode: "hardcore", score: 0 });
         expect(confirm(over, 10 + GAME_OVER_LOCK_MS, rng)).toMatchObject({ phase: "playing", mode: "hardcore" });
     });
