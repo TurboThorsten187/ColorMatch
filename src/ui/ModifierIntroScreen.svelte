@@ -16,6 +16,8 @@
     import { textWidth } from "./fitText.ts";
     import { emWidth, flipLetters } from "./fontFlip.ts";
     import { WORD_FONT, WORD_WEIGHT } from "./fonts.ts";
+    import { RULE_ICONS } from "./ruleIcons.ts";
+    import RuleSign from "./RuleSign.svelte";
     import { backgroundStyle, inkStyle } from "./shapes.ts";
     import SplitMirror from "./SplitMirror.svelte";
     import TopBar from "./TopBar.svelte";
@@ -131,7 +133,7 @@
     const afterimage = $derived(
         intro.id === "negative" ? afterimageOpacity(elapsed % NEGATIVE_LOOP_MS, NEGATIVE_LOOP_MS) : 0,
     );
-    const waitText = $derived(Math.floor(elapsed / WAIT_STEP_MS) % 2 === 0 ? "WAIT" : "NOW");
+    const waitShown = $derived(Math.floor(elapsed / WAIT_STEP_MS) % 2 === 0);
     // The level waits with its full time; only the COUNT UP card fills the timer to show how it runs
     const remaining = $derived(intro.id === "countUp" ? 1 - (elapsed % COUNT_UP_LOOP_MS) / COUNT_UP_LOOP_MS : 1);
     const transform = $derived.by(() => {
@@ -214,9 +216,9 @@
             bind:clientHeight={boxHeight}
         >
             {#if intro.id === "noClick" || intro.id === "doubleTap"}
-                <span class="tag">{baseText}</span>
+                <RuleSign icon={RULE_ICONS[intro.id]} text={baseText} />
             {:else if intro.id === "wait"}
-                <span class="tag">{waitText}</span>
+                <RuleSign icon={waitShown ? RULE_ICONS.wait : RULE_ICONS.now} text={waitShown ? "WAIT" : "NOW"} />
             {:else if intro.second && secondText}
                 <span class="pair">
                     {@render exampleWord()}
@@ -348,12 +350,6 @@
         z-index: -1;
         transform: translate(12px, 8px);
         filter: invert(1);
-    }
-
-    .tag {
-        padding: 8px 10px;
-        background: #fff;
-        color: #000;
     }
 
     .blur {
