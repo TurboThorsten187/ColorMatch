@@ -1,7 +1,7 @@
 import { mount } from "svelte";
+import { loadFlipFonts, loadFonts } from "@/platform/fonts.ts";
+import { listenForInstallOffer } from "@/platform/install.svelte.ts";
 import App from "./App.svelte";
-import { loadFlipFonts, loadFonts } from "./ui/fonts.ts";
-import { listenForInstallOffer } from "./ui/install.svelte.ts";
 import "./app.css";
 
 const target = document.getElementById("app");

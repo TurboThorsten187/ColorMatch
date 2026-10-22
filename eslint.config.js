@@ -5,6 +5,14 @@ import { defineConfig, globalIgnores } from "eslint/config";
 import globals from "globals";
 import ts from "typescript-eslint";
 
+// Imports go one way: ui -> app -> core, with platform (the browser) beside app. Across folders they start at src/
+// (`@/core/game.ts`), so a file's layer shows in every import.
+const ACROSS_FOLDERS = { regex: "^\\.\\./", message: "Import across folders from @/, e.g. @/core/game.ts" };
+
+function layer(...patterns) {
+    return { "no-restricted-imports": ["error", { patterns: [ACROSS_FOLDERS, ...patterns] }] };
+}
+
 export default defineConfig(
     globalIgnores(["dist/", "dist-e2e/", "playwright-report/", "test-results/"]),
     js.configs.recommended,
@@ -24,6 +32,22 @@ export default defineConfig(
         languageOptions: {
             parserOptions: { projectService: true, parser: ts.parser },
         },
+    },
+    { files: ["src/**"], rules: layer() },
+    {
+        files: ["src/core/**"],
+        rules: layer(
+            { regex: "^@/", message: "core is pure game logic: it imports only from core" },
+            { regex: "^svelte", message: "core is pure game logic: no Svelte" },
+        ),
+    },
+    {
+        files: ["src/platform/**"],
+        rules: layer({ regex: "^@/(app|ui)/", message: "platform wraps the browser and knows nothing of app or ui" }),
+    },
+    {
+        files: ["src/app/**"],
+        rules: layer({ regex: "^@/ui/", message: "app drives the game and knows nothing of ui" }),
     },
     {
         files: ["e2e/**/*.ts", "playwright.config.ts"],

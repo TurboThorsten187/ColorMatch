@@ -1,6 +1,9 @@
 <script lang="ts">
-    import { awardById, type AwardId } from "./game/awards.ts";
-    import type { Answer } from "./game/challenge.ts";
+    import { type Direction, neighbor } from "@/app/spatialNav.ts";
+    import { delay, enqueue, type ToastQueue, visible } from "@/app/toastQueue.ts";
+    import { awardById, type AwardId } from "@/core/awards.ts";
+    import type { Answer } from "@/core/challenge.ts";
+    import { COLOR_CSS } from "@/core/colors.ts";
     import {
         answer,
         confirm,
@@ -18,72 +21,43 @@
         tick,
         toMenu,
         WAIT_SHARE,
-    } from "./game/game.ts";
-    import {
-        browserStorage,
-        clearHighscore,
-        isHardcoreUnlocked,
-        loadHighscore,
-        saveHighscore,
-    } from "./game/highscore.ts";
-    import { introById, type IntroId, introsForLevel } from "./game/intros.ts";
-    import {
-        answerOn,
-        clearSettings,
-        DEFAULT_SETTINGS,
-        loadSettings,
-        saveSettings,
-        type Settings,
-        type Side,
-    } from "./game/settings.ts";
-    import {
-        clearLevel,
-        clearStats,
-        EMPTY_STATS,
-        finishGame,
-        type LevelClear,
-        loadStats,
-        saveStats,
-        type Stats,
-        unlockMilestones,
-    } from "./game/stats.ts";
+    } from "@/core/game.ts";
+    import { type Highscores, isHardcoreUnlocked } from "@/core/highscore.ts";
+    import { introById, type IntroId, introsForLevel } from "@/core/intros.ts";
+    import { NEW_SAVE, type SaveData } from "@/core/save.ts";
+    import { answerOn, type Settings, type Side } from "@/core/settings.ts";
+    import { clearLevel, finishGame, type LevelClear, type Stats } from "@/core/stats.ts";
     import {
         answerPractice,
-        clearTutorialProgress,
         currentStep,
         isFinished,
-        loadTutorialProgress,
-        NEW_PLAYER,
         nextCard,
-        saveTutorialProgress,
         tickTutorial,
         TUTORIAL_START,
         type TutorialProgress,
         type TutorialState,
-    } from "./game/tutorial.ts";
-    import { testRng } from "./testRng.ts";
-    import AwardToast from "./ui/AwardToast.svelte";
-    import ChallengeScreen from "./ui/ChallengeScreen.svelte";
-    import { isNegative, lowTimeGlow } from "./ui/effects.ts";
-    import FeedbackFlash, { type FeedbackKind } from "./ui/FeedbackFlash.svelte";
-    import GameOverScreen from "./ui/GameOverScreen.svelte";
-    import { canInstall, install } from "./ui/install.svelte.ts";
-    import { COLOR_CSS } from "./game/colors.ts";
-    import { LOSS_ANIMATION_MS, SQUASH_AT_MS } from "./ui/lossAnimation.ts";
-    import LossScreen from "./ui/LossScreen.svelte";
-    import MenuScreen from "./ui/MenuScreen.svelte";
-    import ModifierIntroScreen from "./ui/ModifierIntroScreen.svelte";
-    import PauseScreen from "./ui/PauseScreen.svelte";
-    import SettingsScreen from "./ui/SettingsScreen.svelte";
-    import { configureSound, playSound, unlockAudio } from "./ui/sound.ts";
-    import SpamPauseScreen from "./ui/SpamPauseScreen.svelte";
-    import SurgeBanner from "./ui/SurgeBanner.svelte";
-    import StatsScreen from "./ui/StatsScreen.svelte";
-    import TapHints from "./ui/TapHints.svelte";
-    import { delay, enqueue, type ToastQueue, visible } from "./ui/toastQueue.ts";
-    import { type Direction, neighbor } from "./ui/spatialNav.ts";
-    import TopBar, { LOW_TIME_SHARE } from "./ui/TopBar.svelte";
-    import TutorialScreen from "./ui/TutorialScreen.svelte";
+    } from "@/core/tutorial.ts";
+    import { canInstall, install } from "@/platform/install.svelte.ts";
+    import { configureSound, playSound, unlockAudio } from "@/platform/sound.ts";
+    import { browserStorage, clearSave, loadSave, removeOldSaves, writeSave } from "@/platform/storage.ts";
+    import { testRng } from "@/platform/testRng.ts";
+    import AwardToast from "@/ui/hud/AwardToast.svelte";
+    import FeedbackFlash, { type FeedbackKind } from "@/ui/hud/FeedbackFlash.svelte";
+    import TapHints from "@/ui/hud/TapHints.svelte";
+    import TopBar, { LOW_TIME_SHARE } from "@/ui/hud/TopBar.svelte";
+    import GameOverScreen from "@/ui/screens/GameOverScreen.svelte";
+    import { LOSS_ANIMATION_MS, SQUASH_AT_MS } from "@/ui/screens/lossAnimation.ts";
+    import LossScreen from "@/ui/screens/LossScreen.svelte";
+    import MenuScreen from "@/ui/screens/MenuScreen.svelte";
+    import ModifierIntroScreen from "@/ui/screens/ModifierIntroScreen.svelte";
+    import PauseScreen from "@/ui/screens/PauseScreen.svelte";
+    import SettingsScreen from "@/ui/screens/SettingsScreen.svelte";
+    import SpamPauseScreen from "@/ui/screens/SpamPauseScreen.svelte";
+    import StatsScreen from "@/ui/screens/StatsScreen.svelte";
+    import SurgeBanner from "@/ui/screens/SurgeBanner.svelte";
+    import TutorialScreen from "@/ui/screens/TutorialScreen.svelte";
+    import ChallengeScreen from "@/ui/word/ChallengeScreen.svelte";
+    import { isNegative, lowTimeGlow } from "@/ui/word/effects.ts";
 
     // The answer of a side depends on FLIP CONTROLS, see answerOn
     const SIDE_KEYS: Readonly<Record<string, Side | undefined>> = {
@@ -124,28 +98,28 @@
     const AFTER_HIT_MS = 120;
 
     const storage = browserStorage();
+    removeOldSaves(storage);
+    const initialSave = loadSave(storage);
+    configureSound(initialSave.settings);
     const rng = testRng() ?? Math.random;
-    const initialSettings = loadSettings(storage);
-    configureSound(initialSettings);
-    const initialHighscore = loadHighscore(storage);
 
     // Game states are immutable, so raw state is enough: reactivity only on reassignment
     let game = $state.raw<GameState>(MENU);
     let now = $state(performance.now());
-    let highscore = $state(initialHighscore);
-    let hardcoreHighscore = $state(loadHighscore(storage, "hardcore"));
+    // The saved data, written all at once by persist()
+    let settings = $state.raw<Settings>(initialSave.settings);
+    let highscores = $state.raw<Highscores>(initialSave.highscores);
+    let stats = $state.raw<Stats>(initialSave.stats);
+    let progress = $state.raw<TutorialProgress>(initialSave.progress);
     let newRecord = $state(false);
     let lastAnswer = $state.raw<{ answer: Answer; at: number } | null>(null);
     let feedback = $state.raw<{ kind: FeedbackKind; at: number } | null>(null);
     let loss = $state.raw<{ level: PlayingState; kind: Exclude<FeedbackKind, "hit">; at: number } | null>(null);
     // The solved SPAM! level, shown frozen with its ! lit at the start of the spam pause
     let spamDone = $state.raw<{ level: PlayingState; at: number } | null>(null);
-    let settings = $state.raw<Settings>(initialSettings);
-    let stats = $state.raw<Stats>(unlockMilestones(loadStats(storage), initialHighscore));
     // Awards of the current game, listed on the game over screen
     let gameAwards = $state.raw<readonly AwardId[]>([]);
     let toasts = $state.raw<ToastQueue<AwardId>>([]);
-    let progress = $state.raw<TutorialProgress>(loadTutorialProgress(storage));
     // Runs instead of the game while set, the game stays in the menu meanwhile
     let tutorial = $state.raw<TutorialState | null>(null);
     // Cards for modifiers seen for the first time, shown while the new level is paused
@@ -170,7 +144,7 @@
 
     const mode = $derived(modeOf(game));
     // A game shows the highscore of its own mode
-    const gameHighscore = $derived(mode === "hardcore" ? hardcoreHighscore : highscore);
+    const gameHighscore = $derived(highscores[mode ?? "normal"]);
     const flash = $derived(lastAnswer && now - lastAnswer.at < FLASH_MS ? lastAnswer.answer : null);
     const showLoss = $derived(game.phase === "gameOver" && loss !== null && now - loss.at < LOSS_ANIMATION_MS);
     // The keys hint only shows on screens with buttons, never while a word waits for an answer
@@ -247,26 +221,22 @@
             feedback = null;
             loss = { level: game, kind, at: time };
             // Re-read first: another tab may have stored a better score meanwhile
-            const best = Math.max(gameHighscore, loadHighscore(storage, next.mode));
+            const best = Math.max(gameHighscore, loadSave(storage).highscores[next.mode]);
             newRecord = next.score > best;
-            saveHighscore(storage, next.score, next.mode);
-            if (next.mode === "hardcore") hardcoreHighscore = Math.max(best, next.score);
-            else highscore = Math.max(best, next.score);
+            highscores = { ...highscores, [next.mode]: Math.max(best, next.score) };
             playSound(kind === "early" ? "miss" : kind);
             playSound("crt", { delayMs: SQUASH_AT_MS });
             // The jingle belongs to the game over screen, which appears after the loss animation
             playSound(newRecord ? "record" : "gameOver", { delayMs: LOSS_ANIMATION_MS });
-            if (next.mode === "normal") {
-                stats = finishGame(stats, game.level, time - gameStartedAt - pausedMs);
-                saveStats(storage, stats);
-            }
+            if (next.mode === "normal") stats = finishGame(stats, game.level, time - gameStartedAt - pausedMs);
+            persist();
         }
         game = shown;
     }
 
     function changeProgress(next: TutorialProgress): void {
         progress = next;
-        saveTutorialProgress(storage, next);
+        persist();
     }
 
     function startTutorial(): void {
@@ -330,41 +300,41 @@
     function recordClear(clear: LevelClear, time: number): void {
         const result = clearLevel(stats, clear);
         stats = result.stats;
-        saveStats(storage, stats);
+        persist();
         if (result.unlocked.length === 0) return;
 
         gameAwards = [...gameAwards, ...result.unlocked];
         toasts = enqueue(toasts, result.unlocked, time);
     }
 
+    // Everything is saved at once: on every setting, cleared level, finished game and seen card
+    function persist(): void {
+        writeSave(storage, { settings, highscores, stats, progress });
+    }
+
+    function applySave(save: SaveData): void {
+        settings = save.settings;
+        highscores = save.highscores;
+        stats = save.stats;
+        progress = save.progress;
+        configureSound(save.settings);
+    }
+
     // Another tab of the game saved something: take it over, so this tab does not overwrite it later
     function onStorage(): void {
-        highscore = loadHighscore(storage);
-        hardcoreHighscore = loadHighscore(storage, "hardcore");
-        settings = loadSettings(storage);
-        configureSound(settings);
-        stats = unlockMilestones(loadStats(storage), highscore);
-        progress = loadTutorialProgress(storage);
+        applySave(loadSave(storage));
     }
 
     function changeSettings(next: Settings): void {
         settings = next;
-        saveSettings(storage, next);
+        persist();
         configureSound(next);
         playSound("click");
     }
 
     function resetAllData(): void {
-        clearHighscore(storage);
-        clearSettings(storage);
-        clearStats(storage);
-        clearTutorialProgress(storage);
-        highscore = 0;
-        hardcoreHighscore = 0;
-        settings = DEFAULT_SETTINGS;
-        stats = EMPTY_STATS;
-        progress = NEW_PLAYER;
-        configureSound(DEFAULT_SETTINGS);
+        clearSave(storage);
+        applySave(NEW_SAVE);
         playSound("click");
     }
 
@@ -429,7 +399,7 @@
     }
 
     function startHardcore(): void {
-        if (game.phase !== "menu" || !isHardcoreUnlocked(highscore)) return;
+        if (game.phase !== "menu" || !isHardcoreUnlocked(highscores.normal)) return;
         const time = performance.now();
         update(startGame(time, rng, "hardcore", settings.colorblind), time);
     }
@@ -667,7 +637,7 @@
             onback={() => showView("game")}
         />
     {:else if view === "stats"}
-        <StatsScreen {stats} {highscore} onback={() => showView("game")} />
+        <StatsScreen {stats} highscore={highscores.normal} onback={() => showView("game")} />
     {:else if tutorial}
         <TutorialScreen
             {tutorial}
@@ -681,9 +651,9 @@
         />
     {:else if game.phase === "menu"}
         <MenuScreen
-            {highscore}
-            {hardcoreHighscore}
-            hardcoreUnlocked={isHardcoreUnlocked(highscore)}
+            highscore={highscores.normal}
+            hardcoreHighscore={highscores.hardcore}
+            hardcoreUnlocked={isHardcoreUnlocked(highscores.normal)}
             flipControls={settings.flipControls}
             onstart={goOn}
             onhardcore={startHardcore}

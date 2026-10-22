@@ -13,6 +13,7 @@
         "isolatedModules": true,
         "moduleDetection": "force",
         "noEmit": true,
+        "paths": { "@/*": ["./src/*"] },
         /* Script-less .svelte components count as JS and need these to be typed */
         "allowJs": true,
         "checkJs": true,
