@@ -10,6 +10,7 @@ export const negative: ModifierGroup = {
     intro: {
         title: "NEGATIVE",
         example: { word: "red", color: "red" },
+        demo: { loopMs: 2000, timeLimitMs: 2000 },
         lines: ["THE SCREEN FLASHES", "AS A *NEGATIVE*", "ONLY THE REAL COLOR COUNTS"],
         colorblindLines: ["THE SCREEN FLASHES", "AS A *NEGATIVE*", "THE RULES STAY THE SAME"],
         accent: "yellow",

@@ -8,6 +8,8 @@ export const blink: ModifierGroup = {
     intro: {
         title: "FADE",
         example: { word: "cyan", color: "cyan" },
+        // Fades out, stays away for a moment and comes back
+        demo: { loopMs: 1800 },
         lines: ["THE WORD FADES AWAY", "IN UNDER A SECOND", "*REMEMBER IT*"],
         accent: "yellow",
     },

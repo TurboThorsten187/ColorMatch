@@ -17,6 +17,8 @@ export const background: ModifierGroup = {
     intro: {
         title: "BACKGROUND",
         example: { word: "red", color: "blue" },
+        // The background shows what the word says, to fool the player
+        demo: { challenge: { background: "red" } },
         lines: ["THE BACKGROUND", "TRIES TO FOOL YOU", "ONLY THE *TEXT COLOR* COUNTS"],
         colorblindLines: ["THE BACKGROUND", "TRIES TO FOOL YOU", "ONLY THE *TEXT SHAPES* COUNT"],
         accent: "yellow",

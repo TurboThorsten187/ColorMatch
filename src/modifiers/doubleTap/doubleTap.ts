@@ -18,7 +18,7 @@ export const doubleTap: ModifierGroup = {
     sign: () => ({ text: "DOUBLE TAP", icon: DOTS }),
     intro: {
         title: "DOUBLE TAP",
-        example: { text: "DOUBLE TAP", color: "red" },
+        example: "sign",
         lines: ["TAP YOUR ANSWER *TWICE*", "ONE WRONG TAP IS A MISS"],
         accent: "red",
     },

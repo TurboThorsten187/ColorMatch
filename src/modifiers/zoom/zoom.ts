@@ -25,6 +25,8 @@ export const zoom: ModifierGroup = {
     intro: {
         title: "ZOOM",
         example: { word: "cyan", color: "cyan" },
+        // Tiny, but still readable on the card
+        demo: { challenge: { size: 0.3 } },
         lines: ["THE WORD IS *TINY*", "THE RULES STAY THE SAME"],
         accent: "yellow",
     },

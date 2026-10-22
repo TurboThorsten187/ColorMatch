@@ -1,10 +1,11 @@
 <script lang="ts">
     import type { Answer } from "@/core/challenge.ts";
     import { LOW_TIME_SHARE, type PlayingState, remainingShare } from "@/core/game.ts";
+    import { isNegative } from "@/modifiers/negative/look.ts";
+    import { lowTimeGlow } from "@/ui/hud/lowTimeGlow.ts";
     import TapHints from "@/ui/hud/TapHints.svelte";
     import TopBar from "@/ui/hud/TopBar.svelte";
-    import ChallengeScreen from "@/ui/word/ChallengeScreen.svelte";
-    import { isNegative, lowTimeGlow } from "@/ui/word/effects.ts";
+    import WordView from "@/ui/word/WordView.svelte";
 
     interface Props {
         // The playing level, or the solved SPAM! level frozen at its last press
@@ -30,7 +31,7 @@
 </script>
 
 <div class="playfield" style:filter={negative ? "invert(1)" : null}>
-    <ChallengeScreen
+    <WordView
         challenge={level.challenge}
         {elapsed}
         timeLimit={level.timeLimit}

@@ -24,7 +24,9 @@ export const wait: ModifierGroup = {
     sign: (share) => (share < WAIT_SHARE ? { text: "WAIT", icon: PAUSE } : { text: "NOW", icon: PLAY }),
     intro: {
         title: "WAIT",
-        example: { text: "WAIT", color: "red" },
+        example: "sign",
+        // WAIT and NOW take turns, a second each
+        demo: { loopMs: 2000, timeLimitMs: 2500 },
         lines: ["ANSWER ONLY", "ONCE IT SAYS *NOW*", "EARLIER IS A MISS"],
         accent: "red",
     },

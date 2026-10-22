@@ -10,6 +10,7 @@ export const rotation: ModifierGroup = {
     intro: {
         title: "ROTATION",
         example: { word: "yellow", color: "yellow" },
+        demo: { challenge: { rotationDeg: -24 } },
         lines: ["THE WORD *SPINS*", "THE RULES STAY THE SAME"],
         accent: "yellow",
     },

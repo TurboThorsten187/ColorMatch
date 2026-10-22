@@ -14,7 +14,8 @@ export const spam: ModifierGroup = {
     rule: { expect: () => "spam", presses: SPAM_PRESSES_NEEDED },
     intro: {
         title: "SPAM",
-        example: { text: SPAM_WORD, color: "yellow" },
+        example: { word: "yellow", color: "yellow" },
+        demo: { pressMs: 300 },
         lines: ["TAP *5 TIMES*,", "ANYWHERE, FAST"],
         accent: "yellow",
     },

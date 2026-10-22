@@ -17,7 +17,7 @@ export const noClick: ModifierGroup = {
     sign: () => ({ text: "DON'T CLICK", icon: CROSS }),
     intro: {
         title: "DON'T CLICK",
-        example: { text: "DON'T CLICK", color: "red" },
+        example: "sign",
         lines: ["HANDS *OFF*!", "WAIT UNTIL", "THE TIMER RUNS OUT"],
         accent: "red",
     },

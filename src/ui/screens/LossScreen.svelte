@@ -4,7 +4,7 @@
     import { FEEDBACK_LABELS } from "@/ui/hud/FeedbackFlash.svelte";
     import TapHints from "@/ui/hud/TapHints.svelte";
     import TopBar from "@/ui/hud/TopBar.svelte";
-    import ChallengeScreen from "@/ui/word/ChallengeScreen.svelte";
+    import WordView from "@/ui/word/WordView.svelte";
     import {
         type Block,
         blockAt,
@@ -161,7 +161,7 @@
 </script>
 
 <div class="loss" style:transform style:opacity={frame.opacity}>
-    <ChallengeScreen
+    <WordView
         challenge={level.challenge}
         elapsed={frozen}
         timeLimit={level.timeLimit}

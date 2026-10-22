@@ -34,7 +34,7 @@ export const twoWords: ModifierGroup = {
     intro: {
         title: "DUO",
         example: { word: "green", color: "green" },
-        second: { word: "red", color: "blue" },
+        demo: { challenge: { second: { word: "red", color: "blue" } } },
         lines: ["TRUE IF *BOTH OR NEITHER*", "OF THE WORDS MATCH"],
         accent: "red",
     },
