@@ -1,7 +1,7 @@
 import type { ModifierGroup, PixelIcon } from "@/modifiers/types.ts";
 
 // The sign says WAIT for this share of the time limit, then NOW; a press before NOW is a miss
-export const WAIT_SHARE = 0.4;
+export const WAIT_SHARE = 2 / 3;
 
 const PAUSE: PixelIcon = {
     rows: [".......", ".##.##.", ".##.##.", ".##.##.", ".##.##.", ".##.##.", "......."],
@@ -26,7 +26,7 @@ export const wait: ModifierGroup = {
         title: "WAIT",
         example: "sign",
         // WAIT and NOW take turns, a second each
-        demo: { loopMs: 2000, timeLimitMs: 2500 },
+        demo: { loopMs: 2000, timeLimitMs: 1000 / WAIT_SHARE },
         lines: ["ANSWER ONLY", "ONCE IT SAYS *NOW*", "EARLIER IS A MISS"],
         accent: "red",
     },

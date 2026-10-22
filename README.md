@@ -55,7 +55,7 @@ die schweren; innerhalb einer Stufe wird die Reihenfolge jede Runde neu gemischt
 | Assemble         | mittel | die Buchstaben fliegen vom Bildschirmrand herein, nach einem Viertel der Zeit ist das Wort komplett                                    |
 | Font Flip        | mittel | jeder Buchstabe wechselt alle 200 ms in eine andere von 28 Schriften; je stärker, desto öfter die schwer lesbaren (bis 1,5-mal so oft) |
 | Negative         | mittel | von 10 % bis 50 % der Zeit ist der ganze Bildschirm ein Fotonegativ, danach kurz ein Nachbild                                          |
-| Wait             | schwer | das Schild zeigt in den ersten 40 % der Zeit WAIT, dann NOW; ein Druck vorher ist TOO EARLY!                                           |
+| Wait             | schwer | das Schild zeigt in den ersten zwei Dritteln der Zeit WAIT, dann NOW; ein Druck vorher ist TOO EARLY!                                  |
 | Double Tap       | schwer | die Antwort zweimal drücken, egal wie schnell; ein falscher Druck ist sofort ein Fehler                                                |
 | Duo              | schwer | zwei Wörter übereinander: TRUE, wenn beide oder keins zu ihrer Farbe passen (BOTH OR NEITHER); 1 s mehr Zeit                           |
 
