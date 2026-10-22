@@ -71,7 +71,7 @@ jobs:
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
-    # Laufende Deployments nicht abbrechen, nur das neueste wartende ausführen
+    # Never cancel a running deployment, only run the newest one waiting
     concurrency:
       group: pages
       cancel-in-progress: false

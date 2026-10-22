@@ -1,7 +1,8 @@
 import { defineConfig, devices } from "@playwright/test";
 
 // Browser tests (e2e/) against a production build in the e2e mode, which takes a fixed random seed from the URL
-// (src/testRng.ts). CHROMIUM_PATH points to an installed Chromium instead of the one `npx playwright install` loads.
+// (src/platform/testRng.ts). CHROMIUM_PATH points to an installed Chromium instead of the one `npx playwright install`
+// loads.
 const PORT = 4174;
 
 export default defineConfig({
