@@ -1,3 +1,4 @@
+import type { GameState } from "@/core/game.ts";
 import type { Rng } from "@/core/random.ts";
 
 // Losing a level: the screen shakes, the word bursts into falling pixel blocks, then the picture shuts off like an
@@ -62,6 +63,11 @@ export interface Block {
 }
 
 export const SHAKE_OFFSETS = SHAKE_STEPS - 1;
+
+// A lost game shows the loss animation first, then the game over screen
+export function showsLoss(game: GameState, now: number): boolean {
+    return game.phase === "gameOver" && now - game.endedAt < LOSS_ANIMATION_MS;
+}
 
 export function lossFrame(elapsed: number): LossFrame {
     const label = progress(elapsed, SHATTER_AT_MS, LABEL_POP_MS);

@@ -1,10 +1,6 @@
-<script module lang="ts">
-    // From here on the timer is red
-    export const LOW_TIME_SHARE = 0.25;
-</script>
-
 <script lang="ts">
     import { COLOR_CSS } from "@/core/colors.ts";
+    import { LOW_TIME_SHARE } from "@/core/game.ts";
 
     type Props = {
         level: number;

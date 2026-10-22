@@ -1,7 +1,7 @@
 <script lang="ts">
     import { COLOR_CSS, COLORS } from "@/core/colors.ts";
-    import type { PlayingState } from "@/core/game.ts";
-    import { FEEDBACK_LABELS, type FeedbackKind } from "@/ui/hud/FeedbackFlash.svelte";
+    import type { LossReason, PlayingState } from "@/core/game.ts";
+    import { FEEDBACK_LABELS } from "@/ui/hud/FeedbackFlash.svelte";
     import TapHints from "@/ui/hud/TapHints.svelte";
     import TopBar from "@/ui/hud/TopBar.svelte";
     import ChallengeScreen from "@/ui/word/ChallengeScreen.svelte";
@@ -19,7 +19,7 @@
         // The lost level, frozen at the moment it was lost
         level: PlayingState;
         lostAt: number;
-        kind: Exclude<FeedbackKind, "hit">;
+        kind: LossReason;
         // Time since the loss in ms
         elapsed: number;
         highscore: number;

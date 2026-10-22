@@ -1,3 +1,4 @@
+import { HARDCORE_UNLOCK_SCORE } from "./balance.ts";
 import { field } from "./parse.ts";
 import type { Mode } from "./progression.ts";
 
@@ -5,9 +6,6 @@ import type { Mode } from "./progression.ts";
 export type Highscores = Readonly<Record<Mode, number>>;
 
 export const NO_HIGHSCORES: Highscores = { normal: 0, hardcore: 0 };
-
-// HARDCORE opens once a normal game has cleared this level, like the LEVEL 50 award
-export const HARDCORE_UNLOCK_SCORE = 50;
 
 export function isHardcoreUnlocked(normalHighscore: number): boolean {
     return normalHighscore >= HARDCORE_UNLOCK_SCORE;

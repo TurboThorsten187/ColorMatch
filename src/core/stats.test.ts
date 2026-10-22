@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { AWARDS, MODIFIER_CLEARS_NEEDED } from "./awards.ts";
+import { AWARDS } from "./awards.ts";
+import { MODIFIER_CLEARS_NEEDED } from "./balance.ts";
 import type { ModifierId } from "./modifiers.ts";
 import {
     averageLevel,

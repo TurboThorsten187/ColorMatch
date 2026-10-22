@@ -1,3 +1,4 @@
+import { MODIFIER_CLEARS_NEEDED } from "./balance.ts";
 import type { ModifierId } from "./modifiers.ts";
 
 export type AwardId =
@@ -57,9 +58,6 @@ export interface SurgeAward extends AwardBase {
 }
 
 export type Award = MilestoneAward | SurgeAward | ModifierAward;
-
-// Levels with a modifier, or surge levels, that have to be cleared, summed up over all games
-export const MODIFIER_CLEARS_NEEDED = 10;
 
 function milestone(id: AwardId, level: number): MilestoneAward {
     return { id, code: String(level), name: `LEVEL ${level}`, rule: `CLEAR LEVEL ${level}`, kind: "milestone", level };

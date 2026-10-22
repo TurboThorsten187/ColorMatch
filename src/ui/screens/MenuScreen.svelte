@@ -1,6 +1,6 @@
 <script lang="ts">
+    import { HARDCORE_UNLOCK_SCORE } from "@/core/balance.ts";
     import { COLOR_CSS, COLORS } from "@/core/colors.ts";
-    import { HARDCORE_UNLOCK_SCORE } from "@/core/highscore.ts";
     import { answerOn } from "@/core/settings.ts";
 
     interface Props {

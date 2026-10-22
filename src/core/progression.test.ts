@@ -1,13 +1,18 @@
 import { describe, expect, it } from "vitest";
+import {
+    EXTRA_TIME_MS,
+    FIRST_INTRO_LEVEL,
+    INTRO_BONUS_MS,
+    INTRO_EVERY,
+    SURGE_FIRST_LEVEL,
+    SURGE_TIME_MS,
+    TEMPO_CATCH_UP_LEVELS,
+} from "./balance.ts";
 import { conflicts, groupById, MODIFIER_GROUPS, type ModifierGroupId, TIERS } from "./modifiers.ts";
 import {
     createCurriculum,
     type Curriculum,
     DUO_EXTRA_MS,
-    EXTRA_TIME_MS,
-    FIRST_INTRO_LEVEL,
-    INTRO_BONUS_MS,
-    INTRO_EVERY,
     introducedAt,
     introLevel,
     isSurgeLevel,
@@ -15,11 +20,8 @@ import {
     maxGroupCount,
     pickGroups,
     plainChance,
-    SURGE_FIRST_LEVEL,
     strengthFor,
-    SURGE_TIME_MS,
     surgeGroupCount,
-    TEMPO_CATCH_UP_LEVELS,
     tempoFor,
     timeLimitFor,
     ZOOM_MIN_SIZE,

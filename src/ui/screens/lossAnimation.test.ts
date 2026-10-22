@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { GAME_OVER_LOCK_MS } from "@/core/game.ts";
+import { GAME_OVER_LOCK_MS } from "@/core/balance.ts";
+import { answer, MENU, startGame } from "@/core/game.ts";
 import {
     blockAt,
     blockSize,
@@ -9,6 +10,7 @@ import {
     lossFrame,
     SHAKE_OFFSETS,
     SHATTER_AT_MS,
+    showsLoss,
     wordBlocks,
 } from "./lossAnimation.ts";
 
@@ -70,6 +72,24 @@ describe("loss animation", () => {
 
     it("cannot be skipped: RETRY and MENU wait until it is over and the buttons have appeared", () => {
         expect(GAME_OVER_LOCK_MS).toBeGreaterThanOrEqual(LOSS_ANIMATION_MS + BUTTONS_APPEAR_MS);
+    });
+});
+
+describe("showsLoss", () => {
+    it("shows the loss animation right after the loss, then the game over screen", () => {
+        const level = startGame(0, Math.random);
+        const over = answer(
+            level,
+            level.phase === "playing" && level.challenge.expected === "true" ? "false" : "true",
+            100,
+            Math.random,
+        );
+
+        expect(over.phase).toBe("gameOver");
+        expect(showsLoss(over, 100)).toBe(true);
+        expect(showsLoss(over, 100 + LOSS_ANIMATION_MS - 1)).toBe(true);
+        expect(showsLoss(over, 100 + LOSS_ANIMATION_MS)).toBe(false);
+        expect(showsLoss(MENU, 100)).toBe(false);
     });
 });
 

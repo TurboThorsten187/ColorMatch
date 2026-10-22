@@ -1,8 +1,8 @@
 <script module lang="ts">
-    // "early": pressed before WAIT turned into NOW
-    export type FeedbackKind = "hit" | "miss" | "timeout" | "early";
+    import type { Feedback } from "@/app/session.svelte.ts";
 
-    export const FEEDBACK_LABELS: Readonly<Record<FeedbackKind, string>> = {
+    // "early": pressed before WAIT turned into NOW
+    export const FEEDBACK_LABELS: Readonly<Record<Feedback, string>> = {
         hit: "+1",
         miss: "MISS!",
         timeout: "TIME UP!",
@@ -12,7 +12,7 @@
 
 <script lang="ts">
     interface Props {
-        kind: FeedbackKind;
+        kind: Feedback;
     }
 
     let { kind }: Props = $props();
