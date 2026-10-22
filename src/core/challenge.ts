@@ -1,5 +1,6 @@
-import { type Color, COLORS, randomColor } from "./colors.ts";
-import { groupById, type ModifierGroupId, type ModifierId } from "./modifiers.ts";
+import { groupById, inGroupOrder } from "@/modifiers/registry.ts";
+import type { LevelContext, ModifierGroupId, ModifierId } from "@/modifiers/types.ts";
+import { type Color, randomColor } from "./colors.ts";
 import { pick, type Rng } from "./random.ts";
 
 // "true": the word names its own ink color, "false": it does not
@@ -21,8 +22,14 @@ export interface ColorWord {
 }
 
 export interface Challenge extends ColorWord {
+    // The level's modifier groups in the order of MODIFIER_GROUPS, and the modifier each one brought
+    readonly groups: readonly ModifierGroupId[];
     readonly modifiers: ReadonlySet<ModifierId>;
     readonly expected: ExpectedInput;
+    // Presses of the expected input that solve the level (more with DOUBLE TAP and SPAM!)
+    readonly presses: number;
+    // Share of the time limit during which a press loses the level (WAIT)
+    readonly lockedShare: number;
     // Only set with the background modifier: any color but the inks, so it says nothing about the answer
     readonly background: Color | null;
     // Only non-zero with the rotation modifier, the angle the spinning word starts at
@@ -38,68 +45,45 @@ export interface Challenge extends ColorWord {
     readonly size: number;
 }
 
-// SYMMETRY looks the same mirrored left to right, so with it only the upside-down mirror changes anything
-const SYMMETRY_MIRRORS: readonly ModifierId[] = ["mirrorVertical"];
+const FIRST_LEVEL: LevelContext = { level: 1, mode: "normal", introducedOn: () => 1 };
 
+// A challenge of the given groups: one modifier of each, the rule of the rule group if there is one, then what the
+// groups add to the words and around them
 export function createChallenge(
     groups: readonly ModifierGroupId[],
-    level: number,
     rng: Rng,
+    level: LevelContext = FIRST_LEVEL,
     tempo: Tempo = {},
-    size = 1,
     strength: Strength = {},
 ): Challenge {
+    const ordered = inGroupOrder(groups);
+    const definitions = ordered.map(groupById);
     const color = randomColor(rng);
-    const matches = rng() >= 0.5;
-    // With two words, TRUE means both words are true or both are false: the upper word's truth is drawn, the lower
-    // one follows from the answer
-    const twoWords = groups.includes("twoWords");
-    const firstTrue = twoWords ? rng() < 0.5 : matches;
-    const word = firstTrue ? color : randomColor(rng, color);
+    const answer: Answer = rng() >= 0.5 ? "true" : "false";
     const modifiers: ReadonlySet<ModifierId> = new Set(
-        groups.map((id) => {
-            const variants =
-                id === "mirror" && groups.includes("splitMirror") ? SYMMETRY_MIRRORS : groupById(id).variants;
-            return variants[Math.floor(rng() * variants.length)];
-        }),
+        definitions.map((group) => group.pickVariant?.(ordered, rng) ?? pick(rng, group.variants)),
     );
-    const expected = expectedInput(matches ? "true" : "false", modifiers);
-    const second = twoWords ? colorWord(matches ? firstTrue : !firstTrue, rng) : null;
+    const rule = definitions.find((group) => group.rule)?.rule;
 
-    return {
-        word,
+    let challenge: Challenge = {
+        word: answer === "true" ? color : randomColor(rng, color),
         color,
+        groups: ordered,
         modifiers,
-        expected,
-        // Never the ink of a word, or that word would vanish
-        background: modifiers.has("background")
-            ? pick(
-                  rng,
-                  COLORS.filter((other) => other !== color && other !== second?.color),
-              )
-            : null,
-        rotationDeg: modifiers.has("rotation") ? rotationDeg(level) : 0,
+        expected: rule?.expect?.(answer) ?? answer,
+        presses: rule?.presses ?? 1,
+        lockedShare: rule?.lockedShare ?? 0,
+        background: null,
+        rotationDeg: 0,
         seed: rng(),
         tempo,
         strength,
-        second,
-        size: modifiers.has("zoom") ? size : 1,
+        second: null,
+        size: 1,
     };
-}
-
-function colorWord(truthful: boolean, rng: Rng): ColorWord {
-    const color = randomColor(rng);
-    return { word: truthful ? color : randomColor(rng, color), color };
-}
-
-export function expectedInput(answer: Answer, modifiers: ReadonlySet<ModifierId>): ExpectedInput {
-    if (modifiers.has("spam")) return "spam";
-    if (modifiers.has("noClick")) return "none";
-    if (modifiers.has("invertInput")) return answer === "true" ? "false" : "true";
-    return answer;
-}
-
-// Pseudo-random but stable per level, between -90 and +90 degrees
-function rotationDeg(level: number): number {
-    return ((level * 53 + 19) % 181) - 90;
+    for (const group of definitions) if (group.words) challenge = { ...challenge, ...group.words(challenge, rng) };
+    for (const group of definitions) {
+        if (group.decorate) challenge = { ...challenge, ...group.decorate(challenge, level, rng) };
+    }
+    return challenge;
 }

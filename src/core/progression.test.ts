@@ -1,4 +1,9 @@
 import { describe, expect, it } from "vitest";
+import { NO_CLICK_TIME_SHARE } from "@/modifiers/noClick/noClick.ts";
+import { conflicts, groupById, MODIFIER_GROUPS } from "@/modifiers/registry.ts";
+import { DUO_EXTRA_MS } from "@/modifiers/twoWords/twoWords.ts";
+import { type ModifierGroupId, TIERS } from "@/modifiers/types.ts";
+import { ZOOM_MIN_SIZE, zoomSizeFor } from "@/modifiers/zoom/zoom.ts";
 import {
     EXTRA_TIME_MS,
     FIRST_INTRO_LEVEL,
@@ -8,11 +13,9 @@ import {
     SURGE_TIME_MS,
     TEMPO_CATCH_UP_LEVELS,
 } from "./balance.ts";
-import { conflicts, groupById, MODIFIER_GROUPS, type ModifierGroupId, TIERS } from "./modifiers.ts";
 import {
     createCurriculum,
     type Curriculum,
-    DUO_EXTRA_MS,
     introducedAt,
     introLevel,
     isSurgeLevel,
@@ -24,8 +27,6 @@ import {
     surgeGroupCount,
     tempoFor,
     timeLimitFor,
-    ZOOM_MIN_SIZE,
-    zoomSizeFor,
 } from "./progression.ts";
 import type { Rng } from "./random.ts";
 
@@ -312,7 +313,9 @@ describe("timeLimitFor", () => {
     });
 
     it("gives a surge its fixed time, however many groups it stacks", () => {
-        const stacked = (level: number): ModifierGroupId[] => CURRICULUM.slice(0, surgeGroupCount(level));
+        // Groups with time rules of their own (Don't Click, DUO) are tested below
+        const plain = CURRICULUM.filter((id) => !groupById(id).rule);
+        const stacked = (level: number): ModifierGroupId[] => plain.slice(0, surgeGroupCount(level));
 
         expect(timeLimitFor(SURGE_FIRST_LEVEL, stacked(SURGE_FIRST_LEVEL), false)).toBe(SURGE_TIME_MS);
         expect(timeLimitFor(120, stacked(120), false)).toBe(SURGE_TIME_MS);
@@ -336,6 +339,15 @@ describe("timeLimitFor", () => {
         expect(timeLimitFor(20, ["twoWords"], false)).toBe(base + EXTRA_TIME_MS.hard + DUO_EXTRA_MS);
         expect(timeLimitFor(SURGE_FIRST_LEVEL, ["rotation", "twoWords"], false)).toBe(SURGE_TIME_MS + DUO_EXTRA_MS);
         expect(timeLimitFor(2, ["twoWords"], false, "hardcore")).toBe(1000 + EXTRA_TIME_MS.hard + DUO_EXTRA_MS);
+    });
+
+    it("gives a Don't Click level only part of its time, on a surge too", () => {
+        const full = timeLimitFor(20, ["mirror"], false) + EXTRA_TIME_MS.medium;
+
+        expect(timeLimitFor(20, ["mirror", "noClick"], false)).toBe(Math.round(full * NO_CLICK_TIME_SHARE));
+        expect(timeLimitFor(SURGE_FIRST_LEVEL, ["mirror", "noClick"], false)).toBe(
+            Math.round(SURGE_TIME_MS * NO_CLICK_TIME_SHARE),
+        );
     });
 });
 

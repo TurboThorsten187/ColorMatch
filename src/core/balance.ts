@@ -1,4 +1,4 @@
-import type { Tier } from "./modifiers.ts";
+import type { Tier } from "@/modifiers/types.ts";
 
 // The numbers that tune the difficulty of a game, in one place. Numbers that belong to a single modifier stay with it.
 

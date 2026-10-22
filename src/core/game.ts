@@ -1,6 +1,6 @@
-import { SURGE_BANNER_MS, GAME_OVER_LOCK_MS } from "./balance.ts";
+import type { ModifierGroupId } from "@/modifiers/types.ts";
+import { GAME_OVER_LOCK_MS, SURGE_BANNER_MS } from "./balance.ts";
 import { type Answer, type Challenge, createChallenge } from "./challenge.ts";
-import { groupsOf, type ModifierGroupId } from "./modifiers.ts";
 import {
     createCurriculum,
     type Curriculum,
@@ -8,25 +8,17 @@ import {
     introLevel,
     isSurgeLevel,
     type Mode,
-    NO_CLICK_TIME_SHARE,
     pickGroups,
-    tempoFor,
     strengthFor,
+    tempoFor,
     timeLimitFor,
-    zoomSizeFor,
 } from "./progression.ts";
 import type { Rng } from "./random.ts";
 
-export const SPAM_PRESSES_NEEDED = 5;
-// Shown instead of a color word, one character lights up per press
-export const SPAM_WORD = "SPAM!";
+// After the last press of a SPAM! level the whole word stays lit for SPAM_BANG_MS, then STOP SPAMMING! shows for
+// SPAM_PAUSE_MS, so further presses go nowhere
 export const SPAM_PAUSE_MS = 500;
-// After the last press the whole SPAM! stays lit this long, then STOP SPAMMING! shows for SPAM_PAUSE_MS
 export const SPAM_BANG_MS = 120;
-// A WAIT level shows WAIT for this share of its time limit, then NOW; a press before NOW is a miss
-export const WAIT_SHARE = 0.4;
-// Right taps a DOUBLE TAP level needs, with no limit on the time between them
-export const DOUBLE_TAPS = 2;
 // From here on the time is running out: the timer turns red and beeps
 export const LOW_TIME_SHARE = 0.25;
 
@@ -36,8 +28,9 @@ export type PlayingState = {
     readonly challenge: Challenge;
     readonly startedAt: number;
     readonly timeLimit: number;
+    // Presses so far in a SPAM! level, each one lights up a character
     readonly spamCount: number;
-    // Right taps so far in a DOUBLE TAP level
+    // Right answers so far in a level that needs more than one (DOUBLE TAP)
     readonly taps: number;
     readonly curriculum: Curriculum;
     readonly mode: Mode;
@@ -110,13 +103,14 @@ export function answer(state: GameState, input: Answer, now: number, rng: Rng): 
     // The press came after the time ran out, only the next frame's tick had not noticed it yet
     if (now - state.startedAt > state.timeLimit) return timeUp(state, now, rng);
 
-    const { expected, modifiers } = state.challenge;
+    const { expected, presses } = state.challenge;
     if (isTooEarly(state, now)) return gameOver(state, now, "early");
     if (expected === "none") return gameOver(state, now, "miss");
 
+    // Presses anywhere count
     if (expected === "spam") {
         const spamCount = state.spamCount + 1;
-        return spamCount >= SPAM_PRESSES_NEEDED
+        return spamCount >= presses
             ? {
                   phase: "spamPause",
                   level: state.level,
@@ -131,7 +125,7 @@ export function answer(state: GameState, input: Answer, now: number, rng: Rng): 
 
     if (input !== expected) return gameOver(state, now, "miss");
     const taps = state.taps + 1;
-    return modifiers.has("doubleTap") && taps < DOUBLE_TAPS ? { ...state, taps } : nextLevel(state, now, rng);
+    return taps < presses ? { ...state, taps } : nextLevel(state, now, rng);
 }
 
 // The SPAM! level is solved and still shows its word, fully lit
@@ -139,9 +133,9 @@ export function isSpamBang(state: SpamPauseState, now: number): boolean {
     return state.resumeAt - now > SPAM_PAUSE_MS;
 }
 
-// A press on a WAIT level before WAIT has turned into NOW
+// A press while the level's rule still locks it (a WAIT level before WAIT has turned into NOW)
 export function isTooEarly(state: PlayingState, now: number): boolean {
-    return state.challenge.modifiers.has("wait") && now - state.startedAt < state.timeLimit * WAIT_SHARE;
+    return now - state.startedAt < state.timeLimit * state.challenge.lockedShare;
 }
 
 // Share of the level's time that is left at `now`, 1 when it begins and 0 when it runs out
@@ -149,12 +143,12 @@ export function remainingShare(state: PlayingState, now: number): number {
     return 1 - (now - state.startedAt) / state.timeLimit;
 }
 
-// How long a correct answer at `at` took: from showing the word, or on a WAIT level from NOW. Null for levels that
-// ask for no answer (Don't Click, SPAM!)
+// How long a correct answer at `at` took: from showing the word, or from the end of a locked start (WAIT's NOW). Null
+// for levels that ask for no answer (Don't Click, SPAM!)
 export function reactionMs(state: PlayingState, at: number): number | null {
-    const { expected, modifiers } = state.challenge;
+    const { expected, lockedShare } = state.challenge;
     if (expected !== "true" && expected !== "false") return null;
-    return at - state.startedAt - (modifiers.has("wait") ? state.timeLimit * WAIT_SHARE : 0);
+    return at - state.startedAt - state.timeLimit * lockedShare;
 }
 
 // The "go on" input outside of a running level: start, continue, or retry after game over
@@ -185,14 +179,7 @@ export function tick(state: GameState, now: number, rng: Rng): GameState {
             return now - state.startedAt <= state.timeLimit ? state : timeUp(state, now, rng);
         case "spamPause":
             return now >= state.resumeAt
-                ? enterLevel(
-                      state.level + 1,
-                      now,
-                      rng,
-                      state.curriculum,
-                      groupsOf(state.solved.challenge.modifiers),
-                      state.mode,
-                  )
+                ? enterLevel(state.level + 1, now, rng, state.curriculum, state.solved.challenge.groups, state.mode)
                 : state;
         case "surgeBanner":
             // The surge stacks more groups than any level before, it cannot repeat the one before
@@ -224,7 +211,7 @@ export function resume(state: GameState, now: number): GameState {
 }
 
 function nextLevel(state: PlayingState, now: number, rng: Rng): GameState {
-    return enterLevel(state.level + 1, now, rng, state.curriculum, groupsOf(state.challenge.modifiers), state.mode);
+    return enterLevel(state.level + 1, now, rng, state.curriculum, state.challenge.groups, state.mode);
 }
 
 // A surge level shows its banner first
@@ -250,17 +237,16 @@ function playLevel(
     mode: Mode,
 ): PlayingState {
     const groups = pickGroups(level, curriculum, previous, rng, mode);
-    const tempo = Object.fromEntries(groups.map((id) => [id, tempoFor(level, introLevel(curriculum, id), mode)]));
-    const strength = Object.fromEntries(groups.map((id) => [id, strengthFor(level, introLevel(curriculum, id), mode)]));
-    const size = groups.includes("zoom") ? zoomSizeFor(level, introLevel(curriculum, "zoom"), mode) : 1;
-    const challenge = createChallenge(groups, level, rng, tempo, size, strength);
-    const timeLimit = timeLimitFor(level, groups, introducedAt(curriculum, level, mode) !== null, mode);
+    const introducedOn = (id: ModifierGroupId): number => introLevel(curriculum, id);
+    const tempo = Object.fromEntries(groups.map((id) => [id, tempoFor(level, introducedOn(id), mode)]));
+    const strength = Object.fromEntries(groups.map((id) => [id, strengthFor(level, introducedOn(id), mode)]));
+    const challenge = createChallenge(groups, rng, { level, mode, introducedOn }, tempo, strength);
     return {
         phase: "playing",
         level,
         challenge,
         startedAt: now,
-        timeLimit: challenge.expected === "none" ? Math.round(timeLimit * NO_CLICK_TIME_SHARE) : timeLimit,
+        timeLimit: timeLimitFor(level, groups, introducedAt(curriculum, level, mode) !== null, mode),
         spamCount: 0,
         taps: 0,
         curriculum,

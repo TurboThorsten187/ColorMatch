@@ -1,7 +1,8 @@
 import { describe, expect, it } from "vitest";
+import { MODIFIER_GROUPS } from "@/modifiers/registry.ts";
+import type { ModifierGroupId } from "@/modifiers/types.ts";
 import { AWARDS } from "./awards.ts";
 import { MODIFIER_CLEARS_NEEDED } from "./balance.ts";
-import type { ModifierId } from "./modifiers.ts";
 import {
     averageLevel,
     averageReactionMs,
@@ -14,8 +15,8 @@ import {
     type Stats,
 } from "./stats.ts";
 
-function clear(stats: Stats, level: number, modifiers: ModifierId[] = [], reactionMs: number | null = 500) {
-    return clearLevel(stats, { level, modifiers: new Set(modifiers), reactionMs });
+function clear(stats: Stats, level: number, groups: ModifierGroupId[] = [], reactionMs: number | null = 500) {
+    return clearLevel(stats, { level, groups, reactionMs });
 }
 
 function award(id: string) {
@@ -29,11 +30,17 @@ describe("awards", () => {
         expect(new Set(AWARDS.map((a) => a.id)).size).toBe(AWARDS.length);
         expect(new Set(AWARDS.map((a) => a.code)).size).toBe(AWARDS.length);
     });
+
+    it("include one for every modifier group, a rule award for every rule group", () => {
+        for (const group of MODIFIER_GROUPS) {
+            expect(AWARDS.find((award) => award.id === group.id)?.kind, group.id).toBe(group.rule ? "rule" : "look");
+        }
+    });
 });
 
 describe("stats", () => {
     it("count a cleared level once per modifier award", () => {
-        const { stats } = clear(EMPTY_STATS, 7, ["mirrorVertical", "mirrorHorizontal", "rotation"]);
+        const { stats } = clear(EMPTY_STATS, 7, ["mirror", "rotation"]);
 
         expect(stats.clears).toEqual({ mirror: 1, rotation: 1 });
     });

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
+import { MODIFIER_GROUPS } from "@/modifiers/registry.ts";
 import { INTROS, newIntros } from "./intros.ts";
-import { MODIFIER_GROUPS } from "./modifiers.ts";
 import {
     answerPractice,
     currentStep,
@@ -72,11 +72,9 @@ describe("tutorial", () => {
 
 describe("modifier intros", () => {
     it("are needed once per modifier group, in list order", () => {
-        const level = new Set(["rotation", "mirrorHorizontal", "mirrorVertical"] as const);
-
-        expect(newIntros(level, [])).toEqual(["mirror", "rotation"]);
-        expect(newIntros(level, ["mirror"])).toEqual(["rotation"]);
-        expect(newIntros(new Set(), [])).toEqual([]);
+        expect(newIntros(["mirror", "rotation"], [])).toEqual(["mirror", "rotation"]);
+        expect(newIntros(["mirror", "rotation"], ["mirror"])).toEqual(["rotation"]);
+        expect(newIntros([], [])).toEqual([]);
     });
 
     it("cover every modifier group exactly once", () => {

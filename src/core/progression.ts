@@ -1,3 +1,5 @@
+import { conflicts, groupById, MODIFIER_GROUPS } from "@/modifiers/registry.ts";
+import { type ModifierGroupId, TIERS } from "@/modifiers/types.ts";
 import {
     BASE_BEND,
     BASE_MIN_MS,
@@ -23,7 +25,6 @@ import {
     SURGE_TIME_MS,
     TEMPO_CATCH_UP_LEVELS,
 } from "./balance.ts";
-import { conflicts, groupById, MODIFIER_GROUPS, type ModifierGroupId, TIERS } from "./modifiers.ts";
 import type { Rng } from "./random.ts";
 
 // The order in which one game introduces the modifier groups: shuffled per game, but easy before medium before hard
@@ -32,17 +33,7 @@ export type Curriculum = readonly ModifierGroupId[];
 // A normal game introduces the modifiers one by one, HARDCORE has them all from the start (see balance.ts)
 export type Mode = "normal" | "hardcore";
 
-// A Don't Click level is only sat out, the full time would just be waiting
-export const NO_CLICK_TIME_SHARE = 0.6;
-// DUO has two words and two inks to read, it gets this on top of its extra time, on a surge too
-export const DUO_EXTRA_MS = 1500;
 const PICK_ATTEMPTS = 6;
-
-// The zoomed word starts at a fifth of the normal size and shrinks with every level after its introduction, down to
-// a tenth
-export const ZOOM_SIZE = 0.2;
-export const ZOOM_MIN_SIZE = 0.1;
-const ZOOM_SHRINK_PER_LEVEL = 0.04;
 
 export function createCurriculum(rng: Rng, colorblind = false): Curriculum {
     return TIERS.flatMap((tier) =>
@@ -100,18 +91,21 @@ export function plainChance(level: number, mode: Mode = "normal"): number {
     return Math.max(0.15, 0.45 - 0.01 * (level - FIRST_INTRO_LEVEL)) * (1 - lateShare(level));
 }
 
-// Every group brings the extra time of its tier, the first one too; a surge has its fixed time instead
+// Every group brings the extra time of its tier, the first one too; a surge has its fixed time instead. A group's own
+// extra time (DUO) comes on top, on a surge too, and a rule may shorten all of it (Don't Click).
 export function timeLimitFor(
     level: number,
     groups: readonly ModifierGroupId[],
     intro: boolean,
     mode: Mode = "normal",
 ): number {
-    const duo = groups.includes("twoWords") ? DUO_EXTRA_MS : 0;
-    if (isSurgeLevel(level, mode)) return SURGE_TIME_MS + duo;
+    const definitions = groups.map(groupById);
+    const own = definitions.reduce((sum, group) => sum + (group.extraTimeMs ?? 0), 0);
+    const share = definitions.reduce((product, group) => product * (group.rule?.timeShare ?? 1), 1);
+    if (isSurgeLevel(level, mode)) return Math.round((SURGE_TIME_MS + own) * share);
     const base = mode === "hardcore" ? BASE_MIN_MS : baseLimit(level);
-    const extra = groups.reduce((sum, id) => sum + EXTRA_TIME_MS[groupById(id).tier], 0);
-    return Math.round(base + (intro ? INTRO_BONUS_MS : 0) + extra + duo);
+    const extra = definitions.reduce((sum, group) => sum + EXTRA_TIME_MS[group.tier], 0);
+    return Math.round(Math.round(base + (intro ? INTRO_BONUS_MS : 0) + extra + own) * share);
 }
 
 // Animated modifiers (spin, pulse, shake, movement, fade, scramble) speed up along with the shrinking time limit:
@@ -134,12 +128,6 @@ export function tempoFor(level: number, introducedOn: number, mode: Mode = "norm
 // Growing modifiers get stronger along with the tempo: 0 on their intro level, 1 once the tempo is at its maximum
 export function strengthFor(level: number, introducedOn: number, mode: Mode = "normal"): number {
     return Math.min(1, (tempoFor(level, introducedOn, mode) - 1) / (MAX_TEMPO - 1));
-}
-
-export function zoomSizeFor(level: number, introducedOn: number, mode: Mode = "normal"): number {
-    if (mode === "hardcore") return ZOOM_MIN_SIZE;
-    const shrink = 1 - ZOOM_SHRINK_PER_LEVEL * Math.max(0, level - introducedOn);
-    return Math.max(ZOOM_MIN_SIZE, ZOOM_SIZE * shrink);
 }
 
 function baseLimit(level: number): number {

@@ -1,33 +1,10 @@
+import { groupById } from "@/modifiers/registry.ts";
+import type { ModifierGroupId } from "@/modifiers/types.ts";
 import { MODIFIER_CLEARS_NEEDED } from "./balance.ts";
-import type { ModifierId } from "./modifiers.ts";
 
-export type AwardId =
-    | "level10"
-    | "level25"
-    | "level50"
-    | "level100"
-    | "surge"
-    | "invertInput"
-    | "noClick"
-    | "spam"
-    | "mirror"
-    | "background"
-    | "blink"
-    | "blur"
-    | "rotation"
-    | "moving"
-    | "scrambled"
-    | "shaky"
-    | "pulsing"
-    | "zoom"
-    | "splitMirror"
-    | "countUp"
-    | "assemble"
-    | "fontFlip"
-    | "negative"
-    | "wait"
-    | "doubleTap"
-    | "twoWords";
+// Clearing levels: four milestones, the surges, and 10 levels with each modifier group (an award per group, with the
+// group's id)
+export type AwardId = "level10" | "level25" | "level50" | "level100" | "surge" | ModifierGroupId;
 
 // "rule" awards belong to modifiers that change the correct input, "look" awards to the visual ones
 export type AwardKind = "milestone" | "surge" | "rule" | "look";
@@ -46,10 +23,10 @@ export interface MilestoneAward extends AwardBase {
     readonly level: number;
 }
 
+// Clearing a level with the group counts once
 export interface ModifierAward extends AwardBase {
+    readonly id: ModifierGroupId;
     readonly kind: "rule" | "look";
-    // Clearing a level with any of these modifiers counts once
-    readonly modifiers: readonly ModifierId[];
 }
 
 // Clearing a surge level counts once
@@ -59,20 +36,45 @@ export interface SurgeAward extends AwardBase {
 
 export type Award = MilestoneAward | SurgeAward | ModifierAward;
 
+// The modifier awards in the order the stats screen shows them, rules first
+const MODIFIER_AWARD_ORDER: readonly ModifierGroupId[] = [
+    "invertInput",
+    "noClick",
+    "spam",
+    "mirror",
+    "background",
+    "blink",
+    "blur",
+    "rotation",
+    "moving",
+    "scrambled",
+    "shaky",
+    "pulsing",
+    "zoom",
+    "splitMirror",
+    "countUp",
+    "assemble",
+    "fontFlip",
+    "negative",
+    "wait",
+    "doubleTap",
+    "twoWords",
+];
+
 function milestone(id: AwardId, level: number): MilestoneAward {
     return { id, code: String(level), name: `LEVEL ${level}`, rule: `CLEAR LEVEL ${level}`, kind: "milestone", level };
 }
 
-function modifierAward(
-    id: AwardId,
-    code: string,
-    name: string,
-    kind: ModifierAward["kind"],
-    levels: string,
-    modifiers: readonly ModifierId[],
-    verb = "BEAT",
-): ModifierAward {
-    return { id, code, name, rule: `${verb} ${MODIFIER_CLEARS_NEEDED} ${levels} LEVELS`, kind, modifiers };
+function modifierAward(id: ModifierGroupId): ModifierAward {
+    const group = groupById(id);
+    const { code, name, levels, verb = "BEAT" } = group.award;
+    return {
+        id,
+        code,
+        name,
+        rule: `${verb} ${MODIFIER_CLEARS_NEEDED} ${levels} LEVELS`,
+        kind: group.rule ? "rule" : "look",
+    };
 }
 
 export const AWARDS: readonly Award[] = [
@@ -87,31 +89,7 @@ export const AWARDS: readonly Award[] = [
         rule: `BEAT ${MODIFIER_CLEARS_NEEDED} SURGE LEVELS`,
         kind: "surge",
     },
-    modifierAward("invertInput", "II", "TURNAROUND", "rule", "INVERTED INPUT", ["invertInput"]),
-    modifierAward("noClick", "NC", "HANDS OFF", "rule", "DON'T CLICK", ["noClick"], "SIT OUT"),
-    modifierAward("spam", "SP", "RAPID FIRE", "rule", "SPAM", ["spam"]),
-    modifierAward("mirror", "MR", "MIRROR MIND", "look", "MIRRORED", [
-        "mirrorVertical",
-        "mirrorHorizontal",
-        "mirrorBoth",
-    ]),
-    modifierAward("background", "BG", "UNFOOLED", "look", "BACKGROUND", ["background"]),
-    modifierAward("blink", "FD", "PHOTO MEMORY", "look", "FADE", ["blink"]),
-    modifierAward("blur", "BL", "SHARP EYES", "look", "BLURRED", ["blur"]),
-    modifierAward("rotation", "RO", "WHIRLWIND", "look", "ROTATED", ["rotation"]),
-    modifierAward("moving", "MV", "TRACKER", "look", "MOVING", ["moving"]),
-    modifierAward("scrambled", "SC", "WORDSMITH", "look", "SCRAMBLED", ["scrambled"]),
-    modifierAward("shaky", "SH", "STEADY HAND", "look", "SHAKY", ["shaky"]),
-    modifierAward("pulsing", "PU", "HEARTBEAT", "look", "PULSING", ["pulsing"]),
-    modifierAward("zoom", "ZM", "EAGLE EYE", "look", "ZOOMED", ["zoom"]),
-    modifierAward("splitMirror", "SY", "HALF AND HALF", "look", "SYMMETRY", ["splitMirror"]),
-    modifierAward("countUp", "RT", "TIME BENDER", "look", "REVERSE TIMER", ["countUp"]),
-    modifierAward("assemble", "AS", "ARCHITECT", "look", "ASSEMBLE", ["assemble"]),
-    modifierAward("fontFlip", "FF", "TYPOGRAPHER", "look", "FONT FLIP", ["fontFlip"]),
-    modifierAward("negative", "NG", "INVERTER", "look", "NEGATIVE", ["negative"]),
-    modifierAward("wait", "WT", "PATIENCE", "rule", "WAIT", ["wait"]),
-    modifierAward("doubleTap", "DT", "DOUBLE TROUBLE", "rule", "DOUBLE TAP", ["doubleTap"]),
-    modifierAward("twoWords", "DU", "DOUBLE VISION", "rule", "DUO", ["twoWords"]),
+    ...MODIFIER_AWARD_ORDER.map(modifierAward),
 ];
 
 export function awardById(id: AwardId): Award {

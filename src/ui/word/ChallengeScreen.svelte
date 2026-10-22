@@ -1,8 +1,9 @@
 <script lang="ts">
     import type { Challenge } from "@/core/challenge.ts";
     import { type Color, wordFor } from "@/core/colors.ts";
-    import { SPAM_WORD, WAIT_SHARE } from "@/core/game.ts";
-    import type { ModifierGroupId, ModifierId } from "@/core/modifiers.ts";
+    import { groupById } from "@/modifiers/registry.ts";
+    import { SPAM_WORD } from "@/modifiers/spam/spam.ts";
+    import type { ModifierGroupId, ModifierId } from "@/modifiers/types.ts";
     import { type Font, WORD_FONT, WORD_WEIGHT } from "@/platform/fonts.ts";
     import {
         type AnchorTransform,
@@ -20,7 +21,6 @@
     } from "./effects.ts";
     import { fitScale, textWidth } from "./fitText.ts";
     import { emWidth, flipLetters } from "./fontFlip.ts";
-    import { RULE_ICONS } from "./ruleIcons.ts";
     import RuleSign from "./RuleSign.svelte";
     import { backgroundStyle, inkStyle } from "./shapes.ts";
     import SplitMirror from "./SplitMirror.svelte";
@@ -130,21 +130,15 @@
     );
     // The rule signs with their icons; SCRAMBLED mixes only the text
     const tags = $derived(
-        [
-            ...(has("noClick") ? [{ text: "DON'T CLICK", icon: RULE_ICONS.noClick }] : []),
-            ...(has("invertInput") ? [{ text: "INVERTED INPUT", icon: RULE_ICONS.invertInput }] : []),
-            ...(has("wait")
-                ? [
-                      elapsed < timeLimit * WAIT_SHARE
-                          ? { text: "WAIT", icon: RULE_ICONS.wait }
-                          : { text: "NOW", icon: RULE_ICONS.now },
-                  ]
-                : []),
-            ...(has("doubleTap") ? [{ text: "DOUBLE TAP", icon: RULE_ICONS.doubleTap }] : []),
-            ...(has("twoWords") ? [{ text: "BOTH OR NEITHER", icon: RULE_ICONS.twoWords }] : []),
-        ].map((tag) =>
-            has("scrambled") ? { ...tag, text: scrambleWords(tag.text, challenge.seed, played("scrambled")) } : tag,
-        ),
+        challenge.groups.flatMap((id) => {
+            const sign = groupById(id).sign?.(elapsed / timeLimit);
+            if (!sign) return [];
+            return [
+                has("scrambled")
+                    ? { ...sign, text: scrambleWords(sign.text, challenge.seed, played("scrambled")) }
+                    : sign,
+            ];
+        }),
     );
     const byLetter = $derived(has("fontFlip") || has("assemble") || has("spam"));
     let tagsWidth = $state(0);

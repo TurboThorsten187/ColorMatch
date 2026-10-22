@@ -302,7 +302,7 @@ export class Session {
                 continue;
             }
             // A new level with a modifier never seen before waits paused until its cards are read
-            const unseen = newIntros(event.level.challenge.modifiers, this.save.progress.seenIntros);
+            const unseen = newIntros(event.level.challenge.groups, this.save.progress.seenIntros);
             if (unseen.length === 0) continue;
             this.intros = unseen;
             shown = pause(next, at);
@@ -348,11 +348,7 @@ export class Session {
 
     // Saved after every level, so progress survives closing the tab in the middle of a game
     #recordClear(level: PlayingState, reactionMs: number | null, at: number): void {
-        const result = clearLevel(this.save.stats, {
-            level: level.level,
-            modifiers: level.challenge.modifiers,
-            reactionMs,
-        });
+        const result = clearLevel(this.save.stats, { level: level.level, groups: level.challenge.groups, reactionMs });
         this.#changeSave({ ...this.save, stats: result.stats });
         if (result.unlocked.length === 0) return;
         this.gameAwards = [...this.gameAwards, ...result.unlocked];

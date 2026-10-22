@@ -1,5 +1,5 @@
 import type { Strength, Tempo } from "@/core/challenge.ts";
-import type { ModifierId } from "@/core/modifiers.ts";
+import type { ModifierId } from "@/modifiers/types.ts";
 
 // Moving, shaking, pulsing, spinning, fading and scrambling only depend on the time since the word appeared and the
 // level's seed, so they stand still while the game is paused and look the same after resuming.
