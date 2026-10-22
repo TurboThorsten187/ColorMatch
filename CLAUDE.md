@@ -5,10 +5,10 @@ Browser reaction game (Stroop effect): does the word match its ink color? Deploy
 
 ## Stack
 
-Svelte 5 (runes) + TypeScript, Vite 8, Vitest, Playwright, ESLint (flat config) + Prettier. Runtime dependencies besides Svelte:
+Svelte 5 (runes) + TypeScript, Vite 8, Vitest, Playwright, ESLint (flat config) + Prettier, vite-plugin-pwa with Workbox. Runtime dependencies besides Svelte:
 self-hosted fonts via `@fontsource` (Press Start 2P for the UI, Orbitron 900 for the color word, plus 26 display fonts
 for the Font Flip modifier, `FLIP_FONTS` in `src/platform/fonts.ts`; latin subsets only). `main.ts` awaits only the first two;
-`loadFlipFonts()` runs in the background, and the service worker report waits for it so they are cached offline.
+`loadFlipFonts()` runs in the background; the service worker caches all of them for offline play.
 Sounds are chiptune sounds synthesized with Web Audio oscillators (recipes in `src/platform/synth.ts`), there are no audio
 files.
 
@@ -126,11 +126,14 @@ folder they are relative (`./game.ts`); ESLint's `no-restricted-imports` blocks 
   where they need the value in script, never hex values of their own, so every screen and the icon
   (`public/favicon.svg`, which has to be updated by hand) show exactly the game's colors. The stage's `--accent`
   (`--yellow`, `--red` while a hardcore game runs) colors the highlights of every screen a game shows.
-- `public/` – PWA files copied as-is: `manifest.webmanifest`, icons (the PNGs and `favicon.ico` are renders of
-  `favicon.svg`, re-render them when it changes) and `sw.js`, a plain JS service worker (network first for the page,
-  cache first for files). `main.ts` registers it in production builds only and reports the loaded files, so the cache
-  holds exactly the current version. `src/platform/install.svelte.ts` keeps the browser's install offer for the menu's
-  INSTALL button.
+- Installable and offline (PWA) through vite-plugin-pwa in `vite.config.ts`: it writes the web app manifest, renders
+  the icons and `favicon.ico` from `public/favicon.svg` on every build (`ICONS`; the only file in `public/`) and adds
+  their head links, and builds `src/sw.ts` (own `tsconfig.sw.json`, it runs in a worker). The worker precaches every
+  file of the build (woff2 only, every font included) and serves files from that cache; the page comes from the
+  network while online, so a new version shows at once, offline it is the precached one. It takes over as soon as it
+  has cached a new version. `main.ts` registers it in builds only (not on the dev server, which has no manifest
+  either); `e2e/offline.spec.ts` plays offline. `src/platform/install.svelte.ts` keeps the browser's install offer for
+  the menu's INSTALL button.
 - The tutorial is `src/core/tutorial.ts`, the intro cards come from the definitions (`src/core/intros.ts`); `Session`
   runs both. A card's example is a challenge of its group drawn by `WordView` (`introExample` builds it from the
   definition's `demo`: loops, a time limit, variants in turn, presses) or the group's sign alone (`example: "sign"`).
