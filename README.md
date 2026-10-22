@@ -79,7 +79,8 @@ also schneller schnell als ein früher. Genauso wachsen Rotation, Pulsing, Shaky
 sanft. Höchstens einer pro Level ändert die Regeln (Inverted
 Input, Don't Click, Spam, Wait, Double Tap, Duo), und dieselbe Kombination kommt nie zweimal hintereinander.
 Nie zusammen kommen Symmetry mit Scrambled oder Spam, Fade mit Assemble, Negative, Wait, Duo oder Spam, Spam
-mit Background oder Scrambled und Zoom mit Blurred (ein winziges unscharfes Wort wäre nur noch ein Fleck). Mit
+mit Background oder Scrambled und Blurred mit Zoom oder Moving (ein unscharfes Wort, das winzig ist oder umhergleitet,
+wäre nur noch ein Fleck). Mit
 Symmetry steht Mirrored nur auf dem Kopf, denn links-rechts gespiegelt sähe das
 Wort gleich aus. Bei Duo wirken Scrambled, Blurred, Symmetry, Assemble, Font Flip und das Nachbild von Negative auf
 beide Wörter. Die

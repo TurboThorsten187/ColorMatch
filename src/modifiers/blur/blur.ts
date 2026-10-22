@@ -5,6 +5,8 @@ export const blur: ModifierGroup = {
     id: "blur",
     tier: "medium",
     variants: ["blur"],
+    // Blurred, a tiny or a gliding word is only a smudge
+    conflictsWith: ["zoom", "moving"],
     hidesShapes: true,
     intro: {
         title: "BLURRED",
