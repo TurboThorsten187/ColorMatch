@@ -5,7 +5,7 @@ import { expect, type Locator, type Page } from "@playwright/test";
 
 export type Answer = "true" | "false";
 
-// The colorblind mode names a shape for every color (src/game/colors.ts)
+// The colorblind mode names a shape for every color (src/core/colors.ts)
 const SHAPE_COLORS: Readonly<Record<string, string>> = {
     HEART: "red",
     TRIANGLE: "green",

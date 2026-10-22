@@ -161,18 +161,24 @@ dafür mit `npm run build:e2e` und spielen es wie ein Mensch: Menü, Tutorial, L
 CI führt sie zusätzlich zu `npm run check` aus und veröffentlicht nur, wenn beides grün ist. Im Test-Build und auf dem
 Dev-Server legt `?seed=42` in der Adresse den Zufall fest, so lässt sich ein Spiel genau wiederholen.
 
-Das Spiel ist mit Svelte 5 und TypeScript gebaut (`src/`):
+Das Spiel ist mit Svelte 5 und TypeScript gebaut (`src/`). Abhängigkeiten laufen nur in eine Richtung, von `ui` über
+`app` zu `core`; ESLint prüft das. Über Ordnergrenzen hinweg beginnen Imports mit `@/`, z. B. `@/core/game.ts`.
 
-- `src/game/` – reine Spiellogik ohne DOM: Zustandsautomat (`game.ts`), Aufgaben, Modifier, Farben, Highscore,
-  Einstellungen, Awards (`awards.ts`), Stats (`stats.ts`), Tutorial (`tutorial.ts`), Modifier-Karten
-  (`intros.ts`) und Progression (`progression.ts`: Einführungsreihenfolge, Auswahl pro Level, Surges, Zeitlimit). Alle
-  Übergänge sind Funktionen `(Zustand, Eingabe, Zeit, Zufall) → neuer Zustand` und damit direkt testbar.
-- `src/ui/` – Svelte-Komponenten für die einzelnen Screens; Modifier werden per CSS (Transform, Filter) dargestellt,
-  Bewegung, Zittern, Pulsieren, Mischen, Einfliegen, Schriftwechsel und Negativ berechnet `effects.ts` aus der Zeit
-  seit Levelbeginn. Die 28 Schriften für Font Flip (`fonts.ts`) lädt das Spiel nach dem Start im Hintergrund.
-  `sound.ts` spielt die Sounds über die Web Audio API ab, `synth.ts` beschreibt, wie jeder Sound erzeugt wird.
-- `src/App.svelte` – verbindet beides: Spielschleife (`requestAnimationFrame`), Tastatur und Touch, Pause beim
-  Verlassen des Tabs, Highscore, Einstellungen, Stats und Tutorial-Fortschritt speichern, Sounds zu Spielereignissen.
+- `src/core/` – reine Spiellogik ohne DOM und ohne Speicherzugriff: Zustandsautomat (`game.ts`), Aufgaben, Modifier,
+  Farben, Highscore, Einstellungen, Awards (`awards.ts`), Stats (`stats.ts`), Tutorial (`tutorial.ts`),
+  Modifier-Karten (`intros.ts`), Progression (`progression.ts`: Einführungsreihenfolge, Auswahl pro Level, Surges,
+  Zeitlimit) und der Spielstand (`save.ts`). Alle Übergänge sind Funktionen `(Zustand, Eingabe, Zeit, Zufall) → neuer
+Zustand` und damit direkt testbar.
+- `src/platform/` – die Anbindung an den Browser: Speichern (`storage.ts`), Sound über die Web Audio API (`sound.ts`;
+  `synth.ts` beschreibt, wie jeder Sound erzeugt wird), Schriften (`fonts.ts`; die 28 Schriften für Font Flip lädt
+  das Spiel nach dem Start im Hintergrund) und das Installieren als App.
+- `src/app/` – Spielablauf ohne Darstellung: Navigation mit den Pfeiltasten, Warteschlange der Award-Meldungen.
+- `src/ui/` – Svelte-Komponenten: `screens/` (ein Screen pro Datei), `hud/` (Level, Timer und Hinweise über dem
+  Spiel) und `word/` (das Wort mit seinen Modifiern). Modifier werden per CSS (Transform, Filter) dargestellt;
+  Bewegung, Zittern, Pulsieren, Mischen, Einfliegen, Schriftwechsel und Negativ berechnet `word/effects.ts` aus der
+  Zeit seit Levelbeginn.
+- `src/App.svelte` – verbindet alles: Spielschleife (`requestAnimationFrame`), Tastatur und Touch, Pause beim
+  Verlassen des Tabs, Speichern des Spielstands, Sounds zu Spielereignissen.
 - `public/` – wird unverändert mitgeliefert: Web-App-Manifest, Icons und der Service Worker `sw.js` für den
   Offline-Betrieb. Der Service Worker läuft nur im Produktions-Build, zum Testen also `npm run build` und
   `npm run preview`. Die PNG-Icons und `favicon.ico` sind aus `favicon.svg` gerendert und müssen bei Änderungen neu
