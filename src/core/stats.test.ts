@@ -70,9 +70,9 @@ describe("stats", () => {
     it("count cleared surge levels for the surge award", () => {
         let stats = EMPTY_STATS;
         for (let i = 0; i < MODIFIER_CLEARS_NEEDED - 1; i++) {
-            const result = clear(stats, 50 + 10 * i, ["blur", "moving", "rotation", "noClick"], null);
+            const result = clear(stats, 50 + 10 * i, ["shaky", "moving", "rotation", "noClick"], null);
             expect(result.unlocked).not.toContain("surge");
-            stats = clear(result.stats, 51 + 10 * i, ["blur", "moving", "rotation"]).stats;
+            stats = clear(result.stats, 51 + 10 * i, ["shaky", "moving", "rotation"]).stats;
         }
         expect(stats.clears.surge).toBe(MODIFIER_CLEARS_NEEDED - 1);
         expect(awardProgress(award("surge"), stats, 0)).toEqual({
@@ -80,7 +80,7 @@ describe("stats", () => {
             need: MODIFIER_CLEARS_NEEDED,
         });
 
-        expect(clear(stats, 200, ["blur", "moving", "rotation", "pulsing"]).unlocked).toContain("surge");
+        expect(clear(stats, 200, ["shaky", "moving", "rotation", "pulsing"]).unlocked).toContain("surge");
     });
 
     it("unlock level milestones when the level is cleared", () => {

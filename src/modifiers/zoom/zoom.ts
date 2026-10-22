@@ -18,8 +18,6 @@ export const zoom: ModifierGroup = {
     id: "zoom",
     tier: "easy",
     variants: ["zoom"],
-    // A tiny word blurred is only a smudge
-    conflictsWith: ["blur"],
     hidesShapes: true,
     decorate: (_challenge, { level, introducedOn, mode }) => ({ size: zoomSizeFor(level, introducedOn("zoom"), mode) }),
     intro: {

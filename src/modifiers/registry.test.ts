@@ -41,6 +41,7 @@ describe("modifier groups", () => {
         }
         expect(conflicts("wait", "invertInput")).toBe(true);
         expect(conflicts("zoom", "blur")).toBe(true);
+        expect(conflicts("moving", "blur")).toBe(true);
 
         expect(conflicts("mirror", "rotation")).toBe(false);
         expect(conflicts("zoom", "moving")).toBe(false);
