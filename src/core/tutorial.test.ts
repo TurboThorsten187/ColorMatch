@@ -1,6 +1,4 @@
 import { describe, expect, it } from "vitest";
-import { MODIFIER_GROUPS } from "@/modifiers/registry.ts";
-import { INTROS, newIntros } from "./intros.ts";
 import {
     answerPractice,
     currentStep,
@@ -67,18 +65,6 @@ describe("tutorial", () => {
         expect(answerPractice(TUTORIAL_START, "true", 0)).toBe(TUTORIAL_START);
         expect(nextCard(onTry)).toBe(onTry);
         expect(answerPractice(hit, "false", 1100)).toBe(hit);
-    });
-});
-
-describe("modifier intros", () => {
-    it("are needed once per modifier group, in list order", () => {
-        expect(newIntros(["mirror", "rotation"], [])).toEqual(["mirror", "rotation"]);
-        expect(newIntros(["mirror", "rotation"], ["mirror"])).toEqual(["rotation"]);
-        expect(newIntros([], [])).toEqual([]);
-    });
-
-    it("cover every modifier group exactly once", () => {
-        expect(INTROS.map((intro) => intro.id).sort()).toEqual(MODIFIER_GROUPS.map((group) => group.id).sort());
     });
 });
 

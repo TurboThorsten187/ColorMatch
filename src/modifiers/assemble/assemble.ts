@@ -10,6 +10,8 @@ export const assemble: ModifierGroup = {
     intro: {
         title: "ASSEMBLE",
         example: { word: "yellow", color: "yellow" },
+        // The letters arrive within the first second of every loop
+        demo: { loopMs: 2200, timeLimitMs: 4000 },
         lines: ["THE LETTERS *FLY IN*", "THE RULES STAY THE SAME"],
         accent: "yellow",
     },

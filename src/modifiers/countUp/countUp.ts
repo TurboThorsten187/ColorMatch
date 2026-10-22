@@ -8,6 +8,8 @@ export const countUp: ModifierGroup = {
     intro: {
         title: "REVERSE TIMER",
         example: { word: "green", color: "green" },
+        // The card's timer fills up again and again
+        demo: { loopMs: 3000, timeLimitMs: 3000 },
         lines: ["THE TIMER *FILLS UP*", "TIME IS UP WHEN IT IS FULL"],
         accent: "yellow",
     },

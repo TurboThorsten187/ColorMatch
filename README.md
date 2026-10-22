@@ -161,6 +161,10 @@ dafür mit `npm run build:e2e` und spielen es wie ein Mensch: Menü, Tutorial, L
 CI führt sie zusätzlich zu `npm run check` aus und veröffentlicht nur, wenn beides grün ist. Im Test-Build und auf dem
 Dev-Server legt `?seed=42` in der Adresse den Zufall fest, so lässt sich ein Spiel genau wiederholen.
 
+`?gallery` zeigt dort alle Modifier nebeneinander, so wie das Spiel sie zeichnet, ohne dass man bis zu ihnen spielen
+muss. `?gallery=moving,shaky` zeigt eine Kombination, `&t=500` hält die Zeit an, `&level=80` zeigt die volle Stärke,
+`&colorblind` die Formen und `&intro=rotation` die Karte eines Modifiers.
+
 Das Spiel ist mit Svelte 5 und TypeScript gebaut (`src/`). Abhängigkeiten laufen nur in eine Richtung, von `ui` über
 `app` und `core` zu `modifiers`; ESLint prüft das. Über Ordnergrenzen hinweg beginnen Imports mit `@/`, z. B. `@/core/game.ts`.
 
@@ -171,8 +175,9 @@ Das Spiel ist mit Svelte 5 und TypeScript gebaut (`src/`). Abhängigkeiten laufe
   und alle Stellschrauben der Schwierigkeit (`balance.ts`). Alle Übergänge sind Funktionen
   `(Zustand, Eingabe, Zeit, Zufall) → neuer Zustand` und damit direkt testbar.
 - `src/modifiers/` – ein Ordner pro Modifier mit allem, was das Spiel über ihn wissen muss: Stufe, Konflikte, wie er
-  die Regeln ändert, sein Schild mit Pixel-Icon, die Karte und der Award. `registry.ts` listet alle; ein neuer
-  Modifier ist ein neuer Ordner plus ein Eintrag dort.
+  die Regeln ändert, sein Schild mit Pixel-Icon, die Karte und der Award, und in `look.ts`, wie er aussieht (Bewegung,
+  Zittern, Pulsieren, Mischen, Einfliegen, Schriftwechsel, Negativ …, berechnet aus der Zeit seit Levelbeginn).
+  `registry.ts` listet alle; ein neuer Modifier ist ein neuer Ordner plus ein Eintrag dort.
 - `src/platform/` – die Anbindung an den Browser: Speichern (`storage.ts`), Sound über die Web Audio API (`sound.ts`;
   `synth.ts` beschreibt, wie jeder Sound erzeugt wird), Schriften (`fonts.ts`; die 28 Schriften für Font Flip lädt
   das Spiel nach dem Start im Hintergrund) und das Installieren als App.
@@ -184,9 +189,9 @@ Das Spiel ist mit Svelte 5 und TypeScript gebaut (`src/`). Abhängigkeiten laufe
   `tokens.css` mit den gemeinsamen Werten (Grautöne, Linienstärken, Schriftgrößen).
 - `src/ui/` – Svelte-Komponenten: `Stage.svelte` (Rahmen und Farben jedes Screens), `Screens.svelte` (welcher Screen
   gerade dran ist), `sounds.ts` (welches Ereignis wie klingt), `screens/` (ein Screen pro Datei), `hud/` (Level, Timer
-  und Hinweise über dem Spiel) und `word/` (das Wort mit seinen Modifiern). Modifier werden per CSS (Transform,
-  Filter) dargestellt; Bewegung, Zittern, Pulsieren, Mischen, Einfliegen, Schriftwechsel und Negativ berechnet
-  `word/effects.ts` aus der Zeit seit Levelbeginn.
+  und Hinweise über dem Spiel) und `word/` (das Wort mit seinen Modifiern). Jedes Wort, im Level wie auf den
+  Modifier-Karten, entsteht auf demselben Weg: `word/wordFrame.ts` berechnet aus Aufgabe und Zeit, wie es gerade
+  aussieht, `WordView.svelte` stellt das per CSS (Transform, Filter) dar.
 - `src/App.svelte` – verbindet die Session mit dem Browser: Spielschleife (`requestAnimationFrame`), Tastatur und
   Touch, Pause beim Verlassen des Tabs, Änderungen aus anderen Tabs.
 - `public/` – wird unverändert mitgeliefert: Web-App-Manifest, Icons und der Service Worker `sw.js` für den

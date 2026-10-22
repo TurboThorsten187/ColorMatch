@@ -8,6 +8,8 @@ export const fontFlip: ModifierGroup = {
     intro: {
         title: "FONT FLIP",
         example: { word: "purple", color: "purple" },
+        // Starts over now and then, so a card left open does not count up ever more font steps
+        demo: { loopMs: 4000 },
         lines: ["THE LETTERS *SWITCH FONTS*", "THE RULES STAY THE SAME"],
         accent: "yellow",
     },

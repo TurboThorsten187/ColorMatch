@@ -1,5 +1,5 @@
+import { flipFont, fontWeight } from "@/modifiers/fontFlip/look.ts";
 import { FLIP_FONTS, type Font } from "@/platform/fonts.ts";
-import { flipFont } from "./effects.ts";
 import { textWidth } from "./fitText.ts";
 
 export interface FlipLetter {
@@ -10,9 +10,6 @@ export interface FlipLetter {
 }
 
 const MEASURE_PX = 100;
-// How often a wild font comes compared to a readable one, from strength 0 to 1: 1.5 times as often at full strength
-const WILD_WEIGHT_GENTLE = 0.5;
-const WILD_WEIGHT_STRONG = 0.75;
 
 // FONT FLIP: every letter in its own font, as large as the whole word would be in that font so that it fits, at most
 // `maxSize`. If the letters then add up to more than `maxWidth`, all of them shrink together. Both are in em. The
@@ -26,9 +23,8 @@ export function flipLetters(
     strength = 0,
     colorblind = false,
 ): FlipLetter[] {
-    const wild = WILD_WEIGHT_GENTLE + (WILD_WEIGHT_STRONG - WILD_WEIGHT_GENTLE) * strength;
     const fonts = colorblind ? FLIP_FONTS.filter((font) => font.thick) : FLIP_FONTS;
-    const weights = fonts.map((font) => (font.wild ? wild : 1));
+    const weights = fonts.map((font) => fontWeight(font.wild, strength));
     const letters = [...text].map((char, index) => {
         const font = fonts[flipFont(seed, index, elapsed, weights)];
         return { char, font, size: Math.min(maxSize, maxWidth / emWidth(text, font)) };

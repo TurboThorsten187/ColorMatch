@@ -89,13 +89,27 @@ export interface Sign {
     readonly icon: PixelIcon;
 }
 
+// How an intro card plays its example: as a level of the group that never ends, unless this says otherwise
+export interface IntroDemo {
+    // The example starts over after this long, in ms
+    readonly loopMs?: number;
+    // The time limit of the level it plays, for what runs on shares of it (ASSEMBLE, NEGATIVE, WAIT)
+    readonly timeLimitMs?: number;
+    // Shows the group's variants in turn, each for this long
+    readonly variantMs?: number;
+    // One more press every this long: SPAM! lights up its characters, stays complete for a moment and starts over
+    readonly pressMs?: number;
+    // What the example's challenge has besides its word
+    readonly challenge?: Partial<Pick<Challenge, "rotationDeg" | "size" | "background" | "second">>;
+}
+
 // The card shown when the group comes up for the first time
 export interface IntroCard {
     readonly title: string;
-    // Shown with the modifier's effect: a color word, which the colorblind mode shows as a shape word, or a fixed text
-    readonly example: ColorWord | { readonly text: string; readonly color: Color };
-    // A second color word below the example, for DUO
-    readonly second?: ColorWord;
+    // Shown with the modifier's effect, drawn like in a level: a color word, which the colorblind mode shows as a
+    // shape word, or the group's rule sign alone
+    readonly example: ColorWord | "sign";
+    readonly demo?: IntroDemo;
     // Words between * are highlighted in the accent color
     readonly lines: readonly string[];
     // Replaces `lines` in the colorblind mode where they talk about colors

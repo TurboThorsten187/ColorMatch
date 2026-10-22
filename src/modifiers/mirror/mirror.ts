@@ -13,6 +13,7 @@ export const mirror: ModifierGroup = {
     intro: {
         title: "MIRRORED",
         example: { word: "green", color: "green" },
+        demo: { variantMs: 1000 },
         lines: ["THE WORD IS MIRRORED", "THE RULES STAY THE SAME"],
         accent: "yellow",
     },

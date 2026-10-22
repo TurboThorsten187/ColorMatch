@@ -12,8 +12,8 @@
     import TapHints from "@/ui/hud/TapHints.svelte";
     import Button from "@/ui/kit/Button.svelte";
     import Card from "@/ui/kit/Card.svelte";
-    import ChallengeScreen from "@/ui/word/ChallengeScreen.svelte";
     import { inkStyle } from "@/ui/word/shapes.ts";
+    import WordView from "@/ui/word/WordView.svelte";
 
     interface Props {
         tutorial: TutorialState;
@@ -119,7 +119,7 @@
         <Button onclick={onskip}>SKIP</Button>
     </div>
 {:else if step?.kind === "try" && practice && challenge && expected}
-    <ChallengeScreen {challenge} elapsed={0} timeLimit={Infinity} {width} {height} {colorblind} />
+    <WordView {challenge} elapsed={0} timeLimit={Infinity} {width} {height} {colorblind} />
     <div class="half" class:right={expectedSide === "right"} aria-hidden="true"></div>
     <div class="divider" aria-hidden="true"></div>
     <div class="practice-top">TRY IT · {step.practice + 1}/{PRACTICE_WORDS.length}</div>

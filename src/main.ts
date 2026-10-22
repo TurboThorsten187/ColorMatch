@@ -12,7 +12,9 @@ if (!target) {
 
 listenForInstallOffer();
 await loadFonts();
-mount(App, { target });
+// The modifier gallery for developers (src/ui/dev/Gallery.svelte), left out of production builds
+const gallery = import.meta.env.MODE !== "production" && new URLSearchParams(window.location.search).has("gallery");
+mount(gallery ? (await import("@/ui/dev/Gallery.svelte")).default : App, { target });
 const flipFonts = loadFlipFonts();
 
 // Offline support (public/sw.js): the worker keeps exactly the files this page loaded

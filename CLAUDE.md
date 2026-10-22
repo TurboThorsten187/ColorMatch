@@ -49,13 +49,15 @@ folder they are relative (`./game.ts`); ESLint's `no-restricted-imports` blocks 
   REVERSE TIMER, `twoWords` DUO.
 - `src/modifiers/` – one folder per modifier group with its definition (`ModifierGroup` in `types.ts`): tier,
   variants, `conflictsWith`, `hidesShapes`, the `rule` (how it changes what solves a level), `extraTimeMs`, the hooks
-  above, the rule `sign` with its pixel icons, the intro card and the award text, plus the numbers of that modifier
-  alone (`WAIT_SHARE`, `SPAM_PRESSES_NEEDED`, `DUO_EXTRA_MS`, the Zoom sizes …). `registry.ts` lists them
-  (`MODIFIER_GROUPS`, `groupById`, `conflicts`, `inGroupOrder`); a group missing there does not compile, and its tests
-  check every definition for completeness. **A new modifier** needs its ids in `types.ts`, a folder with its
-  definition, an entry in `registry.ts` and in `MODIFIER_AWARD_ORDER` (`src/core/awards.ts`, a test checks it) and, if
-  animated, a function in `src/ui/word/effects.ts` driven by the level's `seed`, the elapsed time and its tempo; a
-  new kind of rule may need a new hook.
+  above, the rule `sign` with its pixel icons, the intro card with the `demo` its example plays, and the award text,
+  plus the numbers of that modifier alone (`WAIT_SHARE`, `SPAM_PRESSES_NEEDED`, `DUO_EXTRA_MS`, the Zoom sizes …).
+  A folder's `look.ts` holds how the modifier looks, as pure functions of the level's seed, the time it `played` (the
+  elapsed time at its tempo) and its strength, tested in `look.test.ts`; `src/modifiers/look.ts` has what they share
+  (`noise`, `lerp`). `registry.ts` lists the groups (`MODIFIER_GROUPS`, `groupById`, `conflicts`, `inGroupOrder`); a
+  group missing there does not compile, and its tests check every definition for completeness. **A new modifier**
+  needs its ids in `types.ts`, a folder with its definition, an entry in `registry.ts` and in `MODIFIER_AWARD_ORDER`
+  (`src/core/awards.ts`, a test checks it), and if it changes how the word looks, a `look.ts` used by
+  `src/ui/word/wordFrame.ts`; a new kind of rule may need a new hook. `?gallery` on the dev server shows it at once.
 - `src/core/save.ts` – everything kept between visits as one `SaveData` (settings, highscores, stats, tutorial progress),
   stored as one JSON object with `SAVE_VERSION` under one key by `src/platform/storage.ts`. Each part has a pure
   `parse…` function in its module that reads stored JSON field by field, every invalid field falling back on its own.
@@ -85,24 +87,28 @@ folder they are relative (`./game.ts`); ESLint's `no-restricted-imports` blocks 
   insides. HOLD TO RESET and the award badges are plain buttons: they act on their own terms.
 - `src/ui/` – `Stage.svelte` is the frame of every screen, `Screens.svelte` picks the screen the session is on,
   `sounds.ts` turns `SessionEvent`s into sounds timed to the screens (`cuesFor`). `screens/` has one Svelte component
-  per screen (`LevelScreen` is a running level, also the solved SPAM! frozen at its last press), `hud/` what lies over a level (`TopBar` (level and highscore over a 24-block timer, which `AwardToast` sits below; the modifier cards reuse it `inline` and `paused`), `TapHints`, `FeedbackFlash`, `AwardToast`, `AwardBadge`), `word/` the word and its modifiers (`ChallengeScreen`,
-  `SplitMirror`, `RuleSign`, `effects.ts`, `fontFlip.ts`, `fitText.ts`, `shapes.ts`, `pixelIcon.ts`);
-  modifiers are rendered with CSS transforms and filters; the rule tags (DON'T CLICK, INVERTED INPUT) sit in the
-  word's anchor and get every effect too. `RuleSign` draws them, here and on the intro cards, with the pixel icon of the
+  per screen (`LevelScreen` is a running level, also the solved SPAM! frozen at its last press), `hud/` what lies over a level (`TopBar` (level and highscore over a 24-block timer, which `AwardToast` sits below; the modifier cards reuse it `inline` and `paused`), `TapHints`, `FeedbackFlash`, `AwardToast`, `AwardBadge`), `word/` the word and its modifiers (`WordView`,
+  `wordFrame.ts`, `SplitMirror`, `RuleSign`, `fontFlip.ts`, `fitText.ts`, `shapes.ts`, `pixelIcon.ts`), `dev/` the
+  modifier gallery. One pipeline draws every word, in a level, the tutorial, the loss animation and on the intro cards:
+  `wordFrame()` turns a challenge, the time and a box with its `Layout` (`STAGE`, or `CARD` for an intro card's
+  example box) into a `WordFrame` (the lines and their letters, font size, the anchor's transform, opacity, blur,
+  signs, afterimage), calling the modifiers' `look.ts`; it is pure apart from measuring text and unit tested.
+  `WordView` puts the frame on screen with CSS transforms and filters. The rule signs (DON'T CLICK, INVERTED INPUT)
+  sit in the word's anchor and get every effect too; a card shows none, its text explains the rule. `RuleSign` draws them, here and on the intro cards, with the pixel icon of the
   group's `sign` at both ends (`src/ui/word/pixelIcon.ts`) (a `directed` icon is mirrored at the end, so both face the text). The colorblind setting keeps the six colors internally but shows each as a
   shape: `SHAPE_WORDS`/`wordFor` in `src/core/colors.ts` give the words, `src/ui/word/shapes.ts` fills the letters
   (`inkStyle`) and the background modifier (`backgroundStyle`) with SVG shape tiles; every screen that shows a color
   word takes a `colorblind` prop. The shapes are about as wide as the letters' strokes on phones, so groups that blur,
   shrink or shake them (`hidesShapes` in their definitions) are left out of a colorblind game's curriculum
   (`startGame`/`confirm` take the setting), and Font Flip only uses the `thick` fonts there. `LossScreen` plays the loss animation (timeline in
-  `screens/lossAnimation.ts`, driven by the time since the loss) before `GameOverScreen` switches on. `ChallengeScreen`
+  `screens/lossAnimation.ts`, driven by the time since the loss) before `GameOverScreen` switches on. `WordView`
   draws every word (two for `twoWords`) with one snippet: as one text, or letter by letter for Font Flip, Assemble
   and SPAM!, inside `SplitMirror` (which renders it twice) for Symmetry; the Negative afterimage reuses it. Only the leaves
   carry `data-ink` (the plain word, a Symmetry half of plain text, or each letter), never their wrappers. Assemble's start points lie on the screen edges and are mapped
   into the transformed anchor with `toAnchor`; the afterimage offset and the shake shrink with Zoom (Zoom and Blur never share a level). The loss
   animation rasterizes the anchor's first child, every `data-ink` piece with its font, ink and transforms, cut at
-  the middle of its closest `data-left-half`; blocks keep the pixel's color. Negative inverts `LevelScreen`'s `.playfield` (level, timer, hints) while `isNegative`; the low time frame
-  (`lowTimeGlow`, from `LOW_TIME_SHARE` in `core/game.ts` of real time left, also on Count Up) lies outside of it so it
+  the middle of its closest `data-left-half`; blocks keep the pixel's color. Negative inverts `LevelScreen`'s `.playfield` (level, timer, hints) while `isNegative`, an intro card its example box; the low time frame
+  (`hud/lowTimeGlow.ts`, from `LOW_TIME_SHARE` in `core/game.ts` of real time left, also on Count Up) lies outside of it so it
   stays red. `src/main.ts` awaits `loadFonts()` before mounting because
   the word size is fitted by measuring the real font. `src/platform/sound.ts` wraps Web Audio: `unlockAudio()` on every input
   (browsers need a gesture; on touch only `pointerup` counts), each sound is built from oscillators when it plays.
@@ -126,7 +132,8 @@ folder they are relative (`./game.ts`); ESLint's `no-restricted-imports` blocks 
   holds exactly the current version. `src/platform/install.svelte.ts` keeps the browser's install offer for the menu's
   INSTALL button.
 - The tutorial is `src/core/tutorial.ts`, the intro cards come from the definitions (`src/core/intros.ts`); `Session`
-  runs both.
+  runs both. A card's example is a challenge of its group drawn by `WordView` (`introExample` builds it from the
+  definition's `demo`: loops, a time limit, variants in turn, presses) or the group's sign alone (`example: "sign"`).
 - Awards are defined in `src/core/awards.ts` (the modifier awards from the definitions, one per group with its id);
   `src/core/stats.ts` counts cleared levels per award, is saved after every cleared level and reports newly unlocked
   awards (toast in game, list on game over).
@@ -143,7 +150,7 @@ folder they are relative (`./game.ts`); ESLint's `no-restricted-imports` blocks 
   `EXTRA_TIME_MS` of its tier and its own `extraTimeMs` (DUO) on top, on a surge too, and a rule's `timeShare`
   shortens all of it: Don't Click levels are only sat out) and the tempo of animated modifiers
   (`tempoFor`, following the shrinking base up to `MAX_TEMPO` (1.5) at level 80, stored in `Challenge.tempo`, applied in
-  `ChallengeScreen` and `effects.ts`), and along with the tempo
+  `wordFrame.ts`), and along with the tempo
   the strength (`strengthFor`, `Challenge.strength`, 0 on the intro level to 1 from level 80) that makes rotation
   uneven, widens pulse and shake, blurs more and picks the `wild` Font Flip fonts more often; at strength 1 every such
   effect is at most 1.5 times what it is at 0.
@@ -161,4 +168,7 @@ folder they are relative (`./game.ts`); ESLint's `no-restricted-imports` blocks 
   word's answer from its text and `data-ink`, never from CSS classes or component internals. Keep those stable, or
   change the helpers in `e2e/helpers.ts` with them. The e2e build and the dev server take a fixed random seed from the
   URL (`?seed=42`, `src/platform/testRng.ts`), so a game can be played again exactly; production builds leave that out.
+  They also have the modifier gallery (`?gallery`, `src/ui/dev/Gallery.svelte`, mounted by `main.ts`): every group,
+  or a combination (`?gallery=moving,shaky`), drawn by `WordView`, `&t=500` freezes the time, `&level=80` sets tempo
+  and strength, `&colorblind`, `&intro=rotation` shows the intro card.
 - `vite.config.ts` uses `base: "./"` so the build works under the `/ColorMatch/` Pages path.
