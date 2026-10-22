@@ -1,5 +1,6 @@
 <script lang="ts">
-    import { ICON_SIZE, type PixelIcon, pixelsOf } from "./ruleIcons.ts";
+    import type { PixelIcon } from "@/modifiers/types.ts";
+    import { ICON_SIZE, pixelsOf } from "./pixelIcon.ts";
 
     interface Props {
         icon: PixelIcon;

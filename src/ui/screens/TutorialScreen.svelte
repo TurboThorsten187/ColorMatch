@@ -48,8 +48,11 @@
             ? {
                   word: practice.word,
                   color: practice.color,
+                  groups: [],
                   modifiers: new Set(),
                   expected,
+                  presses: 1,
+                  lockedShare: 0,
                   background: null,
                   rotationDeg: 0,
                   seed: 0,

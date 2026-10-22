@@ -1,11 +1,13 @@
 import { describe, expect, it } from "vitest";
+import { MODIFIER_GROUPS } from "@/modifiers/registry.ts";
+import type { ModifierId } from "@/modifiers/types.ts";
+import { WAIT_SHARE } from "@/modifiers/wait/wait.ts";
 import { GAME_OVER_LOCK_MS, SURGE_BANNER_MS, SURGE_FIRST_LEVEL } from "./balance.ts";
 import type { ExpectedInput } from "./challenge.ts";
 import { gameEvents } from "./events.ts";
-import { WAIT_SHARE } from "./game.ts";
 import { answer, confirm, type GameState, MENU, pause, type PlayingState, resume, startGame, tick } from "./game.ts";
-import { MODIFIER_GROUPS, type ModifierId } from "./modifiers.ts";
 import { seededRng } from "./random.ts";
+import { testChallenge } from "./testChallenge.ts";
 
 const rng = seededRng(3);
 
@@ -14,19 +16,7 @@ function playing(expected: ExpectedInput, level = 1, modifiers: readonly Modifie
         phase: "playing",
         mode: "normal",
         level,
-        challenge: {
-            word: "red",
-            color: "red",
-            modifiers: new Set(expected === "spam" ? ["spam"] : modifiers),
-            expected,
-            background: null,
-            rotationDeg: 0,
-            seed: 0,
-            tempo: {},
-            strength: {},
-            second: null,
-            size: 1,
-        },
+        challenge: testChallenge(expected, expected === "spam" ? ["spam"] : modifiers),
         startedAt: 1000,
         timeLimit: 3000,
         spamCount: 0,

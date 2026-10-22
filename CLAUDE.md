@@ -24,9 +24,11 @@ files.
 
 ## Structure
 
-Imports go one way: `src/ui/` → `src/app/` → `src/core/`, with `src/platform/` (the browser) beside `app`. Across
-folders they start at `src/` (`@/core/game.ts`), within a folder they are relative (`./game.ts`); ESLint's
-`no-restricted-imports` blocks every other direction and `../` paths (`eslint.config.js`).
+Imports go one way: `src/ui/` → `src/app/` → `src/core/` → `src/modifiers/`, with `src/platform/` (the browser)
+beside `app`. The modifier definitions take only types from `core` (and its leaf modules `colors.ts`, `random.ts`), so
+nothing depends on itself when the game loads. Across folders imports start at `src/` (`@/core/game.ts`), within a
+folder they are relative (`./game.ts`); ESLint's `no-restricted-imports` blocks every other direction and `../` paths
+(`eslint.config.js`).
 
 - `src/core/` – pure game logic, no DOM, no Svelte and no storage: immutable `GameState` union and transitions
   `answer`/`confirm`/`toMenu`/`tick`/`pause`/`resume` that take `now` (ms) and an injected `Rng`. All gameplay rules live here and are unit tested.
@@ -37,11 +39,23 @@ folders they start at `src/` (`@/core/game.ts`), within a folder they are relati
   a single modifier. A lost game keeps how (`GameOverState.reason`: miss, early, timeout) and the level it was lost on
   (`lost`). `events.ts` turns a transition into what happened (`gameEvents`: started, cleared with the reaction time,
   spamTap, surge, levelBegan, lost, resumed, menu), so nothing outside of core compares states.
-  Wait (`isTooEarly`, `WAIT_SHARE`) and Double Tap (`PlayingState.taps`) are rules in `game.ts`; `twoWords` builds its
-  second word in `createChallenge` (`Challenge.second`), Zoom's shrinking size is `Challenge.size`. The spam pause
+  `createChallenge` builds a level's challenge from its groups' definitions: one variant each, the rule group's
+  `expected` input, `presses` (DOUBLE TAP, SPAM!) and `lockedShare` (WAIT, `isTooEarly`), then the groups' `words`
+  (DUO's `second` word) and `decorate` hooks (background, rotation start, Zoom's `size`), so `game.ts` asks for no
+  modifier by name; `Challenge.groups` lists the groups in registry order. `testChallenge.ts` builds one for tests the
+  same way. The spam pause
   starts with `SPAM_BANG_MS` of the solved SPAM! (`isSpamBang`), drawn from `SpamPauseState.solved` at `solvedAt`.
   Shown names may differ from the ids, which stay for saved stats: `blink` is FADE, `splitMirror` SYMMETRY, `countUp`
   REVERSE TIMER, `twoWords` DUO.
+- `src/modifiers/` – one folder per modifier group with its definition (`ModifierGroup` in `types.ts`): tier,
+  variants, `conflictsWith`, `hidesShapes`, the `rule` (how it changes what solves a level), `extraTimeMs`, the hooks
+  above, the rule `sign` with its pixel icons, the intro card and the award text, plus the numbers of that modifier
+  alone (`WAIT_SHARE`, `SPAM_PRESSES_NEEDED`, `DUO_EXTRA_MS`, the Zoom sizes …). `registry.ts` lists them
+  (`MODIFIER_GROUPS`, `groupById`, `conflicts`, `inGroupOrder`); a group missing there does not compile, and its tests
+  check every definition for completeness. **A new modifier** needs its ids in `types.ts`, a folder with its
+  definition, an entry in `registry.ts` and in `MODIFIER_AWARD_ORDER` (`src/core/awards.ts`, a test checks it) and, if
+  animated, a function in `src/ui/word/effects.ts` driven by the level's `seed`, the elapsed time and its tempo; a
+  new kind of rule may need a new hook.
 - `src/core/save.ts` – everything kept between visits as one `SaveData` (settings, highscores, stats, tutorial progress),
   stored as one JSON object with `SAVE_VERSION` under one key by `src/platform/storage.ts`. Each part has a pure
   `parse…` function in its module that reads stored JSON field by field, every invalid field falling back on its own.
@@ -72,14 +86,14 @@ folders they start at `src/` (`@/core/game.ts`), within a folder they are relati
 - `src/ui/` – `Stage.svelte` is the frame of every screen, `Screens.svelte` picks the screen the session is on,
   `sounds.ts` turns `SessionEvent`s into sounds timed to the screens (`cuesFor`). `screens/` has one Svelte component
   per screen (`LevelScreen` is a running level, also the solved SPAM! frozen at its last press), `hud/` what lies over a level (`TopBar` (level and highscore over a 24-block timer, which `AwardToast` sits below; the modifier cards reuse it `inline` and `paused`), `TapHints`, `FeedbackFlash`, `AwardToast`, `AwardBadge`), `word/` the word and its modifiers (`ChallengeScreen`,
-  `SplitMirror`, `RuleSign`, `effects.ts`, `fontFlip.ts`, `fitText.ts`, `shapes.ts`, `ruleIcons.ts`);
+  `SplitMirror`, `RuleSign`, `effects.ts`, `fontFlip.ts`, `fitText.ts`, `shapes.ts`, `pixelIcon.ts`);
   modifiers are rendered with CSS transforms and filters; the rule tags (DON'T CLICK, INVERTED INPUT) sit in the
-  word's anchor and get every effect too. `RuleSign` draws them, here and on the intro cards, with the rule's pixel icon
-  from `src/ui/word/ruleIcons.ts` at both ends (a `directed` icon is mirrored at the end, so both face the text). The colorblind setting keeps the six colors internally but shows each as a
+  word's anchor and get every effect too. `RuleSign` draws them, here and on the intro cards, with the pixel icon of the
+  group's `sign` at both ends (`src/ui/word/pixelIcon.ts`) (a `directed` icon is mirrored at the end, so both face the text). The colorblind setting keeps the six colors internally but shows each as a
   shape: `SHAPE_WORDS`/`wordFor` in `src/core/colors.ts` give the words, `src/ui/word/shapes.ts` fills the letters
   (`inkStyle`) and the background modifier (`backgroundStyle`) with SVG shape tiles; every screen that shows a color
   word takes a `colorblind` prop. The shapes are about as wide as the letters' strokes on phones, so groups that blur,
-  shrink or shake them (`hidesShapes` in `MODIFIER_GROUPS`) are left out of a colorblind game's curriculum
+  shrink or shake them (`hidesShapes` in their definitions) are left out of a colorblind game's curriculum
   (`startGame`/`confirm` take the setting), and Font Flip only uses the `thick` fonts there. `LossScreen` plays the loss animation (timeline in
   `screens/lossAnimation.ts`, driven by the time since the loss) before `GameOverScreen` switches on. `ChallengeScreen`
   draws every word (two for `twoWords`) with one snippet: as one text, or letter by letter for Font Flip, Assemble
@@ -111,11 +125,13 @@ folders they start at `src/` (`@/core/game.ts`), within a folder they are relati
   cache first for files). `main.ts` registers it in production builds only and reports the loaded files, so the cache
   holds exactly the current version. `src/platform/install.svelte.ts` keeps the browser's install offer for the menu's
   INSTALL button.
-- The tutorial is `src/core/tutorial.ts`, the intro cards are `src/core/intros.ts`; `Session` runs both.
-- Awards are defined in `src/core/awards.ts`; `src/core/stats.ts` counts cleared levels per award, is saved after every
-  cleared level and reports newly unlocked awards (toast in game, list on game over).
-- Modifiers belong to groups (`MODIFIER_GROUPS` in `src/core/modifiers.ts`, all mirrors are one group) with a tier
-  (easy, medium, hard: the intro order and the group's extra time).
+- The tutorial is `src/core/tutorial.ts`, the intro cards come from the definitions (`src/core/intros.ts`); `Session`
+  runs both.
+- Awards are defined in `src/core/awards.ts` (the modifier awards from the definitions, one per group with its id);
+  `src/core/stats.ts` counts cleared levels per award, is saved after every cleared level and reports newly unlocked
+  awards (toast in game, list on game over).
+- Modifiers belong to groups (all mirrors are one group) with a tier (easy, medium, hard: the intro order and the
+  group's extra time).
   Groups that must not share a level name each other in `conflictsWith` (only one of them needs to), and a level
   has at most one `rule` group. With Symmetry the mirror group only turns the word upside down.
   `src/core/progression.ts` holds the per-game curriculum (`PlayingState.curriculum`: a new group every 3 levels from
@@ -124,15 +140,13 @@ folders they start at `src/` (`@/core/game.ts`), within a folder they are relati
   from mostly one to every count equally likely), surge levels (`isSurgeLevel`,
   announced by the `surgeBanner` phase; `surgeGroupCount` grows by one per surge, the time is a fixed
   `SURGE_TIME_MS`; all these numbers are in `balance.ts`), the time limit (a base that bends from 3 s at level 1 to 1 s at level 80, every group adds
-  `EXTRA_TIME_MS` of its tier, DUO adds `DUO_EXTRA_MS` on top, on a surge too, Don't Click levels get
-  `NO_CLICK_TIME_SHARE` of it) and the tempo of animated modifiers
+  `EXTRA_TIME_MS` of its tier and its own `extraTimeMs` (DUO) on top, on a surge too, and a rule's `timeShare`
+  shortens all of it: Don't Click levels are only sat out) and the tempo of animated modifiers
   (`tempoFor`, following the shrinking base up to `MAX_TEMPO` (1.5) at level 80, stored in `Challenge.tempo`, applied in
   `ChallengeScreen` and `effects.ts`), and along with the tempo
   the strength (`strengthFor`, `Challenge.strength`, 0 on the intro level to 1 from level 80) that makes rotation
   uneven, widens pulse and shake, blurs more and picks the `wild` Font Flip fonts more often; at strength 1 every such
-  effect is at most 1.5 times what it is at 0. A new modifier needs a
-  group, an intro card, an award and, if animated, a function in `src/ui/word/effects.ts` driven by the level's `seed`, the
-  elapsed time and its tempo.
+  effect is at most 1.5 times what it is at 0.
 
 ## Conventions
 

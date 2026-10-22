@@ -1,6 +1,6 @@
+import type { ModifierGroupId } from "@/modifiers/types.ts";
 import { type Award, type AwardId, AWARDS } from "./awards.ts";
 import { MODIFIER_CLEARS_NEEDED } from "./balance.ts";
-import type { ModifierId } from "./modifiers.ts";
 import { field } from "./parse.ts";
 import { isSurgeLevel } from "./progression.ts";
 
@@ -28,7 +28,7 @@ export const EMPTY_STATS: Stats = {
 
 export interface LevelClear {
     readonly level: number;
-    readonly modifiers: ReadonlySet<ModifierId>;
+    readonly groups: readonly ModifierGroupId[];
     // From showing the level to the correct answer; null when the level needs no answer (Don't Click, Spam)
     readonly reactionMs: number | null;
 }
@@ -69,7 +69,7 @@ function counts(award: Award, clear: LevelClear): boolean {
         case "surge":
             return isSurgeLevel(clear.level);
         default:
-            return award.modifiers.some((id) => clear.modifiers.has(id));
+            return clear.groups.includes(award.id);
     }
 }
 

@@ -162,7 +162,7 @@ CI führt sie zusätzlich zu `npm run check` aus und veröffentlicht nur, wenn b
 Dev-Server legt `?seed=42` in der Adresse den Zufall fest, so lässt sich ein Spiel genau wiederholen.
 
 Das Spiel ist mit Svelte 5 und TypeScript gebaut (`src/`). Abhängigkeiten laufen nur in eine Richtung, von `ui` über
-`app` zu `core`; ESLint prüft das. Über Ordnergrenzen hinweg beginnen Imports mit `@/`, z. B. `@/core/game.ts`.
+`app` und `core` zu `modifiers`; ESLint prüft das. Über Ordnergrenzen hinweg beginnen Imports mit `@/`, z. B. `@/core/game.ts`.
 
 - `src/core/` – reine Spiellogik ohne DOM und ohne Speicherzugriff: Zustandsautomat (`game.ts`), Aufgaben, Modifier,
   Farben, Highscore, Einstellungen, Awards (`awards.ts`), Stats (`stats.ts`), Tutorial (`tutorial.ts`),
@@ -170,6 +170,9 @@ Das Spiel ist mit Svelte 5 und TypeScript gebaut (`src/`). Abhängigkeiten laufe
   Zeitlimit), der Spielstand (`save.ts`), die Spielereignisse (`events.ts`: was zwischen zwei Zuständen passiert ist)
   und alle Stellschrauben der Schwierigkeit (`balance.ts`). Alle Übergänge sind Funktionen
   `(Zustand, Eingabe, Zeit, Zufall) → neuer Zustand` und damit direkt testbar.
+- `src/modifiers/` – ein Ordner pro Modifier mit allem, was das Spiel über ihn wissen muss: Stufe, Konflikte, wie er
+  die Regeln ändert, sein Schild mit Pixel-Icon, die Karte und der Award. `registry.ts` listet alle; ein neuer
+  Modifier ist ein neuer Ordner plus ein Eintrag dort.
 - `src/platform/` – die Anbindung an den Browser: Speichern (`storage.ts`), Sound über die Web Audio API (`sound.ts`;
   `synth.ts` beschreibt, wie jeder Sound erzeugt wird), Schriften (`fonts.ts`; die 28 Schriften für Font Flip lädt
   das Spiel nach dem Start im Hintergrund) und das Installieren als App.

@@ -1,10 +1,17 @@
 import { describe, expect, it } from "vitest";
+import { DOUBLE_TAPS } from "@/modifiers/doubleTap/doubleTap.ts";
+import { NO_CLICK_TIME_SHARE } from "@/modifiers/noClick/noClick.ts";
+import { groupById, MODIFIER_GROUPS } from "@/modifiers/registry.ts";
+import { SPAM_PRESSES_NEEDED, SPAM_WORD } from "@/modifiers/spam/spam.ts";
+import { DUO_EXTRA_MS } from "@/modifiers/twoWords/twoWords.ts";
+import type { ModifierId } from "@/modifiers/types.ts";
+import { WAIT_SHARE } from "@/modifiers/wait/wait.ts";
+import { ZOOM_SIZE } from "@/modifiers/zoom/zoom.ts";
 import { GAME_OVER_LOCK_MS, SURGE_BANNER_MS, SURGE_FIRST_LEVEL, SURGE_TIME_MS } from "./balance.ts";
 import type { ExpectedInput } from "./challenge.ts";
 import {
     answer,
     confirm,
-    DOUBLE_TAPS,
     type GameState,
     isSpamBang,
     MENU,
@@ -14,24 +21,13 @@ import {
     resume,
     SPAM_BANG_MS,
     SPAM_PAUSE_MS,
-    SPAM_PRESSES_NEEDED,
-    SPAM_WORD,
     startGame,
     type SurgeBannerState,
     tick,
     toMenu,
-    WAIT_SHARE,
 } from "./game.ts";
-import { groupById, groupsOf, MODIFIER_GROUPS, type ModifierId } from "./modifiers.ts";
-import {
-    DUO_EXTRA_MS,
-    introLevel,
-    NO_CLICK_TIME_SHARE,
-    surgeGroupCount,
-    tempoFor,
-    timeLimitFor,
-    ZOOM_SIZE,
-} from "./progression.ts";
+import { introLevel, surgeGroupCount, tempoFor, timeLimitFor } from "./progression.ts";
+import { testChallenge } from "./testChallenge.ts";
 
 const rng = Math.random;
 const CURRICULUM = MODIFIER_GROUPS.map((group) => group.id);
@@ -45,19 +41,7 @@ function playing(
         phase: "playing",
         mode: "normal",
         level,
-        challenge: {
-            word: "red",
-            color: "red",
-            modifiers: new Set(modifiers),
-            expected,
-            background: null,
-            rotationDeg: 0,
-            seed: 0,
-            tempo: {},
-            strength: {},
-            second: null,
-            size: 1,
-        },
+        challenge: testChallenge(expected, modifiers),
         startedAt: 0,
         timeLimit: timeLimitFor(level, [], false),
         spamCount: 0,
@@ -120,7 +104,7 @@ describe("game", () => {
             const next = answer(playing("true", 40), "true", 100, rng);
             if (next.phase !== "playing") throw new Error("Level 41 did not start");
 
-            for (const id of groupsOf(next.challenge.modifiers)) {
+            for (const id of next.challenge.groups) {
                 expect(next.challenge.tempo[id]).toBe(tempoFor(41, introLevel(CURRICULUM, id)));
             }
         }
@@ -173,20 +157,15 @@ describe("game", () => {
         expect(levelOf(tick(state, state.timeLimit + 1, rng))).toBe(2);
     });
 
-    it("gives a no-click level only part of the time limit", () => {
+    it("gives a level the time limit of its groups, a no-click level only part of it", () => {
         let noClickLevels = 0;
         for (let run = 0; run < 300; run++) {
             // Level 42 introduces no group
             const next = answer(playing("true", 41), "true", 100, rng);
             if (next.phase !== "playing") throw new Error("Level 42 did not start");
 
-            const limit = timeLimitFor(42, groupsOf(next.challenge.modifiers), false);
-            if (next.challenge.expected === "none") {
-                noClickLevels++;
-                expect(next.timeLimit).toBe(Math.round(limit * NO_CLICK_TIME_SHARE));
-            } else {
-                expect(next.timeLimit).toBe(limit);
-            }
+            expect(next.timeLimit).toBe(timeLimitFor(42, next.challenge.groups, false));
+            if (next.challenge.expected === "none") noClickLevels++;
         }
         expect(noClickLevels).toBeGreaterThan(0);
     });
@@ -283,7 +262,7 @@ describe("game", () => {
             const next = tick(spamPause, 0, rng);
             if (next.phase !== "playing") throw new Error("Spam pause did not end");
 
-            expect(groupsOf(next.challenge.modifiers)).not.toEqual(["spam"]);
+            expect(next.challenge.groups).not.toEqual(["spam"]);
         }
     });
 
@@ -348,8 +327,8 @@ describe("surge", () => {
             startedAt: banner.resumeAt,
             timeLimit: surge.challenge.expected === "none" ? Math.round(fixed * NO_CLICK_TIME_SHARE) : fixed,
         });
-        expect(groupsOf(surge.challenge.modifiers)).toHaveLength(surgeGroupCount(SURGE_FIRST_LEVEL));
-        expect(Object.keys(surge.challenge.strength).sort()).toEqual(groupsOf(surge.challenge.modifiers).sort());
+        expect(surge.challenge.groups).toHaveLength(surgeGroupCount(SURGE_FIRST_LEVEL));
+        expect(Object.keys(surge.challenge.strength).sort()).toEqual([...surge.challenge.groups].sort());
     });
 
     it("ignores answers during the banner", () => {
@@ -461,7 +440,7 @@ describe("confirm", () => {
 
         expect(state).toMatchObject({ phase: "playing", mode: "hardcore", level: 1 });
         if (state.phase !== "playing") throw new Error("Hardcore did not start");
-        expect(groupsOf(state.challenge.modifiers)).toHaveLength(1);
+        expect(state.challenge.groups).toHaveLength(1);
         // The group of that level is random and SPAM! has no wrong answer, so the loss is played on a plain level
         const over = answer({ ...playing("true"), mode: "hardcore" }, "false", 10, rng);
         expect(over).toMatchObject({ phase: "gameOver", mode: "hardcore", score: 0 });

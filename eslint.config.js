@@ -5,8 +5,9 @@ import { defineConfig, globalIgnores } from "eslint/config";
 import globals from "globals";
 import ts from "typescript-eslint";
 
-// Imports go one way: ui -> app -> core, with platform (the browser) beside app. Across folders they start at src/
-// (`@/core/game.ts`), so a file's layer shows in every import.
+// Imports go one way: ui -> app -> core, with platform (the browser) beside app. core runs the game with the modifier
+// groups of src/modifiers, whose definitions take only types from core, so nothing depends on itself when the game
+// loads. Across folders imports start at src/ (`@/core/game.ts`), so a file's layer shows in every import.
 const ACROSS_FOLDERS = { regex: "^\\.\\./", message: "Import across folders from @/, e.g. @/core/game.ts" };
 
 function layer(...patterns) {
@@ -37,9 +38,30 @@ export default defineConfig(
     {
         files: ["src/core/**"],
         rules: layer(
-            { regex: "^@/", message: "core is pure game logic: it imports only from core" },
+            { regex: "^@/(?!modifiers/)", message: "core is pure game logic: it imports only from core and modifiers" },
             { regex: "^svelte", message: "core is pure game logic: no Svelte" },
         ),
+    },
+    {
+        files: ["src/modifiers/**"],
+        rules: {
+            ...layer(
+                { regex: "^@/(app|ui|platform)/", message: "modifiers are pure game logic like core" },
+                { regex: "^svelte", message: "modifiers are pure game logic: no Svelte" },
+            ),
+            "@typescript-eslint/no-restricted-imports": [
+                "error",
+                {
+                    patterns: [
+                        {
+                            regex: "^@/core/(?!colors\\.ts$|random\\.ts$)",
+                            allowTypeImports: true,
+                            message: "core imports the modifiers, so they take only types from it (and colors, random)",
+                        },
+                    ],
+                },
+            ],
+        },
     },
     {
         files: ["src/platform/**"],

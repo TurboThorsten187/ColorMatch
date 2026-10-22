@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { ModifierId } from "@/core/modifiers.ts";
+import type { ModifierId } from "@/modifiers/types.ts";
 import {
     AFTERIMAGE_MS,
     ASSEMBLE_SHARE,

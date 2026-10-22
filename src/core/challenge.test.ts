@@ -1,30 +1,57 @@
 import { describe, expect, it } from "vitest";
-import { createChallenge, expectedInput } from "./challenge.ts";
-import { MODIFIER_GROUPS, type ModifierId } from "./modifiers.ts";
+import { DOUBLE_TAPS } from "@/modifiers/doubleTap/doubleTap.ts";
+import { MODIFIER_GROUPS } from "@/modifiers/registry.ts";
+import { SPAM_PRESSES_NEEDED } from "@/modifiers/spam/spam.ts";
+import type { LevelContext, ModifierGroupId, ModifierId } from "@/modifiers/types.ts";
+import { WAIT_SHARE } from "@/modifiers/wait/wait.ts";
+import { ZOOM_SIZE } from "@/modifiers/zoom/zoom.ts";
+import { createChallenge } from "./challenge.ts";
 
-const set = (...ids: ModifierId[]): ReadonlySet<ModifierId> => new Set(ids);
+// A level of a normal game whose groups were all introduced on `introducedOn`
+function at(level: number, introducedOn = 1): LevelContext {
+    return { level, mode: "normal", introducedOn: () => introducedOn };
+}
 
-describe("expectedInput", () => {
-    it("keeps the answer without logic modifiers", () => {
-        expect(expectedInput("true", set("blur"))).toBe("true");
-        expect(expectedInput("false", set())).toBe("false");
+// The plain answer of a challenge's word
+const truth = (challenge: { word: string; color: string }) => (challenge.word === challenge.color ? "true" : "false");
+
+describe("rules", () => {
+    it("keep the plain answer without a rule group", () => {
+        for (let run = 0; run < 100; run++) {
+            const challenge = createChallenge(["blur"], Math.random);
+
+            expect(challenge.expected).toBe(truth(challenge));
+            expect(challenge.presses).toBe(1);
+            expect(challenge.lockedShare).toBe(0);
+        }
     });
 
-    it("inverts the answer", () => {
-        expect(expectedInput("true", set("invertInput"))).toBe("false");
-        expect(expectedInput("false", set("invertInput"))).toBe("true");
+    it("invert the answer", () => {
+        for (let run = 0; run < 100; run++) {
+            const challenge = createChallenge(["invertInput"], Math.random);
+
+            expect(challenge.expected).toBe(truth(challenge) === "true" ? "false" : "true");
+        }
     });
 
-    it("expects no input for noClick and repeated presses for spam", () => {
-        expect(expectedInput("true", set("noClick"))).toBe("none");
-        expect(expectedInput("false", set("spam"))).toBe("spam");
+    it("expect no input with Don't Click and repeated presses anywhere with SPAM!", () => {
+        expect(createChallenge(["noClick"], Math.random).expected).toBe("none");
+        expect(createChallenge(["spam"], Math.random)).toMatchObject({
+            expected: "spam",
+            presses: SPAM_PRESSES_NEEDED,
+        });
+    });
+
+    it("ask for the answer twice with DOUBLE TAP and lock the start of a WAIT level", () => {
+        expect(createChallenge(["doubleTap"], Math.random).presses).toBe(DOUBLE_TAPS);
+        expect(createChallenge(["wait"], Math.random).lockedShare).toBe(WAIT_SHARE);
     });
 });
 
 describe("createChallenge", () => {
     it("expects true exactly when the word names its own color", () => {
         for (let run = 0; run < 500; run++) {
-            const challenge = createChallenge([], 1, Math.random);
+            const challenge = createChallenge([], Math.random);
 
             expect(challenge.modifiers.size).toBe(0);
             expect(challenge.expected).toBe(challenge.word === challenge.color ? "true" : "false");
@@ -33,7 +60,7 @@ describe("createChallenge", () => {
 
     it("uses one modifier of every picked group", () => {
         for (let run = 0; run < 200; run++) {
-            const challenge = createChallenge(["mirror", "blur", "spam"], 20, Math.random);
+            const challenge = createChallenge(["mirror", "blur", "spam"], Math.random, at(20));
 
             expect(challenge.modifiers.size).toBe(3);
             const mirrors = (["mirrorVertical", "mirrorHorizontal", "mirrorBoth"] as const).filter((id) =>
@@ -51,8 +78,8 @@ describe("createChallenge", () => {
         for (let run = 0; run < 2000; run++) {
             const challenge = createChallenge(
                 groups.filter(() => Math.random() < 0.3),
-                40,
                 Math.random,
+                at(40),
             );
 
             expect(challenge.background !== null).toBe(challenge.modifiers.has("background"));
@@ -70,7 +97,7 @@ describe("createChallenge", () => {
         let falses = 0;
         let lures = 0;
         for (let run = 0; run < 3000; run++) {
-            const challenge = createChallenge(["background"], 20, Math.random);
+            const challenge = createChallenge(["background"], Math.random, at(20));
             if (challenge.expected === "false") {
                 falses++;
                 if (challenge.background === challenge.word) lures++;
@@ -84,7 +111,7 @@ describe("createChallenge", () => {
 
     it("keeps the background off the inks of both words", () => {
         for (let run = 0; run < 500; run++) {
-            const challenge = createChallenge(["background", "twoWords"], 20, Math.random);
+            const challenge = createChallenge(["background", "twoWords"], Math.random, at(20));
             if (!challenge.second) throw new Error("The second word is missing");
 
             expect(challenge.background).not.toBe(challenge.color);
@@ -95,7 +122,7 @@ describe("createChallenge", () => {
     it("only turns the word upside down with SYMMETRY, a mirror left to right would change nothing", () => {
         const mirrors = new Set<ModifierId>();
         for (let run = 0; run < 200; run++) {
-            const { modifiers } = createChallenge(["mirror", "splitMirror"], 20, Math.random);
+            const { modifiers } = createChallenge(["mirror", "splitMirror"], Math.random, at(20));
             for (const id of modifiers) mirrors.add(id);
         }
 
@@ -105,7 +132,7 @@ describe("createChallenge", () => {
     it("expects true with two words when both are true or both are false", () => {
         const combinations = new Set<string>();
         for (let run = 0; run < 2000; run++) {
-            const challenge = createChallenge(["twoWords"], 20, Math.random);
+            const challenge = createChallenge(["twoWords"], Math.random, at(20));
             if (!challenge.second) throw new Error("The second word is missing");
 
             const firstTrue = challenge.word === challenge.color;
@@ -115,17 +142,23 @@ describe("createChallenge", () => {
         }
 
         expect(combinations.size).toBe(4);
-        expect(createChallenge(["mirror"], 20, Math.random).second).toBeNull();
+        expect(createChallenge(["mirror"], Math.random, at(20)).second).toBeNull();
     });
 
     it("only shrinks the word with the zoom modifier", () => {
-        expect(createChallenge(["zoom"], 20, Math.random, {}, 0.2).size).toBe(0.2);
-        expect(createChallenge(["mirror"], 20, Math.random, {}, 0.2).size).toBe(1);
-        expect(createChallenge([], 20, Math.random).size).toBe(1);
+        expect(createChallenge(["zoom"], Math.random, at(20, 20)).size).toBe(ZOOM_SIZE);
+        expect(createChallenge(["mirror"], Math.random, at(20, 20)).size).toBe(1);
+        expect(createChallenge([], Math.random).size).toBe(1);
+    });
+
+    it("lists its groups in the order of the registry", () => {
+        const groups: ModifierGroupId[] = ["twoWords", "rotation", "mirror"];
+
+        expect(createChallenge(groups, Math.random).groups).toEqual(["mirror", "rotation", "twoWords"]);
     });
 
     it("keeps the strength of its groups", () => {
-        expect(createChallenge(["blur"], 20, Math.random, {}, 1, { blur: 0.5 }).strength).toEqual({ blur: 0.5 });
-        expect(createChallenge(["blur"], 20, Math.random).strength).toEqual({});
+        expect(createChallenge(["blur"], Math.random, at(20), {}, { blur: 0.5 }).strength).toEqual({ blur: 0.5 });
+        expect(createChallenge(["blur"], Math.random, at(20)).strength).toEqual({});
     });
 });

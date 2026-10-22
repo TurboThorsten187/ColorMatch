@@ -1,8 +1,9 @@
 <script lang="ts">
     import { type Color, COLOR_CSS, wordFor } from "@/core/colors.ts";
-    import { SPAM_WORD } from "@/core/game.ts";
     import type { IntroId, ModifierIntro } from "@/core/intros.ts";
-    import { groupById, type ModifierId } from "@/core/modifiers.ts";
+    import { groupById } from "@/modifiers/registry.ts";
+    import { SPAM_WORD } from "@/modifiers/spam/spam.ts";
+    import type { ModifierId } from "@/modifiers/types.ts";
     import { WORD_FONT, WORD_WEIGHT } from "@/platform/fonts.ts";
     import TopBar from "@/ui/hud/TopBar.svelte";
     import Button from "@/ui/kit/Button.svelte";
@@ -20,7 +21,6 @@
     } from "@/ui/word/effects.ts";
     import { textWidth } from "@/ui/word/fitText.ts";
     import { emWidth, flipLetters } from "@/ui/word/fontFlip.ts";
-    import { RULE_ICONS } from "@/ui/word/ruleIcons.ts";
     import RuleSign from "@/ui/word/RuleSign.svelte";
     import { backgroundStyle, inkStyle } from "@/ui/word/shapes.ts";
     import SplitMirror from "@/ui/word/SplitMirror.svelte";
@@ -137,6 +137,8 @@
         intro.id === "negative" ? afterimageOpacity(elapsed % NEGATIVE_LOOP_MS, NEGATIVE_LOOP_MS) : 0,
     );
     const waitShown = $derived(Math.floor(elapsed / WAIT_STEP_MS) % 2 === 0);
+    // A rule whose example is its sign shows the sign; WAIT takes turns with NOW
+    const exampleSign = $derived("word" in intro.example ? undefined : groupById(intro.id).sign?.(waitShown ? 0 : 1));
     // The level waits with its full time; only the COUNT UP card fills the timer to show how it runs
     const remaining = $derived(intro.id === "countUp" ? 1 - (elapsed % COUNT_UP_LOOP_MS) / COUNT_UP_LOOP_MS : 1);
     const transform = $derived.by(() => {
@@ -220,13 +222,8 @@
                     bind:clientWidth={boxWidth}
                     bind:clientHeight={boxHeight}
                 >
-                    {#if intro.id === "noClick" || intro.id === "doubleTap"}
-                        <RuleSign icon={RULE_ICONS[intro.id]} text={baseText} />
-                    {:else if intro.id === "wait"}
-                        <RuleSign
-                            icon={waitShown ? RULE_ICONS.wait : RULE_ICONS.now}
-                            text={waitShown ? "WAIT" : "NOW"}
-                        />
+                    {#if exampleSign}
+                        <RuleSign icon={exampleSign.icon} text={exampleSign.text} />
                     {:else if intro.second && secondText}
                         <span class="pair">
                             {@render exampleWord()}
