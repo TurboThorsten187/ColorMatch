@@ -157,7 +157,7 @@ npm run preview    # Build lokal ansehen
 ```
 
 Die Browser-Tests in `e2e/` brauchen einmalig ein Chromium: `npx playwright install chromium`. Sie bauen das Spiel
-dafür mit `npm run build:e2e` und spielen es wie ein Mensch: Menü, Tutorial, Level, Game Over, Settings und Stats. Die
+dafür mit `npm run build:e2e` und spielen es wie ein Mensch: Menü, Tutorial, Level, Game Over, Settings, Stats und offline. Die
 CI führt sie zusätzlich zu `npm run check` aus und veröffentlicht nur, wenn beides grün ist. Im Test-Build und auf dem
 Dev-Server legt `?seed=42` in der Adresse den Zufall fest, so lässt sich ein Spiel genau wiederholen.
 
@@ -168,16 +168,17 @@ muss. `?gallery=moving,shaky` zeigt eine Kombination, `&t=500` hält die Zeit an
 Das Spiel ist mit Svelte 5 und TypeScript gebaut (`src/`). Abhängigkeiten laufen nur in eine Richtung, von `ui` über
 `app` und `core` zu `modifiers`; ESLint prüft das. Über Ordnergrenzen hinweg beginnen Imports mit `@/`, z. B. `@/core/game.ts`.
 
-- `src/core/` – reine Spiellogik ohne DOM und ohne Speicherzugriff: Zustandsautomat (`game.ts`), Aufgaben, Modifier,
-  Farben, Highscore, Einstellungen, Awards (`awards.ts`), Stats (`stats.ts`), Tutorial (`tutorial.ts`),
-  Modifier-Karten (`intros.ts`), Progression (`progression.ts`: Einführungsreihenfolge, Auswahl pro Level, Surges,
+- `src/core/` – reine Spiellogik ohne DOM und ohne Speicherzugriff: Zustandsautomat (`game.ts`), Aufgaben, Farben,
+  Highscore, Einstellungen, Awards (`awards.ts`), Stats (`stats.ts`), Tutorial (`tutorial.ts`), Modifier-Karten
+  (`intros.ts`), Progression (`progression.ts`: Einführungsreihenfolge, Auswahl pro Level, Surges,
   Zeitlimit), der Spielstand (`save.ts`), die Spielereignisse (`events.ts`: was zwischen zwei Zuständen passiert ist)
   und alle Stellschrauben der Schwierigkeit (`balance.ts`). Alle Übergänge sind Funktionen
   `(Zustand, Eingabe, Zeit, Zufall) → neuer Zustand` und damit direkt testbar.
 - `src/modifiers/` – ein Ordner pro Modifier mit allem, was das Spiel über ihn wissen muss: Stufe, Konflikte, wie er
   die Regeln ändert, sein Schild mit Pixel-Icon, die Karte und der Award, und in `look.ts`, wie er aussieht (Bewegung,
   Zittern, Pulsieren, Mischen, Einfliegen, Schriftwechsel, Negativ …, berechnet aus der Zeit seit Levelbeginn).
-  `registry.ts` listet alle; ein neuer Modifier ist ein neuer Ordner plus ein Eintrag dort.
+  `registry.ts` listet alle; ein neuer Modifier ist ein neuer Ordner plus ein Eintrag dort (Checkliste in
+  `CLAUDE.md`).
 - `src/platform/` – die Anbindung an den Browser: Speichern (`storage.ts`), Sound über die Web Audio API (`sound.ts`;
   `synth.ts` beschreibt, wie jeder Sound erzeugt wird), Schriften (`fonts.ts`; die 28 Schriften für Font Flip lädt
   das Spiel nach dem Start im Hintergrund) und das Installieren als App.

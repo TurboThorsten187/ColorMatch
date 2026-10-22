@@ -18,7 +18,7 @@ export const wait: ModifierGroup = {
     id: "wait",
     tier: "hard",
     variants: ["wait"],
-    // Fade fades the rule tags too, so NOW would never show
+    // Fade fades the rule signs too, so NOW would never show
     conflictsWith: ["blink"],
     rule: { lockedShare: WAIT_SHARE },
     sign: (share) => (share < WAIT_SHARE ? { text: "WAIT", icon: PAUSE } : { text: "NOW", icon: PLAY }),
