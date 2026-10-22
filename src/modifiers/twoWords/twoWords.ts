@@ -2,7 +2,7 @@ import { randomColor } from "@/core/colors.ts";
 import type { ModifierGroup, PixelIcon } from "@/modifiers/types.ts";
 
 // DUO has two words and two inks to read, it gets this on top of its extra time, on a surge too
-export const DUO_EXTRA_MS = 1500;
+export const DUO_EXTRA_MS = 1000;
 
 // An equals sign: both words alike
 const EQUALS: PixelIcon = {
