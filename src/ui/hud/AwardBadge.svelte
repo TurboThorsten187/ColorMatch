@@ -28,12 +28,12 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        border: 3px solid var(--badge-color);
+        border: var(--line) solid var(--badge-color);
         color: var(--badge-color);
     }
 
     .locked {
-        border-color: #333;
-        color: #555;
+        border-color: var(--line-faint);
+        color: var(--line-off);
     }
 </style>

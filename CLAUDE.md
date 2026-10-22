@@ -59,6 +59,16 @@ folders they start at `src/` (`@/core/game.ts`), within a folder they are relati
   `SessionEvent`s; storage, random numbers, the clock and those listeners are passed in, so it is tested without a
   browser. `keys.ts` maps keys to sides, directions and back, `spatialNav.ts` finds the button in a direction,
   `toastQueue.ts` times the award toasts.
+- `src/ui/kit/` – the building blocks of the screens, styled with the values of `tokens.css` (grays by use, `--line`
+  and `--line-bold` frames, `--text-tiny` … `--text-large`, `--key-help-room`). `Button` (`small` 44 px or `large`
+  56 px, `square`, `color` to be selected in, `ink`/`line` for colored text and frame) gives way for `PRESS_MS`
+  (its `data-press` state, which the stage colors and shrinks) before it acts, so the press shows even when the
+  screen changes; `instant` buttons (`Toggle`, the `Slider` steps) act at once and only show it. `Screen` is a whole
+  screen inside the safe area with `--key-help-room` free at the bottom (`scroll`, `narrow` for the 460 px column; its
+  child fills the height). `ScreenHead` is ◄ and a title, `Card` the framed card of the tutorial and the modifier
+  cards. A screen sizes them through CSS variables on a surrounding element (`--button-height`, `--button-width`,
+  `--button-flex`, `--button-font`, `--button-padding`, `--card-gap`, `--card-padding`), never by styling their
+  insides. HOLD TO RESET and the award badges are plain buttons: they act on their own terms.
 - `src/ui/` – `Stage.svelte` is the frame of every screen, `Screens.svelte` picks the screen the session is on,
   `sounds.ts` turns `SessionEvent`s into sounds timed to the screens (`cuesFor`). `screens/` has one Svelte component
   per screen (`LevelScreen` is a running level, also the solved SPAM! frozen at its last press), `hud/` what lies over a level (`TopBar` (level and highscore over a 24-block timer, which `AwardToast` sits below; the modifier cards reuse it `inline` and `paused`), `TapHints`, `FeedbackFlash`, `AwardToast`, `AwardBadge`), `word/` the word and its modifiers (`ChallengeScreen`,
@@ -88,10 +98,9 @@ folders they start at `src/` (`@/core/game.ts`), within a folder they are relati
   a `flipControls` prop. Outside of a level arrow keys and WASD move the focus between buttons by position
   (`moveFocus` in `src/ui/focus.ts`), and a moved mouse focuses the button under it (`focusHovered`); the selection
   only shows while `keyboardMode` puts the `keys` class on the stage, together with the `key-help` strip, for which
-  every screen with buttons keeps 40 px free at the bottom. `Stage`'s global button CSS colors border and text of the
-  selected button in its `--button-color` (the accent without one); a pressed button (tap, click, Enter, Space)
-  shrinks a little first, `holdPress` holds the click back for `BUTTON_PRESS_MS` and replays it, `data-no-press` opts
-  out. Buttons have no shadows. Menu and game over redefine `--unit` with a stronger height cap, so low browser
+  every screen with buttons keeps `--key-help-room` free at the bottom (0 on short screens, which hide the strip).
+  `Stage`'s global button CSS colors border and text of the selected and of the pressed button in its
+  `--button-color` (the accent without one) and shrinks a pressed one a little. Buttons have no shadows. Menu and game over redefine `--unit` with a stronger height cap, so low browser
   windows fit without scrolling; SETTINGS shrinks its rows and gaps with the height instead. The stage sets the six
   game colors as CSS variables (`--red` … `--cyan`); components use them, or `COLOR_CSS` from `src/core/colors.ts`
   where they need the value in script, never hex values of their own, so every screen and the icon
@@ -131,8 +140,9 @@ folders they start at `src/` (`@/core/game.ts`), within a folder they are relati
 - Docs for players and setup are in `README.md` (German); code, comments and this file are English.
 - Look: "Classic Arcade" (black, pixel font, scanlines, hard edges), dark only. Approved design prototypes:
   https://claude.ai/artifact/VKJWcc8fSgcsMTnLPURYGH (page "2 · Arcade details"). Sizes use `--unit` (1 % of the
-  width, capped) with a px minimum for phones. No text below 10 px, card and button text at least 11 px; text that
-  may wrap needs a `line-height` (the pixel font's default is too tight).
+  width, capped) with a px minimum for phones. No text below 10 px (`--text-tiny`), card and button text at least
+  11 px (`--text-small`); text that may wrap needs a `line-height` (the pixel font's default is too tight). Screens
+  build on `src/ui/kit/` and take grays, frames and fixed text sizes from `tokens.css`, never hex grays of their own.
 - `e2e/` – browser tests that play the game like a player: they find things by role, label and text, and read the
   word's answer from its text and `data-ink`, never from CSS classes or component internals. Keep those stable, or
   change the helpers in `e2e/helpers.ts` with them. The e2e build and the dev server take a fixed random seed from the

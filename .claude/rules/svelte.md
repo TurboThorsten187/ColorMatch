@@ -13,3 +13,5 @@ paths:
 - `$effect` only for side effects with cleanup (timers, rAF, listeners); derive values with `$derived`.
 - Svelte collapses whitespace in markup: put strings with meaningful spacing into a `{constant}`.
 - `npm run typecheck` runs svelte-check with `--fail-on-warnings`, so a11y warnings fail CI too.
+- Buttons are `@/ui/kit/Button.svelte`, whole screens `Screen`, cards `Card` (see CLAUDE.md, `src/ui/kit/`). Size them
+  with their CSS variables on a surrounding element, never with `:global` styles on their insides.

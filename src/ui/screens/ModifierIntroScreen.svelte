@@ -5,6 +5,9 @@
     import { groupById, type ModifierId } from "@/core/modifiers.ts";
     import { WORD_FONT, WORD_WEIGHT } from "@/platform/fonts.ts";
     import TopBar from "@/ui/hud/TopBar.svelte";
+    import Button from "@/ui/kit/Button.svelte";
+    import Card from "@/ui/kit/Card.svelte";
+    import Screen from "@/ui/kit/Screen.svelte";
     import {
         afterimageOpacity,
         assembleRemaining,
@@ -200,82 +203,83 @@
     </span>
 {/snippet}
 
-<div class="intro">
-    <TopBar {level} {remaining} countUp={intro.id === "countUp"} paused inline />
+<Screen scroll>
+    <div class="intro">
+        <TopBar {level} {remaining} countUp={intro.id === "countUp"} paused inline />
 
-    <div class="headline blink">NEW MODIFIER!</div>
+        <div class="headline blink">NEW MODIFIER!</div>
 
-    <div class="card" role="dialog" aria-labelledby="intro-title">
-        <h1 id="intro-title">{intro.title}</h1>
+        <div class="card">
+            <Card labelledby="intro-title" double>
+                <h1 id="intro-title">{intro.title}</h1>
 
-        <div
-            class="example"
-            style:filter={negative ? "invert(1)" : null}
-            aria-hidden="true"
-            bind:clientWidth={boxWidth}
-            bind:clientHeight={boxHeight}
-        >
-            {#if intro.id === "noClick" || intro.id === "doubleTap"}
-                <RuleSign icon={RULE_ICONS[intro.id]} text={baseText} />
-            {:else if intro.id === "wait"}
-                <RuleSign icon={waitShown ? RULE_ICONS.wait : RULE_ICONS.now} text={waitShown ? "WAIT" : "NOW"} />
-            {:else if intro.second && secondText}
-                <span class="pair">
-                    {@render exampleWord()}
-                    <span class="word" style={inkStyle(intro.second.color, colorblind)}>{secondText}</span>
-                </span>
-            {:else if intro.id === "negative"}
-                <!-- The afterimage lies behind the word in its negative colors -->
-                <span class="negative">
-                    {@render exampleWord()}
-                    <span
-                        class="word afterimage"
-                        style={inkStyle(intro.example.color, colorblind)}
-                        style:opacity={afterimage}>{exampleText}</span
-                    >
-                </span>
-            {:else if intro.id === "background"}
-                <!-- The lure behind the word: its color, or its shapes in the colorblind mode -->
-                <span class="lure" style:background={backgroundStyle(LURE, colorblind, true)}
-                    >{@render exampleWord()}</span
+                <div
+                    class="example"
+                    style:filter={negative ? "invert(1)" : null}
+                    aria-hidden="true"
+                    bind:clientWidth={boxWidth}
+                    bind:clientHeight={boxHeight}
                 >
-            {:else}
-                {@render exampleWord()}
-            {/if}
+                    {#if intro.id === "noClick" || intro.id === "doubleTap"}
+                        <RuleSign icon={RULE_ICONS[intro.id]} text={baseText} />
+                    {:else if intro.id === "wait"}
+                        <RuleSign
+                            icon={waitShown ? RULE_ICONS.wait : RULE_ICONS.now}
+                            text={waitShown ? "WAIT" : "NOW"}
+                        />
+                    {:else if intro.second && secondText}
+                        <span class="pair">
+                            {@render exampleWord()}
+                            <span class="word" style={inkStyle(intro.second.color, colorblind)}>{secondText}</span>
+                        </span>
+                    {:else if intro.id === "negative"}
+                        <!-- The afterimage lies behind the word in its negative colors -->
+                        <span class="negative">
+                            {@render exampleWord()}
+                            <span
+                                class="word afterimage"
+                                style={inkStyle(intro.example.color, colorblind)}
+                                style:opacity={afterimage}>{exampleText}</span
+                            >
+                        </span>
+                    {:else if intro.id === "background"}
+                        <!-- The lure behind the word: its color, or its shapes in the colorblind mode -->
+                        <span class="lure" style:background={backgroundStyle(LURE, colorblind, true)}
+                            >{@render exampleWord()}</span
+                        >
+                    {:else}
+                        {@render exampleWord()}
+                    {/if}
+                </div>
+
+                <p class="lines">
+                    {#each lines as line, row (row)}
+                        {#each parts(line) as part, index (index)}
+                            {#if part.marked}
+                                <span style:color={COLOR_CSS[intro.accent]}>{part.text}</span>
+                            {:else}
+                                {part.text}
+                            {/if}
+                        {/each}
+                        {#if row < lines.length - 1}<br />{/if}
+                    {/each}
+                </p>
+            </Card>
         </div>
 
-        <p class="lines">
-            {#each lines as line, row (row)}
-                {#each parts(line) as part, index (index)}
-                    {#if part.marked}
-                        <span style:color={COLOR_CSS[intro.accent]}>{part.text}</span>
-                    {:else}
-                        {part.text}
-                    {/if}
-                {/each}
-                {#if row < lines.length - 1}<br />{/if}
-            {/each}
-        </p>
+        <div class="gotit">
+            <Button size="large" onclick={ongotit} {@attach (node) => node.focus()}>GOT IT</Button>
+        </div>
     </div>
-
-    <button class="gotit" onclick={ongotit} {@attach (node) => node.focus()}>GOT IT</button>
-</div>
+</Screen>
 
 <style>
     .intro {
-        position: absolute;
-        inset: 0;
-        box-sizing: border-box;
         display: flex;
         flex-direction: column;
         align-items: center;
         gap: max(18px, calc(2.4 * var(--unit)));
-        /* The bottom keeps room for App's keys hint */
-        padding: calc(env(safe-area-inset-top) + 16px) 24px calc(env(safe-area-inset-bottom) + 40px);
-        overflow-y: auto;
-        touch-action: pan-y;
-        scrollbar-width: thin;
-        scrollbar-color: #555 #000;
+        padding: 16px 24px 0;
         font-size: max(11px, calc(1.3 * var(--unit)));
     }
 
@@ -287,13 +291,6 @@
 
     .card {
         width: min(400px, 100%);
-        box-sizing: border-box;
-        display: flex;
-        flex-direction: column;
-        gap: 18px;
-        padding: 22px;
-        border: 4px double var(--accent);
-        background: #000;
     }
 
     h1 {
@@ -367,31 +364,24 @@
     }
 
     .gotit {
-        --button-color: var(--accent);
+        --button-width: 100%;
         margin-top: auto;
         width: min(400px, 100%);
-        height: 56px;
         flex: none;
-        border: 4px solid #fff;
-        border-radius: 0;
-        background: #000;
-        color: #fff;
-        font-family: inherit;
-        font-size: 13px;
-        cursor: pointer;
+        display: flex;
     }
 
     /* Phones in landscape: the card and GOT IT have to fit without scrolling */
     @media (max-height: 520px) {
         .intro {
             gap: 8px;
-            padding-top: calc(env(safe-area-inset-top) + 10px);
-            padding-bottom: calc(env(safe-area-inset-bottom) + 12px);
+            padding-top: 10px;
+            padding-bottom: 12px;
         }
 
         .card {
-            gap: 10px;
-            padding: 12px 18px;
+            --card-gap: 10px;
+            --card-padding: 12px 18px;
         }
 
         .example {
@@ -407,7 +397,7 @@
         }
 
         .gotit {
-            height: 44px;
+            --button-height: 44px;
         }
     }
 </style>

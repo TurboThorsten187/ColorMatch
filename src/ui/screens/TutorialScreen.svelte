@@ -10,6 +10,8 @@
         type TutorialState,
     } from "@/core/tutorial.ts";
     import TapHints from "@/ui/hud/TapHints.svelte";
+    import Button from "@/ui/kit/Button.svelte";
+    import Card from "@/ui/kit/Card.svelte";
     import ChallengeScreen from "@/ui/word/ChallengeScreen.svelte";
     import { inkStyle } from "@/ui/word/shapes.ts";
 
@@ -67,44 +69,52 @@
 {#if step?.kind === "card"}
     <div class="dimmed" aria-hidden="true">{wordFor("red", colorblind)}</div>
     <div class="shade"></div>
-    <div class="card" role="dialog" aria-labelledby="tutorial-title">
-        <div class="card-head">
-            <h1 id="tutorial-title">HOW TO PLAY</h1>
-            <span>{step.card + 1}/{TUTORIAL_CARDS}</span>
-        </div>
-
-        {#if step.card === 0}
-            <p class="text">DOES THE <em>WORD</em><br />MATCH ITS <em>{colorblind ? "SHAPES" : "COLOR"}</em>?</p>
-            <div class="example" style={inkStyle("red", colorblind)}>{wordFor("red", colorblind)}</div>
-            <p class="hint">
-                <span class="yes">YES</span> → TAP {trueSide.toUpperCase()} · TRUE<br />OR PRESS {KEY_ARROWS[trueSide]}
-            </p>
-        {:else if step.card === 1}
-            <p class="text">IF THEY<br /><em>DON'T MATCH</em>...</p>
-            <div class="example" style={inkStyle("green", colorblind)}>{wordFor("blue", colorblind)}</div>
-            <p class="hint">
-                <span class="no">NO</span> → TAP {falseSide.toUpperCase()} · FALSE<br />OR PRESS {KEY_ARROWS[falseSide]}
-            </p>
-        {:else}
-            <p class="text">BEAT THE <em>TIMER</em></p>
-            <div class="timer" aria-hidden="true">
-                {#each TIMER_SEGMENTS as i (i)}
-                    <span class:lit={i < TIMER_LIT}></span>
-                {/each}
+    <div class="card">
+        <Card labelledby="tutorial-title" shadow>
+            <div class="card-head">
+                <h1 id="tutorial-title">HOW TO PLAY</h1>
+                <span>{step.card + 1}/{TUTORIAL_CARDS}</span>
             </div>
-            <p class="hint">IT GETS FASTER EVERY LEVEL.<br />FROM LEVEL 5 MODIFIERS<br />MIX THINGS UP.</p>
-        {/if}
 
-        <div class="card-foot">
-            <div class="dots" aria-hidden="true">
-                {#each CARD_DOTS as i (i)}
-                    <span class:on={i === step.card}></span>
-                {/each}
+            {#if step.card === 0}
+                <p class="text">DOES THE <em>WORD</em><br />MATCH ITS <em>{colorblind ? "SHAPES" : "COLOR"}</em>?</p>
+                <div class="example" style={inkStyle("red", colorblind)}>{wordFor("red", colorblind)}</div>
+                <p class="hint">
+                    <span class="yes">YES</span> → TAP {trueSide.toUpperCase()} · TRUE<br />OR PRESS {KEY_ARROWS[
+                        trueSide
+                    ]}
+                </p>
+            {:else if step.card === 1}
+                <p class="text">IF THEY<br /><em>DON'T MATCH</em>...</p>
+                <div class="example" style={inkStyle("green", colorblind)}>{wordFor("blue", colorblind)}</div>
+                <p class="hint">
+                    <span class="no">NO</span> → TAP {falseSide.toUpperCase()} · FALSE<br />OR PRESS {KEY_ARROWS[
+                        falseSide
+                    ]}
+                </p>
+            {:else}
+                <p class="text">BEAT THE <em>TIMER</em></p>
+                <div class="timer" aria-hidden="true">
+                    {#each TIMER_SEGMENTS as i (i)}
+                        <span class:lit={i < TIMER_LIT}></span>
+                    {/each}
+                </div>
+                <p class="hint">IT GETS FASTER EVERY LEVEL.<br />FROM LEVEL 5 MODIFIERS<br />MIX THINGS UP.</p>
+            {/if}
+
+            <div class="card-foot">
+                <div class="dots" aria-hidden="true">
+                    {#each CARD_DOTS as i (i)}
+                        <span class:on={i === step.card}></span>
+                    {/each}
+                </div>
+                <Button onclick={onnext} {@attach (node) => node.focus()}>TRY IT ►</Button>
             </div>
-            <button class="next" onclick={onnext} {@attach (node) => node.focus()}>TRY IT ►</button>
-        </div>
+        </Card>
     </div>
-    <button class="skip" onclick={onskip}>SKIP</button>
+    <div class="skip">
+        <Button onclick={onskip}>SKIP</Button>
+    </div>
 {:else if step?.kind === "try" && practice && challenge && expected}
     <ChallengeScreen {challenge} elapsed={0} timeLimit={Infinity} {width} {height} {colorblind} />
     <div class="half" class:right={expectedSide === "right"} aria-hidden="true"></div>
@@ -148,22 +158,14 @@
         top: calc(env(safe-area-inset-top) + max(80px, 18%));
         left: 50%;
         width: min(400px, calc(100% - 56px));
-        box-sizing: border-box;
         transform: translateX(-50%);
-        display: flex;
-        flex-direction: column;
-        gap: 18px;
-        padding: 22px;
-        border: 4px solid #fff;
-        background: #000;
-        box-shadow: 6px 6px 0 var(--blue);
         font-size: max(11px, calc(1.3 * var(--unit)));
     }
 
     .card-head {
         display: flex;
         justify-content: space-between;
-        color: #bbb;
+        color: var(--text-dim);
     }
 
     h1 {
@@ -215,7 +217,7 @@
 
     .timer span {
         height: 14px;
-        background: #262626;
+        background: var(--fill-off);
     }
 
     .timer span.lit {
@@ -236,39 +238,19 @@
     .dots span {
         width: 10px;
         height: 10px;
-        background: #444;
+        background: var(--line-locked);
     }
 
     .dots span.on {
         background: #fff;
     }
 
-    button {
-        border-radius: 0;
-        font-family: inherit;
-        cursor: pointer;
-    }
-
-    .next {
-        height: 44px;
-        padding: 0 16px;
-        border: 3px solid #fff;
-        background: #000;
-        color: #fff;
-        font-size: 11px;
-    }
-
     .skip {
         position: absolute;
         left: 50%;
-        bottom: calc(env(safe-area-inset-bottom) + 40px);
+        bottom: calc(env(safe-area-inset-bottom) + var(--key-help-room));
         transform: translateX(-50%);
-        height: 44px;
-        padding: 0 16px;
-        border: 3px solid #fff;
-        background: #000;
-        color: #fff;
-        font-size: 11px;
+        display: flex;
     }
 
     .half {
@@ -290,7 +272,7 @@
         top: 0;
         bottom: 0;
         left: 50%;
-        border-left: 3px dashed #333;
+        border-left: var(--line) dashed var(--line-faint);
         pointer-events: none;
     }
 
@@ -312,7 +294,7 @@
         text-align: center;
         font-size: max(11px, calc(1.4 * var(--unit)));
         line-height: 2.1;
-        color: #ddd;
+        color: var(--text-soft);
     }
 
     .explain.hidden {
@@ -336,9 +318,9 @@
     /* Phones in landscape: the card and SKIP have to fit, the blinking hint alone shows the side */
     @media (max-height: 520px) {
         .card {
+            --card-gap: 10px;
+            --card-padding: 14px 18px;
             top: calc(env(safe-area-inset-top) + 12px);
-            gap: 10px;
-            padding: 14px 18px;
         }
 
         .text,

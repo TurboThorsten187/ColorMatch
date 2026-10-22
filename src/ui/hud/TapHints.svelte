@@ -46,9 +46,9 @@
 
     .hint {
         padding: 12px;
-        border: 3px solid #555;
+        border: var(--line) solid var(--line-off);
         background: #000;
-        color: #bbb;
+        color: var(--text-dim);
         font-size: max(12px, calc(1.6 * var(--unit)));
         transition:
             color 150ms,

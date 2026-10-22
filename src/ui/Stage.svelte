@@ -1,7 +1,6 @@
 <script lang="ts">
     import type { Snippet } from "svelte";
     import { COLOR_CSS } from "@/core/colors.ts";
-    import { holdPress } from "./focus.ts";
 
     interface Props {
         // Keys were used last: the selected button shows
@@ -40,7 +39,6 @@
     style:--yellow={COLOR_CSS.yellow}
     style:--purple={COLOR_CSS.purple}
     style:--cyan={COLOR_CSS.cyan}
-    onclickcapture={holdPress}
     bind:this={element}
     bind:clientWidth={width}
     bind:clientHeight={height}
@@ -114,8 +112,8 @@
         padding: 12px 0 calc(env(safe-area-inset-bottom) + 12px);
         background: #000;
         text-align: center;
-        font-size: 10px;
-        color: #777;
+        font-size: var(--text-tiny);
+        color: var(--text-off);
         pointer-events: none;
     }
 

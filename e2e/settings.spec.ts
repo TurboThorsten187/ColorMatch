@@ -45,6 +45,16 @@ test("keeps the settings after a reload", async ({ page }) => {
     await expect(page.getByRole("slider", { name: "VOLUME" })).toHaveAttribute("aria-valuenow", "6");
 });
 
+test("keeps a setting that was pressed right before leaving", async ({ page }) => {
+    await toggle(page, "SCANLINES", "OFF").click();
+    await page.keyboard.press("Escape");
+    await expect(button(page, "START GAME")).toBeVisible();
+
+    await page.reload();
+    await openSettings(page);
+    await expect(toggle(page, "SCANLINES", "OFF")).toHaveAttribute("aria-pressed", "true");
+});
+
 test("FLIP CONTROLS puts FALSE on the left", async ({ page }) => {
     await setToggle(page, "FLIP CONTROLS", "ON");
     await page.keyboard.press("Escape");

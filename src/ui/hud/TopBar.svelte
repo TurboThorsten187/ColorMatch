@@ -95,7 +95,7 @@
 
     .segment {
         height: max(10px, calc(1.2 * var(--unit)));
-        background: #262626;
+        background: var(--fill-off);
     }
 
     .paused .timer {

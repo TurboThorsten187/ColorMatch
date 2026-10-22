@@ -6,8 +6,8 @@
     import { browserStorage } from "@/platform/storage.ts";
     import { testRng } from "@/platform/testRng.ts";
     import { focusHovered, moveFocus } from "@/ui/focus.ts";
-    import { showsLoss } from "@/ui/screens/lossAnimation.ts";
     import Screens from "@/ui/Screens.svelte";
+    import { showsLoss } from "@/ui/screens/lossAnimation.ts";
     import { playEvent } from "@/ui/sounds.ts";
     import Stage from "@/ui/Stage.svelte";
 

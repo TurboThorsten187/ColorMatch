@@ -2,6 +2,8 @@
     import { awardById, type AwardId, AWARDS } from "@/core/awards.ts";
     import { averageLevel, averageReactionMs, awardProgress, formatPlayTime, type Stats } from "@/core/stats.ts";
     import AwardBadge from "@/ui/hud/AwardBadge.svelte";
+    import Screen from "@/ui/kit/Screen.svelte";
+    import ScreenHead from "@/ui/kit/ScreenHead.svelte";
 
     interface Props {
         stats: Stats;
@@ -26,96 +28,56 @@
     const progress = $derived(awardProgress(selected, stats, highscore));
 </script>
 
-<div class="stats">
-    <div class="head">
-        <!-- Focus moves here so keyboard players do not start over at the top of the page -->
-        <button class="back" aria-label="Back" onclick={onback} {@attach (node) => node.focus()}>◄</button>
-        <h1 class="title">STATS</h1>
-    </div>
+<Screen scroll narrow>
+    <div class="stats">
+        <ScreenHead title="STATS" {onback} />
 
-    <dl class="numbers">
-        {#each rows as row (row.label)}
-            <div class="row">
-                <dt class:hi={row.hi}>{row.label}</dt>
-                <dd>{row.value}</dd>
-            </div>
-        {/each}
-    </dl>
+        <dl class="numbers">
+            {#each rows as row (row.label)}
+                <div class="row">
+                    <dt class:hi={row.hi}>{row.label}</dt>
+                    <dd>{row.value}</dd>
+                </div>
+            {/each}
+        </dl>
 
-    <div class="awards-head">
-        <h2>AWARDS</h2>
-        <span>{unlocked.size}/{AWARDS.length}</span>
-    </div>
+        <div class="awards-head">
+            <h2>AWARDS</h2>
+            <span>{unlocked.size}/{AWARDS.length}</span>
+        </div>
 
-    <div class="badges">
-        {#each AWARDS as award (award.id)}
-            <!-- Only selects, so it does not give way like the buttons that act -->
-            <button
-                class="badge-button"
-                data-no-press
-                class:selected={award.id === selectedId}
-                aria-pressed={award.id === selectedId}
-                aria-label="{award.name}{unlocked.has(award.id) ? '' : ', locked'}"
-                onclick={() => (selectedId = award.id)}
-                onfocus={() => (selectedId = award.id)}
-            >
-                <AwardBadge {award} locked={!unlocked.has(award.id)} />
-            </button>
-        {/each}
-    </div>
+        <div class="badges">
+            {#each AWARDS as award (award.id)}
+                <!-- Only selects, so it is no Button that gives way first -->
+                <button
+                    class="badge-button"
+                    class:selected={award.id === selectedId}
+                    aria-pressed={award.id === selectedId}
+                    aria-label="{award.name}{unlocked.has(award.id) ? '' : ', locked'}"
+                    onclick={() => (selectedId = award.id)}
+                    onfocus={() => (selectedId = award.id)}
+                >
+                    <AwardBadge {award} locked={!unlocked.has(award.id)} />
+                </button>
+            {/each}
+        </div>
 
-    <div class="detail" aria-live="polite">
-        <div>{selected.code} · {selected.name}</div>
-        <div>{selected.rule}</div>
-        {#if unlocked.has(selected.id)}
-            <div class="done">UNLOCKED</div>
-        {:else}
-            <div class="progress">{progress.have}/{progress.need}</div>
-        {/if}
+        <div class="detail" aria-live="polite">
+            <div>{selected.code} · {selected.name}</div>
+            <div>{selected.rule}</div>
+            {#if unlocked.has(selected.id)}
+                <div class="done">UNLOCKED</div>
+            {:else}
+                <div class="progress">{progress.have}/{progress.need}</div>
+            {/if}
+        </div>
     </div>
-</div>
+</Screen>
 
 <style>
     .stats {
-        position: absolute;
-        inset: 0;
-        width: min(100%, 460px);
-        margin: 0 auto;
-        box-sizing: border-box;
-        overflow-y: auto;
-        /* The stage blocks touch gestures, this screen may scroll on short screens */
-        touch-action: pan-y;
-        scrollbar-width: thin;
-        scrollbar-color: #555 #000;
-        /* The bottom keeps room for App's keys hint */
-        padding: calc(env(safe-area-inset-top) + max(32px, calc(4 * var(--unit)))) 24px
-            calc(env(safe-area-inset-bottom) + 40px);
+        padding: max(32px, calc(4 * var(--unit))) 24px 0;
         font-size: max(11px, calc(1.3 * var(--unit)));
-    }
-
-    .head {
-        display: flex;
-        align-items: center;
-        gap: 16px;
-    }
-
-    .title {
-        margin: 0;
-        font-size: max(18px, calc(2.6 * var(--unit)));
-        font-weight: normal;
-    }
-
-    .back {
-        width: 44px;
-        height: 44px;
-        flex: none;
-        border: 3px solid #fff;
-        border-radius: 0;
-        background: #000;
-        color: #fff;
-        font-family: inherit;
-        font-size: 12px;
-        cursor: pointer;
     }
 
     .numbers {
@@ -129,7 +91,7 @@
     }
 
     dt {
-        color: #bbb;
+        color: var(--text-dim);
     }
 
     dt.hi {
@@ -146,7 +108,7 @@
         justify-content: space-between;
         align-items: baseline;
         font-size: max(12px, calc(1.7 * var(--unit)));
-        color: #bbb;
+        color: var(--text-dim);
     }
 
     h2 {
@@ -162,7 +124,7 @@
         grid-template-columns: repeat(5, minmax(0, 60px));
         justify-content: space-between;
         row-gap: 10px;
-        font-size: 12px;
+        font-size: var(--text-medium);
     }
 
     /* A tile, not a framed button: the badge is its frame, the outline around it the selection */
@@ -187,9 +149,9 @@
 
     .detail {
         margin-top: 16px;
-        font-size: 10px;
+        font-size: var(--text-tiny);
         line-height: 1.8;
-        color: #bbb;
+        color: var(--text-dim);
     }
 
     .progress {
