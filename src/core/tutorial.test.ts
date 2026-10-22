@@ -1,7 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { type GameState, MENU, pause, type PlayingState } from "./game.ts";
-import { INTROS, introsForLevel, newIntros } from "./intros.ts";
-import { MODIFIER_GROUPS, type ModifierId } from "./modifiers.ts";
+import { INTROS, newIntros } from "./intros.ts";
+import { MODIFIER_GROUPS } from "./modifiers.ts";
 import {
     answerPractice,
     currentStep,
@@ -18,32 +17,6 @@ import {
     TUTORIAL_STEPS,
     type TutorialState,
 } from "./tutorial.ts";
-
-function playing(level: number, modifiers: ModifierId[]): PlayingState {
-    return {
-        phase: "playing",
-        mode: "normal",
-        level,
-        challenge: {
-            word: "red",
-            color: "red",
-            modifiers: new Set(modifiers),
-            expected: "true",
-            background: null,
-            rotationDeg: 0,
-            seed: 0,
-            tempo: {},
-            strength: {},
-            second: null,
-            size: 1,
-        },
-        startedAt: 0,
-        timeLimit: 3000,
-        spamCount: 0,
-        taps: 0,
-        curriculum: MODIFIER_GROUPS.map((group) => group.id),
-    };
-}
 
 function solve(state: TutorialState, now: number): TutorialState {
     const step = currentStep(state);
@@ -108,32 +81,6 @@ describe("modifier intros", () => {
 
     it("cover every modifier group exactly once", () => {
         expect(INTROS.map((intro) => intro.id).sort()).toEqual(MODIFIER_GROUPS.map((group) => group.id).sort());
-    });
-
-    it("are due when a level begins", () => {
-        const blurred = playing(6, ["blur"]);
-
-        expect(introsForLevel(MENU, playing(1, ["mirrorVertical"]), [])).toEqual(["mirror"]);
-        expect(introsForLevel(playing(5, []), blurred, [])).toEqual(["blur"]);
-        const spamPause: GameState = {
-            phase: "spamPause",
-            mode: "normal",
-            level: 5,
-            resumeAt: 0,
-            curriculum: [],
-            groups: ["spam"],
-        };
-
-        expect(introsForLevel(spamPause, blurred, [])).toEqual(["blur"]);
-        expect(introsForLevel(playing(5, []), blurred, ["blur"])).toEqual([]);
-    });
-
-    it("are not due while a level goes on", () => {
-        const spam = playing(15, ["spam"]);
-
-        expect(introsForLevel(spam, { ...spam, spamCount: 1 }, [])).toEqual([]);
-        expect(introsForLevel(pause(spam, 100), spam, [])).toEqual([]);
-        expect(introsForLevel(spam, pause(spam, 100), [])).toEqual([]);
     });
 });
 

@@ -33,10 +33,13 @@ folders they start at `src/` (`@/core/game.ts`), within a folder they are relati
   Every running state carries its `Mode` (`normal` or `hardcore`, `modeOf`); RETRY keeps it. Hardcore's rules are
   `mode` branches in `progression.ts` (no intros, base time 1 s, full tempo/strength/zoom, count every 3 levels, no
   plain levels, surges from `HARDCORE_SURGE_FIRST_LEVEL`); it opens at `HARDCORE_UNLOCK_SCORE` and keeps its own
-  highscore (`Highscores` in `highscore.ts`).
+  highscore (`Highscores` in `highscore.ts`). The numbers that tune the difficulty are in `balance.ts`, except those of
+  a single modifier. A lost game keeps how (`GameOverState.reason`: miss, early, timeout) and the level it was lost on
+  (`lost`). `events.ts` turns a transition into what happened (`gameEvents`: started, cleared with the reaction time,
+  spamTap, surge, levelBegan, lost, resumed, menu), so nothing outside of core compares states.
   Wait (`isTooEarly`, `WAIT_SHARE`) and Double Tap (`PlayingState.taps`) are rules in `game.ts`; `twoWords` builds its
   second word in `createChallenge` (`Challenge.second`), Zoom's shrinking size is `Challenge.size`. The spam pause
-  starts with `SPAM_BANG_MS` of the solved SPAM! (`isSpamBang`), which App draws from `spamDone`, frozen at the last press.
+  starts with `SPAM_BANG_MS` of the solved SPAM! (`isSpamBang`), drawn from `SpamPauseState.solved` at `solvedAt`.
   Shown names may differ from the ids, which stay for saved stats: `blink` is FADE, `splitMirror` SYMMETRY, `countUp`
   REVERSE TIMER, `twoWords` DUO.
 - `src/core/save.ts` – everything kept between visits as one `SaveData` (settings, highscores, stats, tutorial progress),
@@ -46,8 +49,19 @@ folders they start at `src/` (`@/core/game.ts`), within a folder they are relati
   versions or they start over. `writeSave` never lowers a highscore (another tab may have saved a better one); version
   1 started every save anew and `removeOldSaves` deletes the keys of the format before it.
 - `src/platform/` – the browser: storage, Web Audio (`sound.ts`, `synth.ts`), fonts, the install offer, the test seed.
-- `src/app/` – game flow logic without components: spatial navigation, the award toast queue.
-- `src/ui/` – `screens/` has one Svelte component per screen, `hud/` what lies over a level (`TopBar` (level and highscore over a 24-block timer, which `AwardToast` sits below; the modifier cards reuse it `inline` and `paused`), `TapHints`, `FeedbackFlash`, `AwardToast`, `AwardBadge`), `word/` the word and its modifiers (`ChallengeScreen`,
+- `src/app/session.svelte.ts` – `Session`, the only stateful place: the game state and its clock (`frame` per animation
+  frame), the tutorial beside it (the game stays in the menu meanwhile), the intro cards (a level whose `levelBegan`
+  shows a modifier never seen before is kept paused until its cards are confirmed), the view (settings and stats are
+  no game phase), the save (`#changeSave` writes all of it on every change, `reload` takes over what another tab
+  saved), stats, awards and their toasts (a hardcore game records no stats and no awards), and what each input means
+  on each screen (`side`, `tap`, `enter`, `back`, `answers`; the left and right screen halves and keys are mapped to an
+  answer by `answerOn` in `settings.ts` because FLIP CONTROLS swaps them). It reports what the player should hear as
+  `SessionEvent`s; storage, random numbers, the clock and those listeners are passed in, so it is tested without a
+  browser. `keys.ts` maps keys to sides, directions and back, `spatialNav.ts` finds the button in a direction,
+  `toastQueue.ts` times the award toasts.
+- `src/ui/` – `Stage.svelte` is the frame of every screen, `Screens.svelte` picks the screen the session is on,
+  `sounds.ts` turns `SessionEvent`s into sounds timed to the screens (`cuesFor`). `screens/` has one Svelte component
+  per screen (`LevelScreen` is a running level, also the solved SPAM! frozen at its last press), `hud/` what lies over a level (`TopBar` (level and highscore over a 24-block timer, which `AwardToast` sits below; the modifier cards reuse it `inline` and `paused`), `TapHints`, `FeedbackFlash`, `AwardToast`, `AwardBadge`), `word/` the word and its modifiers (`ChallengeScreen`,
   `SplitMirror`, `RuleSign`, `effects.ts`, `fontFlip.ts`, `fitText.ts`, `shapes.ts`, `ruleIcons.ts`);
   modifiers are rendered with CSS transforms and filters; the rule tags (DON'T CLICK, INVERTED INPUT) sit in the
   word's anchor and get every effect too. `RuleSign` draws them, here and on the intro cards, with the rule's pixel icon
@@ -63,36 +77,32 @@ folders they start at `src/` (`@/core/game.ts`), within a folder they are relati
   carry `data-ink` (the plain word, a Symmetry half of plain text, or each letter), never their wrappers. Assemble's start points lie on the screen edges and are mapped
   into the transformed anchor with `toAnchor`; the afterimage offset and the shake shrink with Zoom (Zoom and Blur never share a level). The loss
   animation rasterizes the anchor's first child, every `data-ink` piece with its font, ink and transforms, cut at
-  the middle of its closest `data-left-half`; blocks keep the pixel's color. Negative inverts App's `.playfield` (level, timer, hints) while `isNegative`; the low time frame
-  (`lowTimeGlow`, from `LOW_TIME_SHARE` of real time left, also on Count Up) lies outside of it so it stays red. `src/main.ts` awaits `loadFonts()` before mounting because
+  the middle of its closest `data-left-half`; blocks keep the pixel's color. Negative inverts `LevelScreen`'s `.playfield` (level, timer, hints) while `isNegative`; the low time frame
+  (`lowTimeGlow`, from `LOW_TIME_SHARE` in `core/game.ts` of real time left, also on Count Up) lies outside of it so it
+  stays red. `src/main.ts` awaits `loadFonts()` before mounting because
   the word size is fitted by measuring the real font. `src/platform/sound.ts` wraps Web Audio: `unlockAudio()` on every input
   (browsers need a gesture; on touch only `pointerup` counts), each sound is built from oscillators when it plays.
-- `src/App.svelte` – the only stateful place: rAF loop, keyboard and pointer input (left/right screen half, mapped to
-  an answer by `answerOn` in `settings.ts` because FLIP CONTROLS swaps them; every screen that names a side takes a
-  `flipControls` prop; outside
-  of a level arrow keys and WASD move the focus between buttons by position, `src/app/spatialNav.ts`, and a moved
-  mouse focuses the button under it (`selectHovered`); the selection only shows while `keyboardMode` puts the `keys`
-  class on the stage, together with the `key-help` strip, for which every screen with buttons keeps 40 px free at the
-  bottom. App's global button CSS colors border and text of the selected button in its `--button-color` (the accent
-  without one); a pressed button (tap, click, Enter, Space) shrinks a little first, `pressButton` holds the click back
-  for `BUTTON_PRESS_MS` and replays it, `data-no-press` opts out. Buttons have no shadows. Menu and game over redefine
-  `--unit` with a stronger height cap, so low browser windows fit without scrolling; SETTINGS shrinks its rows and gaps
-  with the height instead),
-  pause on `blur`/`visibilitychange`, the save (`persist()` writes all of it on every change, `onStorage` takes over
-  what another tab saved), sounds and stats for game transitions in `update()` (a hardcore game records no stats and
-  no awards). Settings and stats screens are a `view` in App, not
-  a game phase. The stage sets the six game colors as CSS variables (`--red` … `--cyan`); components use them, or
-  `COLOR_CSS` from `src/core/colors.ts` where they need the value in script, never hex values of their own, so every
-  screen and the icon (`public/favicon.svg`, which has to be updated by hand) show exactly the game's colors. The
-  stage's `--accent` (`--yellow`, `--red` while a hardcore game runs)
-  colors the highlights of every screen a game shows.
+- `src/App.svelte` – the browser side: creates the `Session` (with `localStorage`, `performance.now`, the URL seed,
+  `playEvent` and `configureSound`), runs the rAF loop, and turns window input into session calls: keys, pointer
+  (left/right screen half), pause on `blur`/`visibilitychange`, `storage` events. Every screen that names a side takes
+  a `flipControls` prop. Outside of a level arrow keys and WASD move the focus between buttons by position
+  (`moveFocus` in `src/ui/focus.ts`), and a moved mouse focuses the button under it (`focusHovered`); the selection
+  only shows while `keyboardMode` puts the `keys` class on the stage, together with the `key-help` strip, for which
+  every screen with buttons keeps 40 px free at the bottom. `Stage`'s global button CSS colors border and text of the
+  selected button in its `--button-color` (the accent without one); a pressed button (tap, click, Enter, Space)
+  shrinks a little first, `holdPress` holds the click back for `BUTTON_PRESS_MS` and replays it, `data-no-press` opts
+  out. Buttons have no shadows. Menu and game over redefine `--unit` with a stronger height cap, so low browser
+  windows fit without scrolling; SETTINGS shrinks its rows and gaps with the height instead. The stage sets the six
+  game colors as CSS variables (`--red` … `--cyan`); components use them, or `COLOR_CSS` from `src/core/colors.ts`
+  where they need the value in script, never hex values of their own, so every screen and the icon
+  (`public/favicon.svg`, which has to be updated by hand) show exactly the game's colors. The stage's `--accent`
+  (`--yellow`, `--red` while a hardcore game runs) colors the highlights of every screen a game shows.
 - `public/` – PWA files copied as-is: `manifest.webmanifest`, icons (the PNGs and `favicon.ico` are renders of
   `favicon.svg`, re-render them when it changes) and `sw.js`, a plain JS service worker (network first for the page,
   cache first for files). `main.ts` registers it in production builds only and reports the loaded files, so the cache
   holds exactly the current version. `src/platform/install.svelte.ts` keeps the browser's install offer for the menu's
   INSTALL button.
-- The tutorial (`src/core/tutorial.ts`) runs beside the game state, which stays in the menu meanwhile. A level with a
-  modifier never seen before is stored paused in `update()` until its intro cards (`src/core/intros.ts`) are confirmed.
+- The tutorial is `src/core/tutorial.ts`, the intro cards are `src/core/intros.ts`; `Session` runs both.
 - Awards are defined in `src/core/awards.ts`; `src/core/stats.ts` counts cleared levels per award, is saved after every
   cleared level and reports newly unlocked awards (toast in game, list on game over).
 - Modifiers belong to groups (`MODIFIER_GROUPS` in `src/core/modifiers.ts`, all mirrors are one group) with a tier
@@ -104,7 +114,7 @@ folders they start at `src/` (`@/core/game.ts`), within a folder they are relati
   (`maxGroupCount` grows by one every 12 levels; from level 40 to 80 plain levels die out and the count's weights move
   from mostly one to every count equally likely), surge levels (`isSurgeLevel`,
   announced by the `surgeBanner` phase; `surgeGroupCount` grows by one per surge, the time is a fixed
-  `SURGE_TIME_MS`), the time limit (a base that bends from 3 s at level 1 to 1 s at level 80, every group adds
+  `SURGE_TIME_MS`; all these numbers are in `balance.ts`), the time limit (a base that bends from 3 s at level 1 to 1 s at level 80, every group adds
   `EXTRA_TIME_MS` of its tier, DUO adds `DUO_EXTRA_MS` on top, on a surge too, Don't Click levels get
   `NO_CLICK_TIME_SHARE` of it) and the tempo of animated modifiers
   (`tempoFor`, following the shrinking base up to `MAX_TEMPO` (1.5) at level 80, stored in `Challenge.tempo`, applied in

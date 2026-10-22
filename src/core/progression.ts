@@ -1,56 +1,42 @@
-import { conflicts, groupById, MODIFIER_GROUPS, type ModifierGroupId, type Tier, TIERS } from "./modifiers.ts";
+import {
+    BASE_BEND,
+    BASE_MIN_MS,
+    BASE_RANGE_MS,
+    COUNT_GROWS_EVERY,
+    EARLY_COUNT_WEIGHTS,
+    EXTRA_TIME_MS,
+    FIRST_INTRO_LEVEL,
+    FRESH_BOOST,
+    FRESH_FADE_LEVELS,
+    HARDCORE_COUNT_GROWS_EVERY,
+    HARDCORE_SURGE_EVERY,
+    HARDCORE_SURGE_FIRST_LEVEL,
+    INTRO_BONUS_MS,
+    INTRO_EVERY,
+    LATE_FROM_LEVEL,
+    LATE_UNTIL_LEVEL,
+    MAX_TEMPO,
+    PRACTICE_CHANCE,
+    SURGE_EVERY,
+    SURGE_FIRST_GROUP_COUNT,
+    SURGE_FIRST_LEVEL,
+    SURGE_TIME_MS,
+    TEMPO_CATCH_UP_LEVELS,
+} from "./balance.ts";
+import { conflicts, groupById, MODIFIER_GROUPS, type ModifierGroupId, TIERS } from "./modifiers.ts";
 import type { Rng } from "./random.ts";
 
 // The order in which one game introduces the modifier groups: shuffled per game, but easy before medium before hard
 export type Curriculum = readonly ModifierGroupId[];
 
-export const FIRST_INTRO_LEVEL = 5;
-export const INTRO_EVERY = 3;
-// The level right after an introduction brings the new group back this often, together with a known one. Alone it
-// would repeat the introduction level, which no level may do, so there is no practice while levels hold one group.
-export const PRACTICE_CHANCE = 0.7;
+// A normal game introduces the modifiers one by one, HARDCORE has them all from the start (see balance.ts)
+export type Mode = "normal" | "hardcore";
 
-// Time per level: 3 s at level 1, down to 1 s at LATE_UNTIL_LEVEL along a gentle bend that flattens out towards the end
-const BASE_MIN_MS = 1000;
-const BASE_RANGE_MS = 2000;
-const BASE_BEND = 1.5;
-export const INTRO_BONUS_MS = 1000;
-// Every group of a level brings extra time, the harder its tier the more
-export const EXTRA_TIME_MS: Readonly<Record<Tier, number>> = { easy: 200, medium: 300, hard: 400 };
 // A Don't Click level is only sat out, the full time would just be waiting
 export const NO_CLICK_TIME_SHARE = 0.6;
 // DUO has two words and two inks to read, it gets this on top of its extra time, on a surge too
 export const DUO_EXTRA_MS = 1500;
-
-// Freshly introduced groups are picked more often; the advantage fades over about ten levels
-const FRESH_BOOST = 2;
-const FRESH_FADE_LEVELS = 6;
-// Every COUNT_GROWS_EVERY levels one more group may share a level, starting with one
-const COUNT_GROWS_EVERY = 12;
-// How likely 1, 2, 3 or more groups are early on, cut off at the level's maximum; above three each count is half as
-// likely as the one before
-const EARLY_COUNT_WEIGHTS = [0.6, 0.3, 0.1];
 const PICK_ATTEMPTS = 6;
-
-// From LATE_FROM_LEVEL the levels get harder until LATE_UNTIL_LEVEL: plain levels die out and every count up to the
-// maximum becomes as likely as any other
-const LATE_FROM_LEVEL = 40;
-const LATE_UNTIL_LEVEL = 80;
-
-// Every few levels a surge stacks more groups than any other level, announced by a banner: five on the first, one
-// more on each after it, as many as go together. It always lasts the same time, however many groups it stacks.
-export const SURGE_FIRST_LEVEL = 50;
-export const SURGE_EVERY = 10;
-export const SURGE_FIRST_GROUP_COUNT = 5;
-export const SURGE_TIME_MS = 1300;
-
-// HARDCORE introduces nothing: every group may come from level 1, with the time at its minimum, tempo, strength and
-// zoom at their full and the count mixed as in the late game. One more group may share a level every few levels, and
-// surges come earlier and more often.
-export type Mode = "normal" | "hardcore";
-const HARDCORE_COUNT_GROWS_EVERY = 3;
-export const HARDCORE_SURGE_FIRST_LEVEL = 10;
-export const HARDCORE_SURGE_EVERY = 5;
 
 // The zoomed word starts at a fifth of the normal size and shrinks with every level after its introduction, down to
 // a tenth
@@ -130,15 +116,12 @@ export function timeLimitFor(
 
 // Animated modifiers (spin, pulse, shake, movement, fade, scramble) speed up along with the shrinking time limit:
 // normal speed at the first intro level, MAX_TEMPO times as fast once the time limit is at its minimum
-export const MAX_TEMPO = 1.5;
 const FULL_SHRINK = baseLimit(FIRST_INTRO_LEVEL) / baseLimit(LATE_UNTIL_LEVEL);
 
 export function levelTempo(level: number): number {
     const shrink = Math.max(1, baseLimit(FIRST_INTRO_LEVEL) / baseLimit(level));
     return 1 + ((MAX_TEMPO - 1) * (shrink - 1)) / (FULL_SHRINK - 1);
 }
-
-export const TEMPO_CATCH_UP_LEVELS = 8;
 
 // Every modifier starts at normal speed on its intro level and reaches the level's tempo within a few levels, so one
 // introduced late speeds up faster than one introduced early. Hardcore runs at full speed from level 1.

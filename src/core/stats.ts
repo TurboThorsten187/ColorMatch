@@ -1,4 +1,5 @@
-import { type Award, type AwardId, AWARDS, MODIFIER_CLEARS_NEEDED } from "./awards.ts";
+import { type Award, type AwardId, AWARDS } from "./awards.ts";
+import { MODIFIER_CLEARS_NEEDED } from "./balance.ts";
 import type { ModifierId } from "./modifiers.ts";
 import { field } from "./parse.ts";
 import { isSurgeLevel } from "./progression.ts";

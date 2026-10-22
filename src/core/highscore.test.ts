@@ -1,11 +1,6 @@
 import { describe, expect, it } from "vitest";
-import {
-    bestHighscores,
-    HARDCORE_UNLOCK_SCORE,
-    isHardcoreUnlocked,
-    NO_HIGHSCORES,
-    parseHighscores,
-} from "./highscore.ts";
+import { HARDCORE_UNLOCK_SCORE } from "./balance.ts";
+import { bestHighscores, isHardcoreUnlocked, NO_HIGHSCORES, parseHighscores } from "./highscore.ts";
 
 describe("highscore", () => {
     it("opens hardcore once a normal game has cleared level 50", () => {

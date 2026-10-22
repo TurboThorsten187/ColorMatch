@@ -1,3 +1,4 @@
+import { SURGE_BANNER_MS, GAME_OVER_LOCK_MS } from "./balance.ts";
 import { type Answer, type Challenge, createChallenge } from "./challenge.ts";
 import { groupsOf, type ModifierGroupId } from "./modifiers.ts";
 import {
@@ -26,10 +27,8 @@ export const SPAM_BANG_MS = 120;
 export const WAIT_SHARE = 0.4;
 // Right taps a DOUBLE TAP level needs, with no limit on the time between them
 export const DOUBLE_TAPS = 2;
-export const SURGE_BANNER_MS = 900;
-// Frantic presses right after losing must not skip the result: RETRY, MENU and Enter wait this long, through the
-// loss animation until the buttons have appeared
-export const GAME_OVER_LOCK_MS = 2000;
+// From here on the time is running out: the timer turns red and beeps
+export const LOW_TIME_SHARE = 0.25;
 
 export type PlayingState = {
     readonly phase: "playing";
@@ -50,8 +49,9 @@ export type SpamPauseState = {
     readonly resumeAt: number;
     readonly curriculum: Curriculum;
     readonly mode: Mode;
-    // The groups of the SPAM! level, the next level must not repeat them
-    readonly groups: readonly ModifierGroupId[];
+    // The SPAM! level at its last press, shown fully lit for SPAM_BANG_MS; the next level must not repeat its groups
+    readonly solved: PlayingState;
+    readonly solvedAt: number;
 };
 
 // The SURGE banner, the surge level starts when it is gone
@@ -63,12 +63,18 @@ export type SurgeBannerState = {
     readonly mode: Mode;
 };
 
+// How a level was lost: a wrong press, a press before WAIT turned into NOW, or the time ran out
+export type LossReason = "miss" | "early" | "timeout";
+
 // RETRY plays the same mode again
 export type GameOverState = {
     readonly phase: "gameOver";
     readonly score: number;
     readonly endedAt: number;
     readonly mode: Mode;
+    readonly reason: LossReason;
+    // The level that was lost, as it was at that moment
+    readonly lost: PlayingState;
 };
 
 export type GameState =
@@ -105,7 +111,8 @@ export function answer(state: GameState, input: Answer, now: number, rng: Rng): 
     if (now - state.startedAt > state.timeLimit) return timeUp(state, now, rng);
 
     const { expected, modifiers } = state.challenge;
-    if (expected === "none" || isTooEarly(state, now)) return gameOver(state, now);
+    if (isTooEarly(state, now)) return gameOver(state, now, "early");
+    if (expected === "none") return gameOver(state, now, "miss");
 
     if (expected === "spam") {
         const spamCount = state.spamCount + 1;
@@ -116,12 +123,13 @@ export function answer(state: GameState, input: Answer, now: number, rng: Rng): 
                   resumeAt: now + SPAM_BANG_MS + SPAM_PAUSE_MS,
                   curriculum: state.curriculum,
                   mode: state.mode,
-                  groups: groupsOf(state.challenge.modifiers),
+                  solved: { ...state, spamCount },
+                  solvedAt: now,
               }
             : { ...state, spamCount };
     }
 
-    if (input !== expected) return gameOver(state, now);
+    if (input !== expected) return gameOver(state, now, "miss");
     const taps = state.taps + 1;
     return modifiers.has("doubleTap") && taps < DOUBLE_TAPS ? { ...state, taps } : nextLevel(state, now, rng);
 }
@@ -134,6 +142,19 @@ export function isSpamBang(state: SpamPauseState, now: number): boolean {
 // A press on a WAIT level before WAIT has turned into NOW
 export function isTooEarly(state: PlayingState, now: number): boolean {
     return state.challenge.modifiers.has("wait") && now - state.startedAt < state.timeLimit * WAIT_SHARE;
+}
+
+// Share of the level's time that is left at `now`, 1 when it begins and 0 when it runs out
+export function remainingShare(state: PlayingState, now: number): number {
+    return 1 - (now - state.startedAt) / state.timeLimit;
+}
+
+// How long a correct answer at `at` took: from showing the word, or on a WAIT level from NOW. Null for levels that
+// ask for no answer (Don't Click, SPAM!)
+export function reactionMs(state: PlayingState, at: number): number | null {
+    const { expected, modifiers } = state.challenge;
+    if (expected !== "true" && expected !== "false") return null;
+    return at - state.startedAt - (modifiers.has("wait") ? state.timeLimit * WAIT_SHARE : 0);
 }
 
 // The "go on" input outside of a running level: start, continue, or retry after game over
@@ -164,7 +185,14 @@ export function tick(state: GameState, now: number, rng: Rng): GameState {
             return now - state.startedAt <= state.timeLimit ? state : timeUp(state, now, rng);
         case "spamPause":
             return now >= state.resumeAt
-                ? enterLevel(state.level + 1, now, rng, state.curriculum, state.groups, state.mode)
+                ? enterLevel(
+                      state.level + 1,
+                      now,
+                      rng,
+                      state.curriculum,
+                      groupsOf(state.solved.challenge.modifiers),
+                      state.mode,
+                  )
                 : state;
         case "surgeBanner":
             // The surge stacks more groups than any level before, it cannot repeat the one before
@@ -176,7 +204,7 @@ export function tick(state: GameState, now: number, rng: Rng): GameState {
 
 // Waiting out a DON'T CLICK level solves it, every other level is lost
 function timeUp(state: PlayingState, now: number, rng: Rng): GameState {
-    return state.challenge.expected === "none" ? nextLevel(state, now, rng) : gameOver(state, now);
+    return state.challenge.expected === "none" ? nextLevel(state, now, rng) : gameOver(state, now, "timeout");
 }
 
 export function pause(state: GameState, now: number): GameState {
@@ -241,6 +269,6 @@ function playLevel(
 }
 
 // The score is the number of solved levels
-function gameOver(state: PlayingState, now: number): GameState {
-    return { phase: "gameOver", score: state.level - 1, endedAt: now, mode: state.mode };
+function gameOver(state: PlayingState, now: number, reason: LossReason): GameState {
+    return { phase: "gameOver", score: state.level - 1, endedAt: now, mode: state.mode, reason, lost: state };
 }

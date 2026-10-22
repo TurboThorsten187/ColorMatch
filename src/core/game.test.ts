@@ -1,10 +1,10 @@
 import { describe, expect, it } from "vitest";
+import { GAME_OVER_LOCK_MS, SURGE_BANNER_MS, SURGE_FIRST_LEVEL, SURGE_TIME_MS } from "./balance.ts";
 import type { ExpectedInput } from "./challenge.ts";
 import {
     answer,
     confirm,
     DOUBLE_TAPS,
-    GAME_OVER_LOCK_MS,
     type GameState,
     isSpamBang,
     MENU,
@@ -17,7 +17,6 @@ import {
     SPAM_PRESSES_NEEDED,
     SPAM_WORD,
     startGame,
-    SURGE_BANNER_MS,
     type SurgeBannerState,
     tick,
     toMenu,
@@ -28,8 +27,6 @@ import {
     DUO_EXTRA_MS,
     introLevel,
     NO_CLICK_TIME_SHARE,
-    SURGE_FIRST_LEVEL,
-    SURGE_TIME_MS,
     surgeGroupCount,
     tempoFor,
     timeLimitFor,
@@ -67,6 +64,11 @@ function playing(
         taps: 0,
         curriculum: CURRICULUM,
     };
+}
+
+// A lost game that scored `score`, lost with a wrong press at `endedAt`
+function lostGame(score: number, endedAt: number, mode: PlayingState["mode"] = "normal"): GameState {
+    return { phase: "gameOver", mode, score, endedAt, reason: "miss", lost: { ...playing("true", score + 1), mode } };
 }
 
 function levelOf(state: GameState): number | undefined {
@@ -125,11 +127,15 @@ describe("game", () => {
     });
 
     it("ends the game on a wrong answer with the solved levels as score", () => {
-        expect(answer(playing("true", 4), "false", 100, rng)).toEqual({
+        const state = playing("true", 4);
+
+        expect(answer(state, "false", 100, rng)).toEqual({
             phase: "gameOver",
             mode: "normal",
             score: 3,
             endedAt: 100,
+            reason: "miss",
+            lost: state,
         });
     });
 
@@ -142,17 +148,20 @@ describe("game", () => {
             mode: "normal",
             score: 0,
             endedAt: state.timeLimit + 1,
+            reason: "timeout",
+            lost: state,
         });
     });
 
     it("does not accept an answer that comes after the time ran out", () => {
         const late = playing("true").timeLimit + 1;
 
-        expect(answer(playing("true"), "true", late, rng)).toEqual({
+        expect(answer(playing("true"), "true", late, rng)).toMatchObject({
             phase: "gameOver",
             mode: "normal",
             score: 0,
             endedAt: late,
+            reason: "timeout",
         });
         expect(levelOf(answer(playing("none"), "true", late, rng))).toBe(2);
         expect(answer(playing("spam"), "true", late, rng).phase).toBe("gameOver");
@@ -239,7 +248,9 @@ describe("game", () => {
             level: 1,
             resumeAt: 100 + SPAM_BANG_MS + SPAM_PAUSE_MS,
             curriculum: CURRICULUM,
-            groups: ["spam"],
+            // The level as it was at the last press, every character lit
+            solved: { ...playing("spam"), spamCount: SPAM_PRESSES_NEEDED },
+            solvedAt: 100,
         });
         if (state.phase !== "spamPause") throw new Error("expected the spam pause");
 
@@ -265,7 +276,8 @@ describe("game", () => {
             level: 44,
             resumeAt: 0,
             curriculum: CURRICULUM,
-            groups: ["spam"],
+            solved: playing("spam", 44),
+            solvedAt: 0,
         };
         for (let run = 0; run < 300; run++) {
             const next = tick(spamPause, 0, rng);
@@ -286,7 +298,7 @@ describe("game", () => {
     });
 
     it("ignores answers and time outside of a running level", () => {
-        const over: GameState = { phase: "gameOver", mode: "normal", score: 2, endedAt: 0 };
+        const over = lostGame(2, 0);
 
         expect(answer(MENU, "true", 0, rng)).toBe(MENU);
         expect(answer(over, "true", 0, rng)).toBe(over);
@@ -317,7 +329,8 @@ describe("surge", () => {
             level: SURGE_FIRST_LEVEL - 1,
             resumeAt: 100,
             curriculum: CURRICULUM,
-            groups: ["spam"],
+            solved: playing("spam", SURGE_FIRST_LEVEL - 1),
+            solvedAt: 0,
         };
         expect(tick(spamPause, 100, rng)).toEqual(banner);
     });
@@ -369,7 +382,8 @@ describe("pause", () => {
             level: 3,
             resumeAt: 1000,
             curriculum: CURRICULUM,
-            groups: [],
+            solved: playing("true", 3),
+            solvedAt: 0,
         };
         const resumed = resume(pause(state, 500), 10500);
 
@@ -397,7 +411,7 @@ describe("pause", () => {
     });
 
     it("only pauses a running level", () => {
-        const over: GameState = { phase: "gameOver", mode: "normal", score: 1, endedAt: 0 };
+        const over = lostGame(1, 0);
 
         expect(pause(MENU, 0)).toBe(MENU);
         expect(pause(over, 0)).toBe(over);
@@ -421,7 +435,7 @@ describe("confirm", () => {
     });
 
     it("retries after game over, but not right away", () => {
-        const over: GameState = { phase: "gameOver", mode: "normal", score: 4, endedAt: 1000 };
+        const over = lostGame(4, 1000);
 
         expect(confirm(over, 1000 + GAME_OVER_LOCK_MS - 1, rng)).toBe(over);
         expect(confirm(over, 1000 + GAME_OVER_LOCK_MS, rng)).toMatchObject({
@@ -434,7 +448,7 @@ describe("confirm", () => {
     it("leaves out the groups that hide the shapes when started or retried colorblind", () => {
         const hidden = (state: GameState): string[] =>
             state.phase === "playing" ? state.curriculum.filter((id) => groupById(id).hidesShapes) : ["not playing"];
-        const over: GameState = { phase: "gameOver", mode: "hardcore", score: 4, endedAt: 1000 };
+        const over = lostGame(4, 1000, "hardcore");
 
         expect(hidden(confirm(MENU, 50, rng, true))).toEqual([]);
         expect(hidden(confirm(over, 1000 + GAME_OVER_LOCK_MS, rng, true))).toEqual([]);
@@ -479,7 +493,8 @@ describe("confirm", () => {
             level: 1,
             resumeAt: 100,
             curriculum: CURRICULUM,
-            groups: [],
+            solved: playing("true", 1),
+            solvedAt: 0,
         };
 
         expect(confirm(state, 10, rng)).toBe(state);
@@ -489,7 +504,7 @@ describe("confirm", () => {
 
 describe("toMenu", () => {
     it("leaves the game over screen for the menu, but not right away", () => {
-        const over: GameState = { phase: "gameOver", mode: "normal", score: 4, endedAt: 1000 };
+        const over = lostGame(4, 1000);
 
         expect(toMenu(over, 1000 + GAME_OVER_LOCK_MS - 1)).toBe(over);
         expect(toMenu(over, 1000 + GAME_OVER_LOCK_MS)).toBe(MENU);

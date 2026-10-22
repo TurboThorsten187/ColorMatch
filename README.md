@@ -167,18 +167,23 @@ Das Spiel ist mit Svelte 5 und TypeScript gebaut (`src/`). Abhängigkeiten laufe
 - `src/core/` – reine Spiellogik ohne DOM und ohne Speicherzugriff: Zustandsautomat (`game.ts`), Aufgaben, Modifier,
   Farben, Highscore, Einstellungen, Awards (`awards.ts`), Stats (`stats.ts`), Tutorial (`tutorial.ts`),
   Modifier-Karten (`intros.ts`), Progression (`progression.ts`: Einführungsreihenfolge, Auswahl pro Level, Surges,
-  Zeitlimit) und der Spielstand (`save.ts`). Alle Übergänge sind Funktionen `(Zustand, Eingabe, Zeit, Zufall) → neuer
-Zustand` und damit direkt testbar.
+  Zeitlimit), der Spielstand (`save.ts`), die Spielereignisse (`events.ts`: was zwischen zwei Zuständen passiert ist)
+  und alle Stellschrauben der Schwierigkeit (`balance.ts`). Alle Übergänge sind Funktionen
+  `(Zustand, Eingabe, Zeit, Zufall) → neuer Zustand` und damit direkt testbar.
 - `src/platform/` – die Anbindung an den Browser: Speichern (`storage.ts`), Sound über die Web Audio API (`sound.ts`;
   `synth.ts` beschreibt, wie jeder Sound erzeugt wird), Schriften (`fonts.ts`; die 28 Schriften für Font Flip lädt
   das Spiel nach dem Start im Hintergrund) und das Installieren als App.
-- `src/app/` – Spielablauf ohne Darstellung: Navigation mit den Pfeiltasten, Warteschlange der Award-Meldungen.
-- `src/ui/` – Svelte-Komponenten: `screens/` (ein Screen pro Datei), `hud/` (Level, Timer und Hinweise über dem
-  Spiel) und `word/` (das Wort mit seinen Modifiern). Modifier werden per CSS (Transform, Filter) dargestellt;
-  Bewegung, Zittern, Pulsieren, Mischen, Einfliegen, Schriftwechsel und Negativ berechnet `word/effects.ts` aus der
-  Zeit seit Levelbeginn.
-- `src/App.svelte` – verbindet alles: Spielschleife (`requestAnimationFrame`), Tastatur und Touch, Pause beim
-  Verlassen des Tabs, Speichern des Spielstands, Sounds zu Spielereignissen.
+- `src/app/` – Spielablauf ohne Darstellung: Die Session (`session.svelte.ts`) hält Spielzustand, Tutorial,
+  Modifier-Karten, Spielstand, Stats und Awards und entscheidet, was eine Eingabe auf welchem Screen bewirkt. Speicher,
+  Uhr, Zufall und Sounds bekommt sie übergeben, deshalb lässt sie sich ohne Browser testen. Dazu Tastenbelegung,
+  Navigation mit den Pfeiltasten und die Warteschlange der Award-Meldungen.
+- `src/ui/` – Svelte-Komponenten: `Stage.svelte` (Rahmen und Farben jedes Screens), `Screens.svelte` (welcher Screen
+  gerade dran ist), `sounds.ts` (welches Ereignis wie klingt), `screens/` (ein Screen pro Datei), `hud/` (Level, Timer
+  und Hinweise über dem Spiel) und `word/` (das Wort mit seinen Modifiern). Modifier werden per CSS (Transform,
+  Filter) dargestellt; Bewegung, Zittern, Pulsieren, Mischen, Einfliegen, Schriftwechsel und Negativ berechnet
+  `word/effects.ts` aus der Zeit seit Levelbeginn.
+- `src/App.svelte` – verbindet die Session mit dem Browser: Spielschleife (`requestAnimationFrame`), Tastatur und
+  Touch, Pause beim Verlassen des Tabs, Änderungen aus anderen Tabs.
 - `public/` – wird unverändert mitgeliefert: Web-App-Manifest, Icons und der Service Worker `sw.js` für den
   Offline-Betrieb. Der Service Worker läuft nur im Produktions-Build, zum Testen also `npm run build` und
   `npm run preview`. Die PNG-Icons und `favicon.ico` sind aus `favicon.svg` gerendert und müssen bei Änderungen neu

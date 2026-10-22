@@ -1,6 +1,5 @@
 import type { ColorWord } from "./challenge.ts";
 import type { Color } from "./colors.ts";
-import type { GameState } from "./game.ts";
 import { groupsOf, type ModifierGroupId, type ModifierId } from "./modifiers.ts";
 
 // One card per modifier group, both mirrors share one
@@ -186,13 +185,4 @@ export function introById(id: IntroId): ModifierIntro {
 // The cards a level needs before it starts, each one only the first time its modifier shows up
 export function newIntros(modifiers: ReadonlySet<ModifierId>, seen: readonly IntroId[]): IntroId[] {
     return groupsOf(modifiers).filter((id) => !seen.includes(id));
-}
-
-// Cards are due when a level begins, not when a paused level continues or a SPAM! tap stays on the same level
-export function introsForLevel(previous: GameState, next: GameState, seen: readonly IntroId[]): IntroId[] {
-    const begins =
-        next.phase === "playing" &&
-        previous.phase !== "paused" &&
-        (previous.phase !== "playing" || next.level > previous.level);
-    return begins ? newIntros(next.challenge.modifiers, seen) : [];
 }
