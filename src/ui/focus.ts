@@ -5,8 +5,6 @@ import { type Direction, neighbor } from "@/app/spatialNav.ts";
 
 // What the selection can land on; the volume buttons are left out because the volume bar takes left and right
 const NAVIGABLE = 'button:not(:disabled):not([tabindex="-1"]), [role="slider"]';
-// A pressed button gives way this long before it acts
-const BUTTON_PRESS_MS = 120;
 
 // Moves the focus inside `stage` to the nearest button in `direction`. While the selection is hidden (mouse or touch
 // were used) the first key only shows it. Returns whether the focus moved.
@@ -40,29 +38,4 @@ export function focusHovered(event: PointerEvent, stage: HTMLElement): boolean {
     if (!item || !stage.contains(item)) return false;
     if (item !== document.activeElement) item.focus({ preventScroll: true });
     return true;
-}
-
-// Set while a held back click is replayed, so it is not held back again
-let replaying = false;
-
-// A press of a button, by tap, click, Enter or Space, is held back until the button has given way (its `data-press`
-// state), so the press can be seen even when the screen changes right after. Buttons with their own press feedback
-// opt out with data-no-press. For the stage's click capture.
-export function holdPress(event: MouseEvent): void {
-    if (replaying || !(event.target instanceof Element)) return;
-    const button = event.target.closest("button");
-    if (!button || button.dataset.noPress !== undefined) return;
-    event.stopPropagation();
-    if (button.dataset.press !== undefined) return;
-    button.dataset.press = "";
-    setTimeout(() => {
-        delete button.dataset.press;
-        if (!button.isConnected || button.disabled) return;
-        replaying = true;
-        try {
-            button.click();
-        } finally {
-            replaying = false;
-        }
-    }, BUTTON_PRESS_MS);
 }

@@ -30,7 +30,7 @@
         gap: 12px;
         padding: 10px;
         background: #000;
-        border: 3px solid var(--yellow);
+        border: var(--line) solid var(--yellow);
         box-shadow: 4px 4px 0 color-mix(in srgb, var(--yellow) 42%, #000);
         font-size: max(11px, calc(1.5 * var(--unit)));
         pointer-events: none;
@@ -41,7 +41,7 @@
     .badge {
         width: 44px;
         flex: none;
-        font-size: 11px;
+        font-size: var(--text-small);
     }
 
     .text {
@@ -50,7 +50,7 @@
     }
 
     small {
-        font-size: 10px;
+        font-size: var(--text-tiny);
         color: var(--yellow);
     }
 

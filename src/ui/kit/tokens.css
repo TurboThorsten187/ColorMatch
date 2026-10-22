@@ -1,0 +1,34 @@
+/* The values the screens share ("Classic Arcade", CLAUDE.md). The six game colors are not here: the stage sets them
+   as --red … --cyan from COLOR_CSS, the one place they are defined. */
+:root {
+    /* Grays on the black background, by what they are used for */
+    --text-soft: #ddd;
+    --text-dim: #bbb;
+    --text-note: #999;
+    --text-off: #777;
+    --text-locked: #666;
+    --line-off: #555;
+    --line-locked: #444;
+    --line-faint: #333;
+    --fill-off: #262626;
+
+    /* Frames of buttons, cards and bars */
+    --line: 3px;
+    --line-bold: 4px;
+
+    /* Fixed text sizes: nothing below --text-tiny, card and button text at least --text-small */
+    --text-tiny: 10px;
+    --text-small: 11px;
+    --text-medium: 12px;
+    --text-large: 13px;
+
+    /* Every screen with buttons keeps this much free at the bottom for the stage's key help strip */
+    --key-help-room: 40px;
+}
+
+/* Short screens (phones in landscape) have no key help strip, so they need no room for it */
+@media (max-height: 520px) {
+    :root {
+        --key-help-room: 0px;
+    }
+}

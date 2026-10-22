@@ -177,6 +177,8 @@ Das Spiel ist mit Svelte 5 und TypeScript gebaut (`src/`). Abhängigkeiten laufe
   Modifier-Karten, Spielstand, Stats und Awards und entscheidet, was eine Eingabe auf welchem Screen bewirkt. Speicher,
   Uhr, Zufall und Sounds bekommt sie übergeben, deshalb lässt sie sich ohne Browser testen. Dazu Tastenbelegung,
   Navigation mit den Pfeiltasten und die Warteschlange der Award-Meldungen.
+- `src/ui/kit/` – die Bausteine der Screens: Button, Screen, Karte, Schalter, Regler und Kopfzeile; dazu
+  `tokens.css` mit den gemeinsamen Werten (Grautöne, Linienstärken, Schriftgrößen).
 - `src/ui/` – Svelte-Komponenten: `Stage.svelte` (Rahmen und Farben jedes Screens), `Screens.svelte` (welcher Screen
   gerade dran ist), `sounds.ts` (welches Ereignis wie klingt), `screens/` (ein Screen pro Datei), `hud/` (Level, Timer
   und Hinweise über dem Spiel) und `word/` (das Wort mit seinen Modifiern). Modifier werden per CSS (Transform,

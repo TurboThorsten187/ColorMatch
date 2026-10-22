@@ -1,6 +1,8 @@
 <script lang="ts">
     import { awardById, type AwardId } from "@/core/awards.ts";
     import AwardBadge from "@/ui/hud/AwardBadge.svelte";
+    import Button from "@/ui/kit/Button.svelte";
+    import Screen from "@/ui/kit/Screen.svelte";
     import { BUTTONS_APPEAR_MS, POWER_ON_MS } from "./lossAnimation.ts";
 
     interface Props {
@@ -23,67 +25,64 @@
     const listed = $derived(awards.slice(0, MAX_LISTED).map(awardById));
 </script>
 
-<div class="over" style:--power-on="{POWER_ON_MS}ms" style:--buttons="{BUTTONS_APPEAR_MS}ms">
-    <h1 class="title">GAME<br />OVER</h1>
+<Screen scroll>
+    <div class="over" style:--power-on="{POWER_ON_MS}ms" style:--buttons="{BUTTONS_APPEAR_MS}ms">
+        <h1 class="title">GAME<br />OVER</h1>
 
-    <dl class="scores">
-        <div class="row">
-            <dt>SCORE</dt>
-            <dd>{String(score).padStart(6, "0")}</dd>
-        </div>
-        <div class="row">
-            <dt class="hi">HI-SCORE</dt>
-            <dd>{String(highscore).padStart(6, "0")}</dd>
-        </div>
-    </dl>
+        <dl class="scores">
+            <div class="row">
+                <dt>SCORE</dt>
+                <dd>{String(score).padStart(6, "0")}</dd>
+            </div>
+            <div class="row">
+                <dt class="hi">HI-SCORE</dt>
+                <dd>{String(highscore).padStart(6, "0")}</dd>
+            </div>
+        </dl>
 
-    <div class="record">
-        {#if newRecord}<span class="blink">NEW HI-SCORE!</span>{/if}
+        <div class="record">
+            {#if newRecord}<span class="blink">NEW HI-SCORE!</span>{/if}
+        </div>
+
+        {#if listed.length > 0}
+            <div class="awards">
+                <h2>NEW AWARDS</h2>
+                <ul>
+                    {#each listed as award (award.id)}
+                        <li><span class="badge"><AwardBadge {award} /></span>{award.name}</li>
+                    {/each}
+                </ul>
+                {#if awards.length > MAX_LISTED}<div class="more">+{awards.length - MAX_LISTED} MORE</div>{/if}
+            </div>
+        {/if}
+
+        <div class="actions">
+            <div class="continue">CONTINUE?</div>
+            <Button
+                size="large"
+                color="var(--green)"
+                disabled={locked}
+                onclick={onretry}
+                {@attach (node) => {
+                    // Selected as soon as it can be pressed
+                    if (!locked) node.focus();
+                }}>RETRY</Button
+            >
+            <Button size="large" disabled={locked} onclick={onmenu}>MENU</Button>
+        </div>
     </div>
-
-    {#if listed.length > 0}
-        <div class="awards">
-            <h2>NEW AWARDS</h2>
-            <ul>
-                {#each listed as award (award.id)}
-                    <li><span class="badge"><AwardBadge {award} /></span>{award.name}</li>
-                {/each}
-            </ul>
-            {#if awards.length > MAX_LISTED}<div class="more">+{awards.length - MAX_LISTED} MORE</div>{/if}
-        </div>
-    {/if}
-
-    <div class="actions">
-        <div class="continue">CONTINUE?</div>
-        <button
-            class="retry"
-            disabled={locked}
-            onclick={onretry}
-            {@attach (node) => {
-                // Selected as soon as it can be pressed
-                if (!locked) node.focus();
-            }}>RETRY</button
-        >
-        <button class="menu" disabled={locked} onclick={onmenu}>MENU</button>
-    </div>
-</div>
+</Screen>
 
 <style>
     .over {
-        position: absolute;
-        inset: 0;
         display: flex;
         flex-direction: column;
         align-items: center;
         /* "safe" keeps the title reachable when the content is taller than the screen, which then scrolls */
         justify-content: safe center;
         gap: max(28px, calc(4 * var(--unit)));
-        /* The bottom keeps room for App's keys hint, the top the same so the content stays centered */
-        padding: calc(env(safe-area-inset-top) + 40px) 0 calc(env(safe-area-inset-bottom) + 40px);
-        overflow-y: auto;
-        touch-action: pan-y;
-        scrollbar-width: thin;
-        scrollbar-color: #555 #000;
+        /* As much room on top as the screen keeps at the bottom for the key help, so the content stays centered */
+        padding-top: var(--key-help-room);
     }
 
     /* Browser windows are wider than high: there the sizes follow the height, like in the menu */
@@ -97,7 +96,7 @@
     @media (max-height: 520px) {
         .over {
             gap: 12px;
-            padding-block: calc(env(safe-area-inset-top) + 12px) calc(env(safe-area-inset-bottom) + 12px);
+            padding-block: 12px;
         }
 
         .over .title {
@@ -162,8 +161,8 @@
         display: grid;
         gap: 10px;
         padding: 12px;
-        border: 3px solid var(--accent);
-        font-size: 10px;
+        border: var(--line) solid var(--accent);
+        font-size: var(--text-tiny);
     }
 
     h2 {
@@ -190,14 +189,15 @@
     .badge {
         width: 38px;
         flex: none;
-        font-size: 10px;
+        font-size: var(--text-tiny);
     }
 
     .more {
-        color: #bbb;
+        color: var(--text-dim);
     }
 
     .actions {
+        --button-height: 54px;
         display: flex;
         flex-direction: column;
         gap: 16px;
@@ -205,33 +205,8 @@
 
     .continue {
         text-align: center;
-        font-size: 11px;
-        color: #bbb;
-    }
-
-    button {
-        height: 54px;
-        border: 4px solid #fff;
-        border-radius: 0;
-        font-family: inherit;
-        font-size: 13px;
-        cursor: pointer;
-    }
-
-    button:disabled {
-        opacity: 0.4;
-        cursor: default;
-    }
-
-    .retry {
-        --button-color: var(--green);
-        background: #000;
-        color: #fff;
-    }
-
-    .menu {
-        background: #000;
-        color: #fff;
+        font-size: var(--text-small);
+        color: var(--text-dim);
     }
 
     /* The title switches on like the CRT that just went off: a bright line opens up and flickers */

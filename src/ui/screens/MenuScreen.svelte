@@ -2,6 +2,7 @@
     import { HARDCORE_UNLOCK_SCORE } from "@/core/balance.ts";
     import { COLOR_CSS, COLORS } from "@/core/colors.ts";
     import { answerOn } from "@/core/settings.ts";
+    import Button from "@/ui/kit/Button.svelte";
 
     interface Props {
         highscore: number;
@@ -53,7 +54,10 @@
 
 <div class="menu" class:crowded={oninstall !== undefined && hardcoreUnlocked}>
     {#if oninstall}
-        <button class="install" onclick={oninstall}>INSTALL</button>
+        <!-- Green already, so it is selected in the accent -->
+        <div class="install">
+            <Button ink="var(--green)" line="var(--green)" onclick={oninstall}>INSTALL</Button>
+        </div>
     {/if}
 
     <div class="hiscore">
@@ -87,11 +91,19 @@
     </div>
     <div class="play">
         <!-- Selected from the start, so Enter and the arrow keys begin here -->
-        <button class="start" onclick={onstart} {@attach (node) => node.focus()}>START GAME</button>
+        <Button
+            size="large"
+            color="var(--yellow)"
+            ink="var(--yellow)"
+            onclick={onstart}
+            {@attach (node) => node.focus()}>START GAME</Button
+        >
         <!-- Locked it can still be selected and pressed, and then tells what opens it -->
         <div class="slot">
-            <button
-                class="hardcore"
+            <Button
+                size="large"
+                color="var(--red)"
+                ink="var(--red)"
                 aria-disabled={!hardcoreUnlocked}
                 aria-describedby={hardcoreUnlocked ? undefined : "hardcore-hint"}
                 onclick={hardcoreUnlocked ? onhardcore : () => (lockHint = true)}
@@ -105,7 +117,7 @@
                     </svg>
                 {/if}
                 HARDCORE
-            </button>
+            </Button>
             {#if !hardcoreUnlocked}
                 <span id="hardcore-hint" class="hint" class:shown={lockHint}>CLEAR LEVEL {HARDCORE_UNLOCK_SCORE}</span>
             {/if}
@@ -113,8 +125,8 @@
     </div>
 
     <div class="buttons">
-        <button class="stats" onclick={onstats}>STATS</button>
-        <button class="setup" onclick={onsetup}>SETTINGS</button>
+        <Button size="large" color="var(--blue)" onclick={onstats}>STATS</Button>
+        <Button size="large" color="var(--red)" onclick={onsetup}>SETTINGS</Button>
     </div>
 </div>
 
@@ -164,7 +176,12 @@
         }
     }
 
+    /* The two ways to play, the same size whether HARDCORE is locked or not */
     .play {
+        --button-flex: none;
+        --button-width: max(240px, calc(30 * var(--unit)));
+        --button-height: max(56px, calc(6.4 * var(--unit)));
+        --button-font: max(13px, calc(1.6 * var(--unit)));
         display: flex;
         flex-direction: column;
         align-items: center;
@@ -201,36 +218,6 @@
         font-size: max(12px, calc(2.2 * var(--unit)));
     }
 
-    /* The two ways to play, the same size whether HARDCORE is locked or not */
-    .start,
-    .hardcore {
-        flex: none;
-        width: max(240px, calc(30 * var(--unit)));
-        height: max(56px, calc(6.4 * var(--unit)));
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 8px;
-        font-size: max(13px, calc(1.6 * var(--unit)));
-    }
-
-    .start {
-        --button-color: var(--yellow);
-        color: var(--yellow);
-    }
-
-    .hardcore {
-        --button-color: var(--red);
-        color: var(--red);
-    }
-
-    /* Locked it is gray, but selected and pressed in red like when it is open */
-    .hardcore[aria-disabled="true"] {
-        border-color: #444;
-        color: #666;
-        cursor: default;
-    }
-
     .slot {
         position: relative;
     }
@@ -250,29 +237,13 @@
         left: 0;
         right: 0;
         text-align: center;
-        font-size: 10px;
-        color: #bbb;
+        font-size: var(--text-tiny);
+        color: var(--text-dim);
         visibility: hidden;
     }
 
     .hint.shown {
         visibility: visible;
-    }
-
-    /* In the browser and on phones in landscape all four buttons have the same size */
-    @media (max-height: 520px), (min-width: 600px) {
-        .start,
-        .hardcore,
-        .buttons button {
-            flex: none;
-            width: max(200px, calc(24 * var(--unit)));
-            height: max(52px, calc(5.8 * var(--unit)));
-            font-size: max(12px, calc(1.3 * var(--unit)));
-        }
-
-        .buttons {
-            gap: 24px;
-        }
     }
 
     /* Short screens have no room below it, there the hint covers the label inside the border */
@@ -286,6 +257,9 @@
     }
 
     .buttons {
+        --button-flex: 0 1 180px;
+        --button-height: 52px;
+        --button-font: var(--text-small);
         margin-top: auto;
         width: calc(100% - 80px);
         display: flex;
@@ -293,34 +267,23 @@
         gap: 16px;
     }
 
-    button {
-        flex: 0 1 180px;
-        height: 52px;
-        border: 4px solid #fff;
-        border-radius: 0;
-        background: #000;
-        color: #fff;
-        font-family: inherit;
-        font-size: 11px;
-        cursor: pointer;
+    /* In the browser and on phones in landscape all four buttons have the same size */
+    @media (max-height: 520px), (min-width: 600px) {
+        .play,
+        .buttons {
+            --button-flex: none;
+            --button-width: max(200px, calc(24 * var(--unit)));
+            --button-height: max(52px, calc(5.8 * var(--unit)));
+            --button-font: max(12px, calc(1.3 * var(--unit)));
+        }
     }
 
-    .stats {
-        --button-color: var(--blue);
-    }
-
-    .setup {
-        --button-color: var(--red);
-    }
-
-    /* Small and out of the way in the top right corner; green already, so it is selected in the accent */
+    /* Small and out of the way in the top right corner */
     .install {
+        --button-height: 40px;
+        --button-padding: 0 8px;
         position: absolute;
         top: calc(env(safe-area-inset-top) + 16px);
         right: calc(env(safe-area-inset-right) + 16px);
-        height: 40px;
-        padding: 0 8px;
-        border: 3px solid var(--green);
-        color: var(--green);
     }
 </style>

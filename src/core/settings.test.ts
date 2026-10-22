@@ -1,13 +1,5 @@
 import { describe, expect, it } from "vitest";
-import {
-    answerOn,
-    changeVolume,
-    DEFAULT_SETTINGS,
-    parseSettings,
-    type Settings,
-    sideOf,
-    VOLUME_STEPS,
-} from "./settings.ts";
+import { answerOn, DEFAULT_SETTINGS, parseSettings, type Settings, sideOf } from "./settings.ts";
 
 describe("settings", () => {
     it("start with the defaults", () => {
@@ -36,16 +28,6 @@ describe("settings", () => {
         for (const stored of [42, null, "text", []]) {
             expect(parseSettings(stored)).toEqual(DEFAULT_SETTINGS);
         }
-    });
-
-    it("keep the volume between 1 and the number of steps", () => {
-        const quiet = { ...DEFAULT_SETTINGS, volume: 1 };
-        const loud = { ...DEFAULT_SETTINGS, volume: VOLUME_STEPS };
-
-        expect(changeVolume(DEFAULT_SETTINGS, 1).volume).toBe(DEFAULT_SETTINGS.volume + 1);
-        expect(changeVolume(DEFAULT_SETTINGS, -1).volume).toBe(DEFAULT_SETTINGS.volume - 1);
-        expect(changeVolume(quiet, -1)).toBe(quiet);
-        expect(changeVolume(loud, 1)).toBe(loud);
     });
 });
 

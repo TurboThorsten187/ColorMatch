@@ -52,8 +52,3 @@ export function parseSettings(stored: unknown): Settings {
         flipControls: flag(field(stored, "flipControls"), DEFAULT_SETTINGS.flipControls),
     };
 }
-
-export function changeVolume(settings: Settings, delta: number): Settings {
-    const volume = Math.min(VOLUME_STEPS, Math.max(1, settings.volume + delta));
-    return volume === settings.volume ? settings : { ...settings, volume };
-}
