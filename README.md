@@ -146,14 +146,20 @@ Voraussetzung: Node.js 20.19+ oder 22.13+.
 npm ci
 npm run dev        # Dev-Server mit Hot Reload
 npm run dev -- --host  # zusätzlich im WLAN erreichbar, z. B. zum Testen auf dem Handy
-npm run check      # alles, was auch die CI prüft: lint, typecheck, test, build
+npm run check      # lint, typecheck, Unit-Tests und build
 npm test           # Unit-Tests (Vitest)
+npm run test:e2e   # Browser-Tests (Playwright), spielen das Spiel in Chromium
 npm run typecheck  # svelte-check (TypeScript und Svelte)
 npm run lint       # ESLint und Prettier prüfen
 npm run format     # mit Prettier formatieren
 npm run build      # Produktions-Build nach dist/
 npm run preview    # Build lokal ansehen
 ```
+
+Die Browser-Tests in `e2e/` brauchen einmalig ein Chromium: `npx playwright install chromium`. Sie bauen das Spiel
+dafür mit `npm run build:e2e` und spielen es wie ein Mensch: Menü, Tutorial, Level, Game Over, Settings und Stats. Die
+CI führt sie zusätzlich zu `npm run check` aus und veröffentlicht nur, wenn beides grün ist. Im Test-Build und auf dem
+Dev-Server legt `?seed=42` in der Adresse den Zufall fest, so lässt sich ein Spiel genau wiederholen.
 
 Das Spiel ist mit Svelte 5 und TypeScript gebaut (`src/`):
 

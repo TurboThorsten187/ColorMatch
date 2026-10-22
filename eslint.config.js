@@ -6,7 +6,7 @@ import globals from "globals";
 import ts from "typescript-eslint";
 
 export default defineConfig(
-    globalIgnores(["dist/"]),
+    globalIgnores(["dist/", "dist-e2e/", "playwright-report/", "test-results/"]),
     js.configs.recommended,
     ts.configs.recommended,
     svelte.configs.recommended,
@@ -24,5 +24,9 @@ export default defineConfig(
         languageOptions: {
             parserOptions: { projectService: true, parser: ts.parser },
         },
+    },
+    {
+        files: ["e2e/**/*.ts", "playwright.config.ts"],
+        languageOptions: { globals: globals.node },
     },
 );
