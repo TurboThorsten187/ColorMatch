@@ -15,20 +15,12 @@ await loadFonts();
 // The modifier gallery for developers (src/ui/dev/Gallery.svelte), left out of production builds
 const gallery = import.meta.env.MODE !== "production" && new URLSearchParams(window.location.search).has("gallery");
 mount(gallery ? (await import("@/ui/dev/Gallery.svelte")).default : App, { target });
-const flipFonts = loadFlipFonts();
+// The FONT FLIP fonts, in the background
+void loadFlipFonts();
 
-// Offline support (public/sw.js): the worker keeps exactly the files this page loaded
+// Offline support (src/sw.ts), only in builds
 if (import.meta.env.PROD && "serviceWorker" in navigator) {
-    navigator.serviceWorker
-        .register("./sw.js")
-        .then(() => navigator.serviceWorker.ready)
-        // The FONT FLIP fonts belong to the loaded files, so they are there offline too
-        .then(async (registration) => {
-            await flipFonts;
-            const loaded = performance.getEntriesByType("resource").map((entry) => entry.name);
-            registration.active?.postMessage({ loaded });
-        })
-        .catch((error: unknown) => {
-            console.error("Service worker registration failed", error);
-        });
+    navigator.serviceWorker.register("./sw.js").catch((error: unknown) => {
+        console.error("Service worker registration failed", error);
+    });
 }

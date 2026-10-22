@@ -194,10 +194,11 @@ Das Spiel ist mit Svelte 5 und TypeScript gebaut (`src/`). Abhängigkeiten laufe
   aussieht, `WordView.svelte` stellt das per CSS (Transform, Filter) dar.
 - `src/App.svelte` – verbindet die Session mit dem Browser: Spielschleife (`requestAnimationFrame`), Tastatur und
   Touch, Pause beim Verlassen des Tabs, Änderungen aus anderen Tabs.
-- `public/` – wird unverändert mitgeliefert: Web-App-Manifest, Icons und der Service Worker `sw.js` für den
-  Offline-Betrieb. Der Service Worker läuft nur im Produktions-Build, zum Testen also `npm run build` und
-  `npm run preview`. Die PNG-Icons und `favicon.ico` sind aus `favicon.svg` gerendert und müssen bei Änderungen neu
-  exportiert werden.
+- Installieren und Offline-Betrieb (PWA) übernimmt vite-plugin-pwa (`vite.config.ts`): Es schreibt das
+  Web-App-Manifest, rendert bei jedem Build die Icons aus `public/favicon.svg` und baut den Service Worker
+  `src/sw.ts`. Der legt beim Installieren alle Dateien des Builds im Cache ab, alle Schriften eingeschlossen; mit
+  Internet kommt die Seite trotzdem immer frisch aus dem Netz. Der Service Worker läuft nur im Build, zum Testen also
+  `npm run build` und `npm run preview`.
 
 ## Deployment
 
