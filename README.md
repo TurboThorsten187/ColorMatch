@@ -57,7 +57,7 @@ die schweren; innerhalb einer Stufe wird die Reihenfolge jede Runde neu gemischt
 | Negative         | mittel | von 10 % bis 50 % der Zeit ist der ganze Bildschirm ein Fotonegativ, danach kurz ein Nachbild                                          |
 | Wait             | schwer | das Schild zeigt in den ersten 40 % der Zeit WAIT, dann NOW; ein Druck vorher ist TOO EARLY!                                           |
 | Double Tap       | schwer | die Antwort zweimal drücken, egal wie schnell; ein falscher Druck ist sofort ein Fehler                                                |
-| Duo              | schwer | zwei Wörter übereinander: TRUE, wenn beide oder keins zu ihrer Farbe passen (BOTH OR NEITHER); 1,5 s mehr Zeit                         |
+| Duo              | schwer | zwei Wörter übereinander: TRUE, wenn beide oder keins zu ihrer Farbe passen (BOTH OR NEITHER); 1 s mehr Zeit                           |
 
 Nach dem letzten Druck bei Spam bleibt das ganz erleuchtete SPAM! noch 0,12 s stehen, dann zeigt STOP SPAMMING! 0,5 s
 lang, dass weiteres Tippen nichts bringt.
@@ -69,7 +69,7 @@ bis Level 12 höchstens einer, ab Level 13 zwei, ab 25 drei, ab 37 vier und so w
 häufiger. Sobald zwei erlaubt sind, kommt ein neuer Modifier im Level nach seiner Einführung meist gleich noch einmal,
 zusammen mit einem bekannten.
 Jeder Modifier in einem Level bringt Extrazeit, auch schon der erste: leicht 0,2 s, mittel 0,3 s, schwer 0,4 s; Duo
-bekommt noch 1,5 s obendrauf, auch im Surge und im Hardcore. Bei Don't Click läuft nur 60 % der Zeit, damit man
+bekommt noch 1 s obendrauf, auch im Surge und im Hardcore. Bei Don't Click läuft nur 60 % der Zeit, damit man
 nicht so lange warten muss. Rotation, Pulsing, Shaky, Moving, Fade, Scrambled und Font Flip
 werden mit dem Level schneller, so wie die Zeit pro Level schrumpft (etwa 1,18-mal so schnell bei Level 40, 1,5-mal so
 schnell ab Level 80). Jeder
@@ -94,7 +94,7 @@ seltener und verschwinden dann ganz. Bis Level 40 kommt meist nur ein Modifier, 
 Level 80 ist jede Anzahl bis zum Höchstmaß gleich wahrscheinlich. Ab Level 50 ist jedes
 zehnte Level ein **Surge**: Ein Banner zeigt 0,9 s lang SURGE, dann kommen fünf Modifier gleichzeitig, bei jedem
 weiteren Surge einer mehr, soweit sie zusammenpassen (höchstens eine Regel). Ein Surge dauert immer 1,3 s, ohne
-Extrazeit pro Modifier; nur Duo bringt seine 1,5 s mit.
+Extrazeit pro Modifier; nur Duo bringt seine 1 s mit.
 
 **HARDCORE** öffnet sich im Menü, sobald ein normales Spiel Level 50 geschafft hat (vorher ist der Button grau mit
 Schloss und zeigt beim Drücken kurz CLEAR LEVEL 50). Es gibt keine Einführungen: Alle Modifier können ab Level 1 kommen, mit voller

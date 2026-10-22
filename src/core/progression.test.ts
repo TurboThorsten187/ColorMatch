@@ -21,6 +21,7 @@ import {
     isSurgeLevel,
     levelTempo,
     maxGroupCount,
+    type Mode,
     pickGroups,
     plainChance,
     strengthFor,
@@ -45,10 +46,10 @@ function seeded(seed: number): Rng {
 }
 
 // Plays one game's levels with the given curriculum
-function run(curriculum: Curriculum, rng: Rng, levels = 60): ModifierGroupId[][] {
+function run(curriculum: Curriculum, rng: Rng, levels = 60, mode: Mode = "normal"): ModifierGroupId[][] {
     const picked: ModifierGroupId[][] = [];
     for (let level = 1; level <= levels; level++) {
-        picked.push(pickGroups(level, curriculum, picked.at(-1) ?? [], rng));
+        picked.push(pickGroups(level, curriculum, picked.at(-1) ?? [], rng, mode));
     }
     return picked;
 }
@@ -126,21 +127,20 @@ describe("pickGroups", () => {
         }
     });
 
-    it("keeps to the maximum count, one rule group and no conflicts", () => {
+    it("keeps to the maximum count, one rule group and no conflicts, in hardcore too", () => {
         const rng = seeded(4);
-        for (let game = 0; game < 200; game++) {
-            run(createCurriculum(rng), rng, 80).forEach((groups, index) => {
-                const level = index + 1;
-                expect(groups.length).toBeLessThanOrEqual(
-                    isSurgeLevel(level) ? surgeGroupCount(level) : maxGroupCount(level),
-                );
-                expect(groups.filter((id) => groupById(id).rule).length).toBeLessThanOrEqual(1);
-                for (const a of groups) {
-                    for (const b of groups) {
-                        if (a !== b) expect(conflicts(a, b)).toBe(false);
-                    }
-                }
-            });
+        for (const mode of ["normal", "hardcore"] as const) {
+            for (let game = 0; game < 200; game++) {
+                run(createCurriculum(rng), rng, 80, mode).forEach((groups, index) => {
+                    const level = index + 1;
+                    expect(groups.length).toBeLessThanOrEqual(
+                        isSurgeLevel(level, mode) ? surgeGroupCount(level, mode) : maxGroupCount(level, mode),
+                    );
+                    expect(groups.filter((id) => groupById(id).rule).length).toBeLessThanOrEqual(1);
+                    const clashes = groups.flatMap((a) => groups.filter((b) => a !== b && conflicts(a, b)));
+                    expect(clashes, `${mode} level ${level}`).toEqual([]);
+                });
+            }
         }
     });
 
@@ -332,10 +332,10 @@ describe("timeLimitFor", () => {
         );
     });
 
-    it("gives DUO 1.5 s on top of its extra time, on a surge and in hardcore too", () => {
+    it("gives DUO 1 s on top of its extra time, on a surge and in hardcore too", () => {
         const base = timeLimitFor(20, [], false);
 
-        expect(DUO_EXTRA_MS).toBe(1500);
+        expect(DUO_EXTRA_MS).toBe(1000);
         expect(timeLimitFor(20, ["twoWords"], false)).toBe(base + EXTRA_TIME_MS.hard + DUO_EXTRA_MS);
         expect(timeLimitFor(SURGE_FIRST_LEVEL, ["rotation", "twoWords"], false)).toBe(SURGE_TIME_MS + DUO_EXTRA_MS);
         expect(timeLimitFor(2, ["twoWords"], false, "hardcore")).toBe(1000 + EXTRA_TIME_MS.hard + DUO_EXTRA_MS);
