@@ -63,6 +63,10 @@ paths:
   whether SETTINGS shows VIBRATION; the e2e tests run on a desktop, where it is hidden.
 - `src/ui/dev/AwardIcons.svelte` (`?awardIcons`, dev server only): every award badge as a 512 px achievement icon,
   photographed by `npm run store:achievements` (`scripts/store-achievements.mjs`) for the Play Console import.
+  `src/ui/dev/FeatureGraphic.svelte` (`?featureGraphic`) is the store's 1024 x 500 feature graphic, photographed with
+  the icon and the phone screenshots by `npm run store:listing` (`scripts/store-listing.mjs`), which also checks the
+  store texts in `store/<locale>/` against Play's lengths.
 - The modifier gallery (`src/ui/dev/Gallery.svelte`, dev server and e2e builds only, mounted by `main.ts` for
   `?gallery`): every group, or a combination (`?gallery=moving,shaky`), drawn by `WordView`; `&t=500` freezes the
-  time, `&level=80` sets tempo and strength, `&colorblind`, `&intro=rotation` shows the intro card.
+  time, `&level=80` sets tempo and strength, `&colorblind`, `&seed=3` other words, `&intro=rotation` shows the intro
+  card, `&screen` the combination as a whole `LevelScreen` (with `&highscore=64`), as the store screenshots use it.

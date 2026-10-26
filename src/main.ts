@@ -13,11 +13,14 @@ if (!target) {
 
 listenForInstallOffer();
 await loadFonts();
-// The modifier gallery and the achievement icons for developers (src/ui/dev/), left out of production builds
+// The modifier gallery, the achievement icons and the feature graphic for developers (src/ui/dev/), left out of
+// production builds
 const params = new URLSearchParams(window.location.search);
 const dev = import.meta.env.MODE !== "production";
 if (dev && params.has("gallery")) mount((await import("@/ui/dev/Gallery.svelte")).default, { target });
 else if (dev && params.has("awardIcons")) mount((await import("@/ui/dev/AwardIcons.svelte")).default, { target });
+else if (dev && params.has("featureGraphic"))
+    mount((await import("@/ui/dev/FeatureGraphic.svelte")).default, { target });
 else mount(App, { target });
 // The FONT FLIP fonts, in the background
 void loadFlipFonts();

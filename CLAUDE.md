@@ -33,6 +33,8 @@ Store).
 - `npm run format` – Prettier (4 spaces, 120 columns)
 - `npm run android:sync` – build and copy into `android/`; `android:open` (Android Studio), `android:run` (device or
   emulator). Gradle needs `JAVA_HOME` on a JDK 21 and `ANDROID_HOME` on the SDK.
+- `npm run store:listing` – the Play Store graphics into `dist-store/listing/` (icon, feature graphic, phone
+  screenshots); the store texts are in `store/<locale>/`
 
 ## Architecture
 
