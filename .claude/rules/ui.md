@@ -14,7 +14,8 @@ paths:
   frames and fixed text sizes come from `src/ui/kit/tokens.css`, never hex grays of their own. Buttons have no shadows.
 - Colors: the stage sets the six game colors as CSS variables (`--red` … `--cyan`); components use them, or
   `COLOR_CSS` from `src/core/colors.ts` in script, never hex values of their own, so every screen and the icon
-  (`public/favicon.svg`, updated by hand) show exactly the game's colors. `--accent` (`--yellow`, `--red` while a
+  (`public/favicon.svg` and the Android icon vectors in `android/app/src/main/res/`, updated by hand) show exactly the
+  game's colors. `--accent` (`--yellow`, `--red` while a
   hardcore game runs) colors the highlights of every screen a game shows.
 - Kit (`src/ui/kit/`): `Button` (`small` 44 px or `large` 56 px, `square`, `color` to be selected in, `ink`/`line` for
   colored text and frame) gives way for `PRESS_MS` (its `data-press` state, which the stage colors and shrinks) before

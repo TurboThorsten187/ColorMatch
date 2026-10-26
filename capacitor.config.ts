@@ -5,6 +5,10 @@ const config: CapacitorConfig = {
     appId: "io.github.turbothorsten187.colormatch",
     appName: "ColorMatch",
     webDir: "dist",
+    plugins: {
+        // MainActivity hides the bars; when a swipe shows them, light icons on the black game
+        SystemBars: { style: "DARK" },
+    },
 };
 
 export default config;

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Android 7 knows no adaptive icons: the color blocks of public/favicon.svg on a black circle -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="48dp"
+    android:height="48dp"
+    android:viewportWidth="512"
+    android:viewportHeight="512">
+    <path android:fillColor="#000000" android:pathData="M256,0a256,256 0,1 1,0 512a256,256 0,1 1,0 -512z" />
+    <path android:fillColor="#ff2238" android:pathData="M106,158h92v92h-92z" />
+    <path android:fillColor="#24ff3c" android:pathData="M210,158h92v92h-92z" />
+    <path android:fillColor="#2d6bff" android:pathData="M314,158h92v92h-92z" />
+    <path android:fillColor="#fff200" android:pathData="M106,262h92v92h-92z" />
+    <path android:fillColor="#b53dff" android:pathData="M210,262h92v92h-92z" />
+    <path android:fillColor="#00f0ff" android:pathData="M314,262h92v92h-92z" />
+</vector>

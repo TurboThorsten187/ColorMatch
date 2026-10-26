@@ -64,7 +64,13 @@ when the game loads. Across folders imports start at `src/` (`@/core/game.ts`), 
 - `src/main.ts` – awaits the UI and word fonts (the word is fitted by measuring them), mounts `App` (or the gallery),
   loads the Font Flip fonts in the background and registers the service worker in web builds (not in the app).
 - `src/platform/native.ts` – `isNativeApp()`: the app is told apart at runtime (`Capacitor.isNativePlatform()`), never
-  by a Vite mode, because every mode but `production` ships the gallery and the test seed.
+  by a Vite mode, because every mode but `production` ships the gallery and the test seed. `listenToApp` brings
+  Android's back button (App.svelte: `session.back()`, or `minimizeApp()` while `session.atMenu`) and the app going to
+  the background (`session.leave()`); in the web version it does nothing.
+- `android/` – the native frame: `MainActivity` keeps the system bars hidden (a swipe shows them for a moment), the
+  launch theme is black. The icon is vector drawables that repeat `public/favicon.svg` (`drawable/ic_launcher_foreground.xml`
+  for adaptive icons, `mipmap-anydpi/` for Android 7); change them with it. The save stays in the WebView's
+  `localStorage`, which Android's Auto Backup includes.
 - `src/sw.ts` + `vite.config.ts` – installable and offline (PWA): vite-plugin-pwa writes the manifest, renders the
   icons from `public/favicon.svg` on every build and builds the Workbox worker, which precaches every file of the
   build (all fonts included). The page comes from the network while online, so a new version shows at once; offline

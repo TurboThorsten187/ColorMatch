@@ -2,6 +2,7 @@
     import { directionOfKey, isBackKey, sideOfKey } from "@/app/keys.ts";
     import { Session } from "@/app/session.svelte.ts";
     import { currentStep } from "@/core/tutorial.ts";
+    import { listenToApp, minimizeApp } from "@/platform/native.ts";
     import { configureSound, unlockAudio } from "@/platform/sound.ts";
     import { browserStorage } from "@/platform/storage.ts";
     import { testRng } from "@/platform/testRng.ts";
@@ -45,6 +46,17 @@
         });
         return () => cancelAnimationFrame(frame);
     });
+
+    // In the Android app: back works like Escape and leaves the app from the menu, the background pauses like `blur`
+    $effect(() =>
+        listenToApp({
+            back: () => {
+                if (session.atMenu) minimizeApp();
+                else session.back();
+            },
+            hidden: () => session.leave(),
+        }),
+    );
 
     // When the key or finger went down, not when the handler runs a moment later. Falls back to now for events
     // without a usable time stamp.

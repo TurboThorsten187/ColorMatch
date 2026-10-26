@@ -165,7 +165,9 @@ Mehr Details und eine Checkliste für neue Modifier stehen in [`CLAUDE.md`](CLAU
 
 Die Android-App verpackt mit Capacitor denselben Produktions-Build wie die Web-Version. Ob das Spiel als App läuft,
 erkennt `src/platform/native.ts` zur Laufzeit; in der App gibt es keinen Service Worker, die Dateien liegen auf dem
-Gerät.
+Gerät. Die App läuft im Vollbild (Wischen vom Rand zeigt die Systemleisten kurz), die Zurück-Taste wirkt wie Esc und
+schickt die App im Menü in den Hintergrund, beim Wechsel in eine andere App pausiert das Spiel. Der Spielstand liegt im
+`localStorage` der WebView, die automatische Android-Sicherung nimmt ihn mit (z. B. bei einer Neuinstallation).
 
 Voraussetzungen: Android Studio Otter (2025.2.1) oder neuer, auf dem Handy die Entwickleroptionen mit USB-Debugging.
 Für die Befehle im Terminal muss `JAVA_HOME` auf ein JDK 21 zeigen (z. B. das von Android Studio,
