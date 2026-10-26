@@ -35,7 +35,8 @@ paths:
 - Screens: `LevelScreen` is a running level (also the solved SPAM! frozen at its last press), `LossScreen` plays the
   loss animation (`screens/lossAnimation.ts`, driven by the time since the loss) before `GameOverScreen`. Menu and game
   over redefine `--unit` with a stronger height cap, so low windows fit without scrolling; SETTINGS shrinks its rows
-  and gaps with the height. `hud/`: `TopBar` (level and highscore over a 24-block timer; the modifier cards reuse it
+  and gaps with the height. The menu's top corners hold INSTALL (right, while the browser offers it) and, in the app
+  with Play Games, the leaderboards and achievements icons or SIGN IN (left, `playGames` prop). `hud/`: `TopBar` (level and highscore over a 24-block timer; the modifier cards reuse it
   `inline` and `paused`), `TapHints`, `FeedbackFlash`, `AwardToast`, `AwardBadge`, `lowTimeGlow.ts`.
 - The word (`src/ui/word/`): one pipeline draws it in a level, the tutorial, the loss animation and on the intro
   cards. `wordFrame()` turns a challenge, the time and a box with its `Layout` (`STAGE`, or `CARD` for an intro card's
@@ -60,6 +61,8 @@ paths:
   loss heavy, nothing else); `src/platform/haptics.ts` plays it through `@capacitor/haptics` (the app's vibrator,
   `navigator.vibrate` in a phone browser). `canVibrate()` (the app, or a touch screen with the Vibration API) decides
   whether SETTINGS shows VIBRATION; the e2e tests run on a desktop, where it is hidden.
+- `src/ui/dev/AwardIcons.svelte` (`?awardIcons`, dev server only): every award badge as a 512 px achievement icon,
+  photographed by `npm run store:achievements` (`scripts/store-achievements.mjs`) for the Play Console import.
 - The modifier gallery (`src/ui/dev/Gallery.svelte`, dev server and e2e builds only, mounted by `main.ts` for
   `?gallery`): every group, or a combination (`?gallery=moving,shaky`), drawn by `WordView`; `&t=500` freezes the
   time, `&level=80` sets tempo and strength, `&colorblind`, `&intro=rotation` shows the intro card.

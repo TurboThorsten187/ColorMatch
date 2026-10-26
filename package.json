@@ -16,7 +16,8 @@
         "check": "npm run lint && npm run typecheck && npm test && npm run build",
         "android:sync": "npm run build && cap sync android",
         "android:open": "cap open android",
-        "android:run": "cap run android"
+        "android:run": "cap run android",
+        "store:achievements": "node scripts/store-achievements.mjs"
     },
     "devDependencies": {
         "@capacitor/cli": "^8.5.3",

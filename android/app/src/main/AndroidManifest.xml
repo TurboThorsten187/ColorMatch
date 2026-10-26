@@ -12,6 +12,9 @@
         <!-- Crash reports only (src/platform/crashReports.ts): no sessions, which the JS options cannot turn off here -->
         <meta-data android:name="io.sentry.auto-session-tracking.enable" android:value="false" />
 
+        <!-- Play Games Services, see res/values/games.xml -->
+        <meta-data android:name="com.google.android.gms.games.APP_ID" android:value="@string/game_services_project_id" />
+
         <activity
             android:configChanges="orientation|keyboardHidden|keyboard|screenSize|locale|smallestScreenSize|screenLayout|uiMode|navigation|density"
             android:name=".MainActivity"

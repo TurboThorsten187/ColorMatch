@@ -192,6 +192,22 @@ unter **Settings → Security & Privacy** einstellen:
 - **Advanced Data Scrubbing**: zwei Regeln mit Methode _Remove_ und Datentyp _Anything_, Quelle `contexts.device.id`
   und `$user.id`. Das Android-SDK hängt an native Abstürze eine Installations-ID an, die so nicht gespeichert wird.
 
+Google Play Games (Ranglisten und Erfolge) ist aus, bis die IDs aus der Play Console eingetragen sind. Einrichten unter
+**Grow users → Play Games Services → Setup and management**:
+
+1. Projekt anlegen und mit der App verknüpfen; OAuth-Zugangsdaten (Android) mit den SHA-1-Fingerabdrücken von Debug-,
+   Upload- und App-Signaturschlüssel.
+2. Zwei Ranglisten, Punkte als ganze Zahl, größer ist besser: **HI-SCORE** und **HARDCORE**.
+3. Erfolge: `npm run store:achievements` schreibt Icons und CSV-Dateien nach `dist-store/achievements/`. Die Dateien
+   des Ordners (ohne Unterordner) zippen, z. B.
+   `Compress-Archive dist-store/achievements/* dist-store/achievements.zip`, und unter **Achievements → Import
+   achievements** hochladen.
+4. Die Projekt-ID nach `android/app/src/main/res/values/games.xml`, die IDs der Ranglisten und Erfolge nach
+   `src/platform/playGamesIds.ts`; dann unter **Publishing** veröffentlichen.
+
+Angemeldet zeigt das Menü oben links zwei Knöpfe für Ranglisten und Erfolge, sonst **SIGN IN**. Highscores und Awards
+werden nach jedem Start und jeder Anmeldung nachgereicht, auch die von vorher.
+
 ## Deployment
 
 Jeder Push auf `main` baut das Spiel mit `.github/workflows/deploy.yml` und veröffentlicht es auf GitHub Pages. Dafür

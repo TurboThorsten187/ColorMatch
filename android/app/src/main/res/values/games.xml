@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- The Play Games Services project id from the Play Console (Play Games Services, Configuration). Empty: the app
+         runs without Play Games. Leaderboard and achievement ids are in src/platform/playGamesIds.ts. -->
+    <string name="game_services_project_id" translatable="false"></string>
+</resources>

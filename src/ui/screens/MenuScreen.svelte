@@ -4,6 +4,13 @@
     import { answerOn } from "@/core/settings.ts";
     import Button from "@/ui/kit/Button.svelte";
 
+    interface PlayGamesButtons {
+        signedIn: boolean;
+        onleaderboards: () => void;
+        onachievements: () => void;
+        onsignin: () => void;
+    }
+
     interface Props {
         highscore: number;
         hardcoreHighscore: number;
@@ -17,6 +24,8 @@
         onsetup: () => void;
         // Only while the browser offers to install the game
         oninstall?: () => void;
+        // Only in the app with Play Games: its leaderboards and achievements, SIGN IN while the automatic sign-in failed
+        playGames?: PlayGamesButtons;
     }
 
     let {
@@ -29,6 +38,7 @@
         onstats,
         onsetup,
         oninstall,
+        playGames,
     }: Props = $props();
 
     const TITLE_LINES = ["COLOR", "MATCH"];
@@ -52,7 +62,45 @@
     });
 </script>
 
-<div class="menu" class:crowded={oninstall !== undefined && hardcoreUnlocked}>
+<div class="menu" class:crowded={(oninstall !== undefined || playGames !== undefined) && hardcoreUnlocked}>
+    {#if playGames}
+        <!-- Green like INSTALL across, so it is selected in the accent -->
+        <div class="play-games">
+            {#if playGames.signedIn}
+                <Button
+                    square
+                    ink="var(--green)"
+                    line="var(--green)"
+                    aria-label="Leaderboards"
+                    onclick={playGames.onleaderboards}
+                >
+                    <svg class="icon" viewBox="0 0 10 10" aria-hidden="true">
+                        <rect x="3" y="2" width="4" height="8" />
+                        <rect y="5" width="3" height="5" />
+                        <rect x="7" y="4" width="3" height="6" />
+                    </svg>
+                </Button>
+                <Button
+                    square
+                    ink="var(--green)"
+                    line="var(--green)"
+                    aria-label="Achievements"
+                    onclick={playGames.onachievements}
+                >
+                    <svg class="icon" viewBox="0 0 10 10" aria-hidden="true">
+                        <rect x="2" width="6" height="5" />
+                        <rect y="1" width="2" height="2" />
+                        <rect x="8" y="1" width="2" height="2" />
+                        <rect x="4" y="5" width="2" height="2" />
+                        <rect x="2" y="7" width="6" height="3" />
+                    </svg>
+                </Button>
+            {:else}
+                <Button ink="var(--green)" line="var(--green)" onclick={playGames.onsignin}>SIGN IN</Button>
+            {/if}
+        </div>
+    {/if}
+
     {#if oninstall}
         <!-- Green already, so it is selected in the accent -->
         <div class="install">
@@ -169,7 +217,7 @@
         line-height: 1.8;
     }
 
-    /* Both hi-scores side by side reach under INSTALL on narrow screens, there they move down below it */
+    /* Both hi-scores side by side reach under INSTALL or Play Games on narrow screens, there they move down below it */
     @media (max-width: 459px) {
         .crowded .hiscore {
             margin-top: 48px;
@@ -285,5 +333,23 @@
         position: absolute;
         top: calc(env(safe-area-inset-top) + 16px);
         right: calc(env(safe-area-inset-right) + 16px);
+    }
+
+    /* Play Games in the top left corner, across from INSTALL */
+    .play-games {
+        --button-height: 40px;
+        --button-padding: 0 8px;
+        position: absolute;
+        top: calc(env(safe-area-inset-top) + 16px);
+        left: calc(env(safe-area-inset-left) + 16px);
+        display: flex;
+        gap: 8px;
+    }
+
+    .icon {
+        width: 20px;
+        height: 20px;
+        fill: currentColor;
+        shape-rendering: crispEdges;
     }
 </style>
