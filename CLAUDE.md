@@ -2,7 +2,11 @@
 
 Browser reaction game (Stroop effect): does the word match its ink color? Deployed to GitHub Pages
 (https://turbothorsten187.github.io/ColorMatch/) by `.github/workflows/deploy.yml` on every push to `main`, once
-`npm run check` and the e2e tests pass.
+`npm run check` and the e2e tests pass. The Android app's signed bundle (AAB) comes from
+`.github/workflows/android.yml` for a `v*` tag or by hand, uploaded to the Play Console by hand: `versionName` is the
+`version` in `package.json`, `versionCode` the workflow's run number (`ANDROID_VERSION_CODE`); the upload key and its
+passwords come from secrets (`ANDROID_KEYSTORE_*`, `ANDROID_KEY_*`), the JavaScript source maps go to Sentry and stay
+out of the app.
 
 More detail for an area loads with its files from `.claude/rules/`: `core.md` (game logic, progression, save),
 `modifiers.md` (modifier definitions and looks), `ui.md` (screens, kit, word rendering, look), `svelte.md` (Svelte 5
