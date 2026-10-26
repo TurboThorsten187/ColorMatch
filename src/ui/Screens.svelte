@@ -3,6 +3,7 @@
     import { awardById } from "@/core/awards.ts";
     import { isGameOverLocked, isSpamBang } from "@/core/game.ts";
     import { introById } from "@/core/intros.ts";
+    import { canVibrate } from "@/platform/haptics.ts";
     import { canInstall, install } from "@/platform/install.svelte.ts";
     import AwardToast from "./hud/AwardToast.svelte";
     import FeedbackFlash from "./hud/FeedbackFlash.svelte";
@@ -51,6 +52,7 @@
 {#if session.view === "settings"}
     <SettingsScreen
         {settings}
+        canVibrate={canVibrate()}
         onchange={(next) => session.changeSettings(next)}
         onreset={() => session.resetAll()}
         onreplay={() => session.startTutorial()}

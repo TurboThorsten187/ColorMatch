@@ -2,11 +2,13 @@
     import { directionOfKey, isBackKey, sideOfKey } from "@/app/keys.ts";
     import { Session } from "@/app/session.svelte.ts";
     import { currentStep } from "@/core/tutorial.ts";
+    import { configureHaptics } from "@/platform/haptics.ts";
     import { listenToApp, minimizeApp } from "@/platform/native.ts";
     import { configureSound, unlockAudio } from "@/platform/sound.ts";
     import { browserStorage } from "@/platform/storage.ts";
     import { testRng } from "@/platform/testRng.ts";
     import { focusHovered, moveFocus } from "@/ui/focus.ts";
+    import { feelEvent } from "@/ui/haptics.ts";
     import Screens from "@/ui/Screens.svelte";
     import { showsLoss } from "@/ui/screens/lossAnimation.ts";
     import { playEvent } from "@/ui/sounds.ts";
@@ -19,8 +21,14 @@
         storage: browserStorage(),
         rng: testRng() ?? Math.random,
         clock: () => performance.now(),
-        onEvent: playEvent,
-        onSettings: configureSound,
+        onEvent: (event) => {
+            playEvent(event);
+            feelEvent(event);
+        },
+        onSettings: (settings) => {
+            configureSound(settings);
+            configureHaptics(settings);
+        },
     });
 
     let width = $state(0);

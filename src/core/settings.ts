@@ -7,6 +7,8 @@ export interface Settings {
     readonly sound: boolean;
     // 1 (quietest) to VOLUME_STEPS (loudest)
     readonly volume: number;
+    // Only shown where the device can vibrate
+    readonly vibration: boolean;
     readonly scanlines: boolean;
     // Shapes instead of colors, see SHAPE_WORDS
     readonly colorblind: boolean;
@@ -17,6 +19,7 @@ export interface Settings {
 export const DEFAULT_SETTINGS: Settings = {
     sound: true,
     volume: 5,
+    vibration: true,
     scanlines: true,
     colorblind: false,
     flipControls: false,
@@ -47,6 +50,7 @@ export function parseSettings(stored: unknown): Settings {
     return {
         sound: flag(field(stored, "sound"), DEFAULT_SETTINGS.sound),
         volume: isVolume(volume) ? volume : DEFAULT_SETTINGS.volume,
+        vibration: flag(field(stored, "vibration"), DEFAULT_SETTINGS.vibration),
         scanlines: flag(field(stored, "scanlines"), DEFAULT_SETTINGS.scanlines),
         colorblind: flag(field(stored, "colorblind"), DEFAULT_SETTINGS.colorblind),
         flipControls: flag(field(stored, "flipControls"), DEFAULT_SETTINGS.flipControls),
