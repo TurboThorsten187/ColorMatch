@@ -36,7 +36,7 @@ Store).
 src/ui/  ──►  src/app/  ──►  src/core/  ──►  src/modifiers/
   (Svelte)     (Session)      (pure rules)    (one folder per modifier group)
                   │
-            src/platform/  (the browser: storage, sound, fonts, install, test seed)
+            src/platform/  (the browser and the app: storage, sound, vibration, fonts, install, test seed)
 ```
 
 Imports go one way along the arrows; `ui` may also use `platform`, `core` and `modifiers` directly. Modifier
@@ -57,7 +57,8 @@ when the game loads. Across folders imports start at `src/` (`@/core/game.ts`), 
   without a browser.
 - `src/ui/` – Svelte: `Stage.svelte` (the frame and the game colors), `Screens.svelte` (picks the screen for the
   session), `screens/`, `hud/`, `word/` (draws the color word), `kit/` (buttons, cards, screens, `tokens.css`),
-  `sounds.ts` (`SessionEvent`s to sounds), `dev/` (the modifier gallery).
+  `sounds.ts` (`SessionEvent`s to sounds), `haptics.ts` (`SessionEvent`s to vibrations), `dev/` (the modifier
+  gallery).
 - `src/App.svelte` – the browser side: creates the `Session` (with `localStorage`, `performance.now`, the URL seed,
   `playEvent`, `configureSound`), runs the rAF loop and turns keys, pointer, `blur`/`visibilitychange` and `storage`
   events into session calls.

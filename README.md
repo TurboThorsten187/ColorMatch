@@ -96,6 +96,8 @@ Modifier. Ein Badge antippen zeigt die Bedingung und den Fortschritt.
 ## Einstellungen
 
 - **SOUND** an oder aus, Lautstärke in 8 Stufen. Die Sounds sind Chiptunes, die der Browser selbst erzeugt.
+- **VIBRATION** an oder aus, nur auf Geräten, die vibrieren können: leicht bei jedem SPAM!-Tipp, kräftiger bei einem
+  Fehler im Tutorial, am stärksten, wenn ein Spiel verloren ist.
 - **SCANLINES** für den Röhrenmonitor-Look.
 - **COLORBLIND** zeigt Formen statt Farben: Die Wörter nennen Formen, und die Buchstaben sind mit den Formen gefüllt.
   Gefragt ist dasselbe wie sonst.

@@ -9,6 +9,8 @@
 
     interface Props {
         settings: Settings;
+        // The VIBRATION row only shows where the device can vibrate
+        canVibrate: boolean;
         onchange: (next: Settings) => void;
         // Called once the reset button was held long enough
         onreset: () => void;
@@ -17,9 +19,9 @@
         onback: () => void;
     }
 
-    let { settings, onchange, onreset, onreplay, onback }: Props = $props();
+    let { settings, canVibrate, onchange, onreset, onreplay, onback }: Props = $props();
 
-    type Switch = "sound" | "scanlines" | "colorblind" | "flipControls";
+    type Switch = "sound" | "vibration" | "scanlines" | "colorblind" | "flipControls";
 
     // Deleting everything must not happen by accident: the button has to be held this long
     const HOLD_MS = 1500;
@@ -106,6 +108,13 @@
                     onchange={(volume) => onchange({ ...settings, volume })}
                 />
             </div>
+
+            {#if canVibrate}
+                <div class="row">
+                    <span id="vibration-label">VIBRATION</span>
+                    {@render onOff("vibration", "vibration-label")}
+                </div>
+            {/if}
 
             <div class="row">
                 <span id="scanlines-label">SCANLINES</span>

@@ -10,6 +10,7 @@ describe("settings", () => {
         const settings: Settings = {
             sound: false,
             volume: 2,
+            vibration: false,
             scanlines: false,
             colorblind: true,
             flipControls: true,
@@ -19,9 +20,22 @@ describe("settings", () => {
     });
 
     it("replace each invalid field with its default", () => {
-        const stored = { sound: "yes", volume: 99, scanlines: false, colorblind: "on", flipControls: 1 };
+        const stored = {
+            sound: "yes",
+            volume: 99,
+            vibration: "off",
+            scanlines: false,
+            colorblind: "on",
+            flipControls: 1,
+        };
 
         expect(parseSettings(stored)).toEqual({ ...DEFAULT_SETTINGS, scanlines: false });
+    });
+
+    it("turn vibration on for saves from before it existed", () => {
+        const { vibration, ...older } = DEFAULT_SETTINGS;
+
+        expect(parseSettings({ ...older, sound: false }).vibration).toBe(vibration);
     });
 
     it("ignore stored values that are not a settings object", () => {

@@ -56,6 +56,10 @@ paths:
 - Sound: `sounds.ts` turns `SessionEvent`s into cues timed to the screens (`cuesFor`); `src/platform/sound.ts` wraps
   Web Audio, `unlockAudio()` runs on every input (browsers need a gesture; on touch only `pointerup` counts), each
   sound is built from oscillators when it plays.
+- Vibration: `haptics.ts` maps `SessionEvent`s to a strength (`vibrationFor`: SPAM! tap light, practice miss medium,
+  loss heavy, nothing else); `src/platform/haptics.ts` plays it through `@capacitor/haptics` (the app's vibrator,
+  `navigator.vibrate` in a phone browser). `canVibrate()` (the app, or a touch screen with the Vibration API) decides
+  whether SETTINGS shows VIBRATION; the e2e tests run on a desktop, where it is hidden.
 - The modifier gallery (`src/ui/dev/Gallery.svelte`, dev server and e2e builds only, mounted by `main.ts` for
   `?gallery`): every group, or a combination (`?gallery=moving,shaky`), drawn by `WordView`; `&t=500` freezes the
   time, `&level=80` sets tempo and strength, `&colorblind`, `&intro=rotation` shows the intro card.
