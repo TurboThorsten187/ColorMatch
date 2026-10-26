@@ -1,6 +1,7 @@
 import { mount } from "svelte";
 import { loadFlipFonts, loadFonts } from "@/platform/fonts.ts";
 import { listenForInstallOffer } from "@/platform/install.svelte.ts";
+import { isNativeApp } from "@/platform/native.ts";
 import App from "./App.svelte";
 import "@/ui/kit/tokens.css";
 import "./app.css";
@@ -18,8 +19,8 @@ mount(gallery ? (await import("@/ui/dev/Gallery.svelte")).default : App, { targe
 // The FONT FLIP fonts, in the background
 void loadFlipFonts();
 
-// Offline support (src/sw.ts), only in builds
-if (import.meta.env.PROD && "serviceWorker" in navigator) {
+// Offline support (src/sw.ts), only in web builds: the Android app has its files on the device
+if (import.meta.env.PROD && !isNativeApp() && "serviceWorker" in navigator) {
     navigator.serviceWorker.register("./sw.js").catch((error: unknown) => {
         console.error("Service worker registration failed", error);
     });

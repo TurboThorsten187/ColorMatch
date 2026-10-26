@@ -14,7 +14,9 @@ Svelte 5 (runes) + TypeScript, Vite 8, Vitest, Playwright, ESLint (flat config) 
 Workbox. Runtime dependencies besides Svelte: self-hosted fonts via `@fontsource` (Press Start 2P for the UI,
 Orbitron 900 for the color word, plus 26 display fonts for the Font Flip modifier, `FLIP_FONTS` in
 `src/platform/fonts.ts`; latin subsets only). Sounds are chiptune sounds synthesized with Web Audio oscillators
-(`src/platform/synth.ts`), there are no audio files.
+(`src/platform/synth.ts`), there are no audio files. Capacitor 8 wraps the same production build as the Android app
+(`android/`, `capacitor.config.ts`, app id `io.github.turbothorsten187.colormatch`, fixed for good once in the Play
+Store).
 
 ## Commands
 
@@ -25,6 +27,8 @@ Orbitron 900 for the color word, plus 26 display fonts for the Font Flip modifie
   touches the UI, `App.svelte` or the service worker. They need a Chromium: `npx playwright install chromium`, or
   `CHROMIUM_PATH` pointing to an installed one (in Claude Code cloud sessions `CHROMIUM_PATH=/opt/pw-browsers/chromium`)
 - `npm run format` – Prettier (4 spaces, 120 columns)
+- `npm run android:sync` – build and copy into `android/`; `android:open` (Android Studio), `android:run` (device or
+  emulator). Gradle needs `JAVA_HOME` on a JDK 21 and `ANDROID_HOME` on the SDK.
 
 ## Architecture
 
@@ -58,7 +62,9 @@ when the game loads. Across folders imports start at `src/` (`@/core/game.ts`), 
   `playEvent`, `configureSound`), runs the rAF loop and turns keys, pointer, `blur`/`visibilitychange` and `storage`
   events into session calls.
 - `src/main.ts` – awaits the UI and word fonts (the word is fitted by measuring them), mounts `App` (or the gallery),
-  loads the Font Flip fonts in the background and registers the service worker in builds.
+  loads the Font Flip fonts in the background and registers the service worker in web builds (not in the app).
+- `src/platform/native.ts` – `isNativeApp()`: the app is told apart at runtime (`Capacitor.isNativePlatform()`), never
+  by a Vite mode, because every mode but `production` ships the gallery and the test seed.
 - `src/sw.ts` + `vite.config.ts` – installable and offline (PWA): vite-plugin-pwa writes the manifest, renders the
   icons from `public/favicon.svg` on every build and builds the Workbox worker, which precaches every file of the
   build (all fonts included). The page comes from the network while online, so a new version shows at once; offline
