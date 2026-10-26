@@ -15,7 +15,7 @@ function layer(...patterns) {
 }
 
 export default defineConfig(
-    globalIgnores(["dist/", "dist-e2e/", "playwright-report/", "test-results/", "android/"]),
+    globalIgnores(["dist/", "dist-e2e/", "dist-store/", "playwright-report/", "test-results/", "android/"]),
     js.configs.recommended,
     ts.configs.recommended,
     svelte.configs.recommended,
@@ -72,7 +72,7 @@ export default defineConfig(
         rules: layer({ regex: "^@/ui/", message: "app drives the game and knows nothing of ui" }),
     },
     {
-        files: ["e2e/**/*.ts", "playwright.config.ts"],
+        files: ["e2e/**/*.ts", "playwright.config.ts", "scripts/**"],
         languageOptions: { globals: globals.node },
     },
 );

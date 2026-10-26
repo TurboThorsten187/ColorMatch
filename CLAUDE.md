@@ -68,6 +68,12 @@ when the game loads. Across folders imports start at `src/` (`@/core/game.ts`), 
   by a Vite mode, because every mode but `production` ships the gallery and the test seed. `listenToApp` brings
   Android's back button (App.svelte: `session.back()`, or `minimizeApp()` while `session.atMenu`) and the app going to
   the background (`session.leave()`); in the web version it does nothing.
+- `src/platform/playGames.svelte.ts` – Google Play Games through the app's own plugin
+  (`android/.../PlayGamesPlugin.java`, Play Games Services v2): App.svelte's `$effect` hands both highscores to the
+  leaderboards and the saved awards to the achievements whenever they change or a sign-in succeeds (Play Games keeps
+  the best and unlocks once). Off until the Play Console ids are in `src/platform/playGamesIds.ts` and
+  `android/app/src/main/res/values/games.xml`. `npm run store:achievements` writes the achievement import (icons and
+  CSV) into `dist-store/`.
 - `src/platform/crashReports.ts` – Sentry (`@sentry/capacitor`, a lazily loaded chunk), only in the app, only with
   `VITE_SENTRY_DSN` from the build (`.env.example`) and only while CRASH REPORTS is on; started by `onSettings`, so
   after the save is read. Errors only: no PII, sessions, tracing or replays; user.id is fixed, the installation id in

@@ -5,6 +5,7 @@
     import { configureCrashReports } from "@/platform/crashReports.ts";
     import { configureHaptics } from "@/platform/haptics.ts";
     import { listenToApp, minimizeApp } from "@/platform/native.ts";
+    import { startPlayGames, syncPlayGames } from "@/platform/playGames.svelte.ts";
     import { configureSound, unlockAudio } from "@/platform/sound.ts";
     import { browserStorage } from "@/platform/storage.ts";
     import { testRng } from "@/platform/testRng.ts";
@@ -56,6 +57,10 @@
         });
         return () => cancelAnimationFrame(frame);
     });
+
+    // Google Play Games in the Android app: signs in by itself, gets the highscores and awards, also after a sign-in
+    startPlayGames();
+    $effect(() => syncPlayGames(session.save.highscores, session.save.stats.awards));
 
     // In the Android app: back works like Escape and leaves the app from the menu, the background pauses like `blur`
     $effect(() =>

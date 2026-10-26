@@ -6,6 +6,13 @@
     import { canReportCrashes } from "@/platform/crashReports.ts";
     import { canVibrate } from "@/platform/haptics.ts";
     import { canInstall, install } from "@/platform/install.svelte.ts";
+    import {
+        hasPlayGames,
+        needsSignIn,
+        showAchievements,
+        showLeaderboards,
+        signIn,
+    } from "@/platform/playGames.svelte.ts";
     import AwardToast from "./hud/AwardToast.svelte";
     import FeedbackFlash from "./hud/FeedbackFlash.svelte";
     import GameOverScreen from "./screens/GameOverScreen.svelte";
@@ -46,6 +53,23 @@
         install().catch((error: unknown) => {
             console.error("Install prompt failed", error);
         });
+    }
+
+    // The menu's Play Games corner, in the app once Play Games is set up
+    const playGames = $derived(
+        hasPlayGames()
+            ? {
+                  signedIn: !needsSignIn(),
+                  onleaderboards: () => clicked(showLeaderboards),
+                  onachievements: () => clicked(showAchievements),
+                  onsignin: () => clicked(signIn),
+              }
+            : undefined,
+    );
+
+    function clicked(action: () => void): void {
+        playEvent({ kind: "click" });
+        action();
     }
 </script>
 
@@ -88,6 +112,7 @@
         onstats={() => session.showView("stats")}
         onsetup={() => session.showView("settings")}
         oninstall={canInstall() ? installGame : undefined}
+        {playGames}
     />
 {:else if game.phase === "playing" || (game.phase === "spamPause" && isSpamBang(game, now))}
     <!-- The solved SPAM! stays a moment, frozen at its last press -->
