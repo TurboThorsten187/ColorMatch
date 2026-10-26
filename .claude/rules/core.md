@@ -47,6 +47,6 @@ paths:
   the format before version 1.
 - `src/app/session.svelte.ts`: a level whose `levelBegan` shows a modifier never seen before stays paused until its
   cards are confirmed; `#changeSave` writes all of the save on every change, `reload` takes over what another tab
-  saved. Inputs: `side`, `tap`, `enter`, `back`, `answers`; `answerOn` in `settings.ts` maps a screen half or key to an
+  saved. Inputs: `side`, `tap`, `enter`, `back`, `answers`, `atMenu` (back has nowhere to go); `answerOn` in `settings.ts` maps a screen half or key to an
   answer, because FLIP CONTROLS swaps them. `keys.ts` maps keys, `spatialNav.ts` finds the button in a direction,
   `toastQueue.ts` times the award toasts.

@@ -142,6 +142,11 @@ export class Session {
         return this.intros.length === 0 && this.game.phase === "playing";
     }
 
+    // The menu with nothing over it, where back has nowhere to go: the Android app goes to the background instead
+    get atMenu(): boolean {
+        return this.view === "game" && !this.tutorial && this.game.phase === "menu";
+    }
+
     // One animation frame at `time`
     frame(time: number): void {
         // A frame may start before an input that was already applied, the clock never runs backwards

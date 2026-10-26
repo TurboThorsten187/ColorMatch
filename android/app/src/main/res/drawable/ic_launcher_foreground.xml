@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The color blocks of public/favicon.svg (keep both in step). Its 512 x 512 picture fills the 72 dp an adaptive icon
+     shows of its 108 dp, so the viewport is 768 wide and the picture starts at 128: the blocks stay inside the 66 dp
+     every launcher mask keeps. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="768"
+    android:viewportHeight="768">
+    <path android:fillColor="#ff2238" android:pathData="M234,286h92v92h-92z" />
+    <path android:fillColor="#24ff3c" android:pathData="M338,286h92v92h-92z" />
+    <path android:fillColor="#2d6bff" android:pathData="M442,286h92v92h-92z" />
+    <path android:fillColor="#fff200" android:pathData="M234,390h92v92h-92z" />
+    <path android:fillColor="#b53dff" android:pathData="M338,390h92v92h-92z" />
+    <path android:fillColor="#00f0ff" android:pathData="M442,390h92v92h-92z" />
+</vector>

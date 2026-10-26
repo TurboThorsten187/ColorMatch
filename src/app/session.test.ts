@@ -217,6 +217,22 @@ describe("session", () => {
         expect(t.session.game.phase).toBe("playing");
     });
 
+    it("is at the menu only while nothing lies over it", () => {
+        const t = setup();
+        expect(t.session.atMenu).toBe(true);
+
+        t.session.showView("settings");
+        expect(t.session.atMenu).toBe(false);
+        t.session.back();
+        expect(t.session.atMenu).toBe(true);
+
+        t.session.goOn();
+        expect(t.session.tutorial).not.toBeNull();
+        expect(t.session.atMenu).toBe(false);
+        t.session.back();
+        expect(t.session.atMenu).toBe(false);
+    });
+
     it("saves the settings and forgets everything on reset", () => {
         const t = setup();
         const quiet = { ...t.session.settings, sound: false };
