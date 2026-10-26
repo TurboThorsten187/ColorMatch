@@ -2,6 +2,7 @@
     import { directionOfKey, isBackKey, sideOfKey } from "@/app/keys.ts";
     import { Session } from "@/app/session.svelte.ts";
     import { currentStep } from "@/core/tutorial.ts";
+    import { configureCrashReports } from "@/platform/crashReports.ts";
     import { configureHaptics } from "@/platform/haptics.ts";
     import { listenToApp, minimizeApp } from "@/platform/native.ts";
     import { configureSound, unlockAudio } from "@/platform/sound.ts";
@@ -28,6 +29,7 @@
         onSettings: (settings) => {
             configureSound(settings);
             configureHaptics(settings);
+            configureCrashReports(settings);
         },
     });
 

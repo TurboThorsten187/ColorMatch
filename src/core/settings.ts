@@ -14,6 +14,8 @@ export interface Settings {
     readonly colorblind: boolean;
     // FALSE on the left and TRUE on the right: screen halves, arrow keys and A / D
     readonly flipControls: boolean;
+    // Anonymous error reports from the Android app, see src/platform/crashReports.ts
+    readonly crashReports: boolean;
 }
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -23,6 +25,7 @@ export const DEFAULT_SETTINGS: Settings = {
     scanlines: true,
     colorblind: false,
     flipControls: false,
+    crashReports: true,
 };
 
 export type Side = "left" | "right";
@@ -54,5 +57,6 @@ export function parseSettings(stored: unknown): Settings {
         scanlines: flag(field(stored, "scanlines"), DEFAULT_SETTINGS.scanlines),
         colorblind: flag(field(stored, "colorblind"), DEFAULT_SETTINGS.colorblind),
         flipControls: flag(field(stored, "flipControls"), DEFAULT_SETTINGS.flipControls),
+        crashReports: flag(field(stored, "crashReports"), DEFAULT_SETTINGS.crashReports),
     };
 }

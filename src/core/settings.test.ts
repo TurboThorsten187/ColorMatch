@@ -14,6 +14,7 @@ describe("settings", () => {
             scanlines: false,
             colorblind: true,
             flipControls: true,
+            crashReports: false,
         };
 
         expect(parseSettings(JSON.parse(JSON.stringify(settings)))).toEqual(settings);
@@ -27,15 +28,16 @@ describe("settings", () => {
             scanlines: false,
             colorblind: "on",
             flipControls: 1,
+            crashReports: null,
         };
 
         expect(parseSettings(stored)).toEqual({ ...DEFAULT_SETTINGS, scanlines: false });
     });
 
-    it("turn vibration on for saves from before it existed", () => {
-        const { vibration, ...older } = DEFAULT_SETTINGS;
+    it("turn vibration and crash reports on for saves from before they existed", () => {
+        const { vibration, crashReports, ...older } = DEFAULT_SETTINGS;
 
-        expect(parseSettings({ ...older, sound: false }).vibration).toBe(vibration);
+        expect(parseSettings({ ...older, sound: false })).toMatchObject({ vibration, crashReports, sound: false });
     });
 
     it("ignore stored values that are not a settings object", () => {

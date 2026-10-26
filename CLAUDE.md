@@ -68,6 +68,11 @@ when the game loads. Across folders imports start at `src/` (`@/core/game.ts`), 
   by a Vite mode, because every mode but `production` ships the gallery and the test seed. `listenToApp` brings
   Android's back button (App.svelte: `session.back()`, or `minimizeApp()` while `session.atMenu`) and the app going to
   the background (`session.leave()`); in the web version it does nothing.
+- `src/platform/crashReports.ts` – Sentry (`@sentry/capacitor`, a lazily loaded chunk), only in the app, only with
+  `VITE_SENTRY_DSN` from the build (`.env.example`) and only while CRASH REPORTS is on; started by `onSettings`, so
+  after the save is read. Errors only: no PII, sessions, tracing or replays; user.id is fixed, the installation id in
+  `device.id` is dropped in `beforeSend` and, for native crashes, by the Sentry project's data scrubbing. Turning it
+  off closes Sentry at once; on again, it starts with the next app start (Sentry 4.4 cannot send again after `close`).
 - `android/` – the native frame: `MainActivity` keeps the system bars hidden (a swipe shows them for a moment), the
   launch theme is black. The icon is vector drawables that repeat `public/favicon.svg` (`drawable/ic_launcher_foreground.xml`
   for adaptive icons, `mipmap-anydpi/` for Android 7); change them with it. The save stays in the WebView's
