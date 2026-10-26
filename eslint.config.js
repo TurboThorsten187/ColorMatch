@@ -15,7 +15,7 @@ function layer(...patterns) {
 }
 
 export default defineConfig(
-    globalIgnores(["dist/", "dist-e2e/", "playwright-report/", "test-results/"]),
+    globalIgnores(["dist/", "dist-e2e/", "playwright-report/", "test-results/", "android/"]),
     js.configs.recommended,
     ts.configs.recommended,
     svelte.configs.recommended,

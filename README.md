@@ -152,13 +152,31 @@ Svelte 5 und TypeScript, gebaut mit Vite. Abhängigkeiten laufen nur in eine Ric
 | `src/app/`       | die Session: Spielablauf, Eingaben, Spielstand, Stats und Awards, ohne Darstellung     |
 | `src/core/`      | reine, getestete Spiellogik: Zustände, Progression, Zeitlimits, Awards, Speicherformat |
 | `src/modifiers/` | ein Ordner pro Modifier mit Regeln, Aussehen (`look.ts`), Karte und Award              |
-| `src/platform/`  | Browser-Anbindung: Speichern, Sound, Schriften, Installieren                           |
+| `src/platform/`  | Browser-Anbindung: Speichern, Sound, Schriften, Installieren, App-Erkennung            |
 | `e2e/`           | Browser-Tests, die das Spiel wie ein Mensch spielen                                    |
+| `android/`       | die Android-App (Capacitor), ein Rahmen um den Web-Build                               |
 
 Installieren und Offline-Betrieb übernimmt vite-plugin-pwa: Es rendert die Icons aus `public/favicon.svg` und baut
 den Service Worker `src/sw.ts`, der alle Dateien des Builds zwischenspeichert.
 
 Mehr Details und eine Checkliste für neue Modifier stehen in [`CLAUDE.md`](CLAUDE.md).
+
+### Android-App
+
+Die Android-App verpackt mit Capacitor denselben Produktions-Build wie die Web-Version. Ob das Spiel als App läuft,
+erkennt `src/platform/native.ts` zur Laufzeit; in der App gibt es keinen Service Worker, die Dateien liegen auf dem
+Gerät.
+
+Voraussetzungen: Android Studio Otter (2025.2.1) oder neuer, auf dem Handy die Entwickleroptionen mit USB-Debugging.
+Für die Befehle im Terminal muss `JAVA_HOME` auf ein JDK 21 zeigen (z. B. das von Android Studio,
+`C:\Program Files\Android\Android Studio\jbr`) und `ANDROID_HOME` auf das Android SDK
+(`%LOCALAPPDATA%\Android\Sdk`).
+
+```bash
+npm run android:sync   # Build und nach android/ kopieren – nach jeder Änderung am Spiel
+npm run android:open   # das Projekt in Android Studio öffnen
+npm run android:run    # auf dem angeschlossenen Handy oder im Emulator starten
+```
 
 ## Deployment
 

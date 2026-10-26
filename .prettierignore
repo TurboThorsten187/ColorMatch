@@ -1,3 +1,5 @@
 package-lock.json
 # Local Claude Code permissions, rewritten by the tool and ignored by git
 .claude/settings.local.json
+# The Android project: Gradle and Android Studio files
+android/
