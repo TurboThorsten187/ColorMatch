@@ -11,6 +11,8 @@
         settings: Settings;
         // The VIBRATION row only shows where the device can vibrate
         canVibrate: boolean;
+        // CRASH REPORTS only shows in the app, which sends them
+        canReportCrashes: boolean;
         onchange: (next: Settings) => void;
         // Called once the reset button was held long enough
         onreset: () => void;
@@ -19,9 +21,9 @@
         onback: () => void;
     }
 
-    let { settings, canVibrate, onchange, onreset, onreplay, onback }: Props = $props();
+    let { settings, canVibrate, canReportCrashes, onchange, onreset, onreplay, onback }: Props = $props();
 
-    type Switch = "sound" | "vibration" | "scanlines" | "colorblind" | "flipControls";
+    type Switch = "sound" | "vibration" | "scanlines" | "colorblind" | "flipControls" | "crashReports";
 
     // Deleting everything must not happen by accident: the button has to be held this long
     const HOLD_MS = 1500;
@@ -130,6 +132,13 @@
                 <span id="flip-controls-label">FLIP CONTROLS</span>
                 {@render onOff("flipControls", "flip-controls-label")}
             </div>
+
+            {#if canReportCrashes}
+                <div class="row">
+                    <span id="crash-reports-label">CRASH REPORTS</span>
+                    {@render onOff("crashReports", "crash-reports-label")}
+                </div>
+            {/if}
 
             <div class="row replay">
                 <span id="tutorial-label">TUTORIAL</span>

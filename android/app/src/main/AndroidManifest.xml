@@ -9,6 +9,9 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
 
+        <!-- Crash reports only (src/platform/crashReports.ts): no sessions, which the JS options cannot turn off here -->
+        <meta-data android:name="io.sentry.auto-session-tracking.enable" android:value="false" />
+
         <activity
             android:configChanges="orientation|keyboardHidden|keyboard|screenSize|locale|smallestScreenSize|screenLayout|uiMode|navigation|density"
             android:name=".MainActivity"

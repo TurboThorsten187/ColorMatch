@@ -109,6 +109,8 @@ Modifier. Ein Badge antippen zeigt die Bedingung und den Fortschritt.
   Blurred, Zoom, Moving und Shaky machen die kleinen Formen unkenntlich und kommen in diesem Modus nicht vor.
 
 - **FLIP CONTROLS** tauscht die Seiten von TRUE und FALSE.
+- **CRASH REPORTS** (nur in der Android-App, Standard an) schickt anonyme Fehlerberichte an Sentry (EU): ohne
+  Spielstand, Namen, IP-Adresse oder Geräte-ID. Ausschalten wirkt sofort, erneutes Einschalten ab dem nächsten Start.
 - **REPLAY** zeigt das Tutorial noch einmal.
 - **HOLD TO RESET** (1,5 s gedrückt halten) löscht Highscores, Stats, Awards, Einstellungen und den Tutorial-Fortschritt.
 
@@ -154,7 +156,7 @@ Svelte 5 und TypeScript, gebaut mit Vite. Abhängigkeiten laufen nur in eine Ric
 | `src/app/`       | die Session: Spielablauf, Eingaben, Spielstand, Stats und Awards, ohne Darstellung     |
 | `src/core/`      | reine, getestete Spiellogik: Zustände, Progression, Zeitlimits, Awards, Speicherformat |
 | `src/modifiers/` | ein Ordner pro Modifier mit Regeln, Aussehen (`look.ts`), Karte und Award              |
-| `src/platform/`  | Browser-Anbindung: Speichern, Sound, Schriften, Installieren, App-Erkennung            |
+| `src/platform/`  | Browser- und App-Anbindung: Speichern, Sound, Vibration, Fehlerberichte, Schriften     |
 | `e2e/`           | Browser-Tests, die das Spiel wie ein Mensch spielen                                    |
 | `android/`       | die Android-App (Capacitor), ein Rahmen um den Web-Build                               |
 
@@ -181,6 +183,14 @@ npm run android:sync   # Build und nach android/ kopieren – nach jeder Änderu
 npm run android:open   # das Projekt in Android Studio öffnen
 npm run android:run    # auf dem angeschlossenen Handy oder im Emulator starten
 ```
+
+Fehlerberichte schickt die App nur, wenn der Build einen Sentry-DSN kennt: lokal in `.env.local` (Vorlage
+`.env.example`), in der CI als Secret `VITE_SENTRY_DSN`. Einmalig im Sentry-Projekt (Organisation in der EU-Region)
+unter **Settings → Security & Privacy** einstellen:
+
+- **Prevent Storing of IP Addresses** und **Data Scrubber** an.
+- **Advanced Data Scrubbing**: zwei Regeln mit Methode _Remove_ und Datentyp _Anything_, Quelle `contexts.device.id`
+  und `$user.id`. Das Android-SDK hängt an native Abstürze eine Installations-ID an, die so nicht gespeichert wird.
 
 ## Deployment
 
