@@ -212,3 +212,42 @@ werden nach jedem Start und jeder Anmeldung nachgereicht, auch die von vorher.
 
 Jeder Push auf `main` baut das Spiel mit `.github/workflows/deploy.yml` und veröffentlicht es auf GitHub Pages. Dafür
 muss unter **Settings → Pages → Build and deployment → Source** einmalig **GitHub Actions** ausgewählt sein.
+
+### Android-Release
+
+`.github/workflows/android.yml` baut für einen Tag `v*` (oder von Hand unter **Actions → Android release → Run
+workflow**) ein signiertes App-Bundle (AAB) und legt es als Artefakt des Laufs ab; hochgeladen wird es von Hand in der
+Play Console (der allererste Upload geht ohnehin nur so). Die Versionsnummer im Store ist die `version` aus
+`package.json`, der `versionCode` die Laufnummer des Workflows, so ist jeder Upload höher als der vorige.
+
+Einmalig den Upload-Schlüssel anlegen, außerhalb des Repos (`keytool` liegt im JDK von Android Studio):
+
+```bash
+keytool -genkeypair -v -keystore upload.jks -alias upload -keyalg RSA -keysize 2048 -validity 10000
+```
+
+Die Datei samt Passwörtern zweimal offline sichern (z. B. USB-Stick und Passwortmanager), nie ins Repo. Beim ersten
+Upload **Play App Signing** annehmen: Google hält den eigentlichen App-Signaturschlüssel, `upload.jks` signiert nur die
+Uploads; geht er verloren, kann ihn der Play-Support zurücksetzen.
+
+Unter **Settings → Secrets and variables → Actions** eintragen:
+
+| Secret                      | Inhalt                                                                                      |
+| --------------------------- | ------------------------------------------------------------------------------------------- |
+| `ANDROID_KEYSTORE_BASE64`   | `upload.jks` als Base64, z. B. `base64 -w0 upload.jks` in Git Bash                          |
+| `ANDROID_KEYSTORE_PASSWORD` | Passwort der Datei                                                                          |
+| `ANDROID_KEY_ALIAS`         | Alias des Schlüssels (oben `upload`)                                                        |
+| `ANDROID_KEY_PASSWORD`      | Passwort des Schlüssels                                                                     |
+| `VITE_SENTRY_DSN`           | DSN des Sentry-Projekts (optional, ohne ihn keine Fehlerberichte)                           |
+| `SENTRY_AUTH_TOKEN`         | Organization Auth Token aus Sentry (optional, lädt die Source Maps für lesbare Stacktraces) |
+
+Dazu als Variables `SENTRY_ORG` und `SENTRY_PROJECT` (die Kürzel aus Sentry). Ein Release:
+
+```bash
+npm version 1.0.1 --no-git-tag-version   # Version in package.json und package-lock.json erhöhen, committen, mergen
+git tag v1.0.1
+git push origin v1.0.1
+```
+
+Lokal signiert Gradle mit denselben Umgebungsvariablen, statt `ANDROID_KEYSTORE_BASE64` mit `ANDROID_KEYSTORE_PATH`
+(Pfad zur Datei); ohne sie bleibt ein Release-Build unsigniert.

@@ -1,0 +1,83 @@
+name: Android release
+
+# A signed app bundle (AAB) for the Play Console from the same production build as the web version. Runs for a tag
+# like v1.0.0 or by hand; the bundle is uploaded to the Play Console by hand.
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  bundle:
+    runs-on: ubuntu-latest
+    env:
+      # Crash reports of the app (src/platform/crashReports.ts); not secret, but kept out of the code
+      VITE_SENTRY_DSN: ${{ secrets.VITE_SENTRY_DSN }}
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+      - run: npm run check
+
+      # Hidden source maps: Sentry gets them, the app does not
+      - run: npm run build -- --sourcemap hidden
+
+      # The token only in this step, the install scripts of dependencies never see it
+      - name: Upload source maps to Sentry
+        env:
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+          SENTRY_ORG: ${{ vars.SENTRY_ORG }}
+          SENTRY_PROJECT: ${{ vars.SENTRY_PROJECT }}
+          # The organization lives in the EU region
+          SENTRY_URL: https://de.sentry.io
+        run: |
+          if [ -z "$SENTRY_AUTH_TOKEN" ]; then
+            echo "::notice::No SENTRY_AUTH_TOKEN, the source maps are not uploaded"
+            exit 0
+          fi
+          npx @sentry/cli@3.8.2 sourcemaps inject dist
+          npx @sentry/cli@3.8.2 sourcemaps upload dist
+
+      - name: Leave the source maps out of the app
+        run: find dist -name "*.map" -delete
+
+      - run: npx cap sync android
+
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - name: Build the signed bundle
+        working-directory: android
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+          # Every upload needs a higher version code than the one before
+          ANDROID_VERSION_CODE: ${{ github.run_number }}
+        run: |
+          if [ -z "$ANDROID_KEYSTORE_BASE64" ]; then
+            echo "::error::The secret ANDROID_KEYSTORE_BASE64 (the upload key) is missing"
+            exit 1
+          fi
+          export ANDROID_KEYSTORE_PATH="$RUNNER_TEMP/upload.jks"
+          echo "$ANDROID_KEYSTORE_BASE64" | base64 --decode > "$ANDROID_KEYSTORE_PATH"
+          ./gradlew bundleRelease
+          rm "$ANDROID_KEYSTORE_PATH"
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: colormatch-${{ github.ref_name }}-${{ github.run_number }}
+          path: android/app/build/outputs/bundle/release/app-release.aab
+          if-no-files-found: error

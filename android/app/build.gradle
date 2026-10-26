@@ -1,5 +1,10 @@
 apply plugin: 'com.android.application'
 
+// The version shown in the store is the one of package.json; every upload needs a higher versionCode, which CI takes
+// from its run number (.github/workflows/android.yml)
+def gameVersion = new groovy.json.JsonSlurper().parse(file('../../package.json')).version
+def uploadVersionCode = (System.getenv('ANDROID_VERSION_CODE') ?: '1') as int
+
 android {
     namespace = "io.github.turbothorsten187.colormatch"
     compileSdk = rootProject.ext.compileSdkVersion
@@ -7,8 +12,8 @@ android {
         applicationId "io.github.turbothorsten187.colormatch"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 1
-        versionName "1.0"
+        versionCode uploadVersionCode
+        versionName gameVersion
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         aaptOptions {
              // Files and dirs to omit from the packaged assets dir, modified to accommodate modern web apps.
@@ -16,8 +21,22 @@ android {
             ignoreAssetsPattern = '!.svn:!.git:!.ds_store:!*.scc:.*:!CVS:!thumbs.db:!picasa.ini:!*~'
         }
     }
+    // The upload key and its passwords come from the environment (CI secrets), never from a file in the repository.
+    // Without them a release build stays unsigned.
+    signingConfigs {
+        release {
+            def keystore = System.getenv('ANDROID_KEYSTORE_PATH')
+            if (keystore) {
+                storeFile file(keystore)
+                storePassword System.getenv('ANDROID_KEYSTORE_PASSWORD')
+                keyAlias System.getenv('ANDROID_KEY_ALIAS')
+                keyPassword System.getenv('ANDROID_KEY_PASSWORD')
+            }
+        }
+    }
     buildTypes {
         release {
+            if (System.getenv('ANDROID_KEYSTORE_PATH')) signingConfig signingConfigs.release
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
