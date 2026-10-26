@@ -16,3 +16,11 @@ test("draws every modifier group and opens its intro card", async ({ page }) => 
     await button(page, "GOT IT").click();
     await expect(page.getByRole("figure")).toHaveCount(21);
 });
+
+test("draws a combination as a whole level screen", async ({ page }) => {
+    await page.goto("/?gallery=rotation,background&level=22&t=700&screen&highscore=64");
+
+    await expect(page.getByText("LV 22", { exact: true })).toBeVisible();
+    await expect(page.getByText("HI 064", { exact: true })).toBeVisible();
+    await expect(page.locator("[data-ink]").first()).toBeAttached();
+});

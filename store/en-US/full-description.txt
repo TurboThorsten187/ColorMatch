@@ -1,0 +1,21 @@
+RED in red? TRUE. BLUE in red? FALSE. Simple, until your brain gets in the way.
+
+ColorMatch is a fast reaction game built on the Stroop effect: a color word appears in an ink color, and you decide in a split second whether the two match. Tap the left half of the screen for TRUE, the right half for FALSE. One mistake or one moment too slow, and the game is over.
+
+From level 5 on, modifiers twist the word or change the rules. Every three levels a new one joins, and later several hit at once:
+• The word spins, mirrors, shakes, pulses, fades, flies in letter by letter or changes its font with every letter
+• A colored background, a photo negative or a tiny, drifting word tries to fool your eyes
+• New rules: don't tap at all, tap five times, wait for NOW, answer twice, flip your answer or judge two words at once
+• Surges: from level 50 on, every tenth level throws five modifiers at you at once
+
+21 modifiers, each introduced with a short card the first time it shows up. The time limit shrinks from 3 seconds to 1 second by level 80.
+
+Reach level 50 to unlock HARDCORE: every modifier from level 1, full speed, 1 second base time and a highscore of its own.
+
+• 26 awards and stats on your games, average level and reaction time
+• Leaderboards and achievements with Google Play Games
+• Colorblind mode: shapes instead of colors, same game
+• Flip controls, sound, vibration and scanlines in the settings
+• Chiptune sounds and a classic arcade look
+• Plays offline, no ads, no account needed
+• Your progress stays on your device; anonymous crash reports can be turned off

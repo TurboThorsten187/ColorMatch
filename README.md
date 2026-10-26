@@ -208,6 +208,11 @@ Google Play Games (Ranglisten und Erfolge) ist aus, bis die IDs aus der Play Con
 Angemeldet zeigt das Menü oben links zwei Knöpfe für Ranglisten und Erfolge, sonst **SIGN IN**. Highscores und Awards
 werden nach jedem Start und jeder Anmeldung nachgereicht, auch die von vorher.
 
+Der Store-Eintrag (**Grow users → Store presence → Main store listing**, Deutsch und Englisch): Titel, Kurz- und
+Langbeschreibung stehen in `store/de-DE/` und `store/en-US/`. `npm run store:listing` prüft ihre Längen und
+fotografiert die Grafiken nach `dist-store/listing/`: das App-Icon (512 × 512), die Feature-Grafik (1024 × 500) und
+acht Handy-Screenshots (1080 × 1920) in der Reihenfolge des Eintrags. Kategorie: Spiele → Arcade.
+
 ## Deployment
 
 Jeder Push auf `main` baut das Spiel mit `.github/workflows/deploy.yml` und veröffentlicht es auf GitHub Pages. Dafür

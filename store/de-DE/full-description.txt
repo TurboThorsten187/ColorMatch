@@ -1,0 +1,21 @@
+RED in Rot? TRUE. BLUE in Rot? FALSE. Ganz einfach, bis dein Gehirn dazwischenfunkt.
+
+ColorMatch ist ein schnelles Reaktionsspiel mit dem Stroop-Effekt: Ein Farbwort erscheint in einer Schriftfarbe, und du entscheidest in Sekundenbruchteilen, ob beides zusammenpasst. Links tippen heißt TRUE, rechts tippen FALSE. Ein Fehler oder einen Moment zu langsam, und das Spiel ist vorbei.
+
+Ab Level 5 verdrehen Modifier das Wort oder ändern die Regeln. Alle drei Level kommt ein neuer dazu, später mehrere auf einmal:
+• Das Wort dreht sich, ist gespiegelt, zittert, pulsiert, blendet aus, fliegt Buchstabe für Buchstabe herein oder wechselt bei jedem Buchstaben die Schrift
+• Ein farbiger Hintergrund, ein Fotonegativ oder ein winziges, wanderndes Wort täuscht deine Augen
+• Neue Regeln: gar nicht tippen, fünfmal tippen, auf NOW warten, doppelt antworten, die Antwort umdrehen oder zwei Wörter auf einmal prüfen
+• Surges: Ab Level 50 bringt jedes zehnte Level fünf Modifier auf einmal
+
+21 Modifier, jeder wird beim ersten Auftauchen mit einer kurzen Karte vorgestellt. Das Zeitlimit schrumpft von 3 Sekunden auf 1 Sekunde bis Level 80.
+
+Wer Level 50 schafft, schaltet HARDCORE frei: alle Modifier ab Level 1, volles Tempo, 1 Sekunde Grundzeit und ein eigener Highscore.
+
+• 26 Awards und Statistiken zu Spielen, Durchschnittslevel und Reaktionszeit
+• Ranglisten und Erfolge mit Google Play Games
+• Farbenblind-Modus: Formen statt Farben, gleiches Spiel
+• Seiten tauschen, Sound, Vibration und Scanlines in den Einstellungen
+• Chiptune-Sounds und klassischer Arcade-Look
+• Spielt offline, ohne Werbung, ohne Konto
+• Dein Spielstand bleibt auf dem Gerät; anonyme Absturzberichte lassen sich abschalten

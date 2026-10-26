@@ -17,7 +17,8 @@
         "android:sync": "npm run build && cap sync android",
         "android:open": "cap open android",
         "android:run": "cap run android",
-        "store:achievements": "node scripts/store-achievements.mjs"
+        "store:achievements": "node scripts/store-achievements.mjs",
+        "store:listing": "node scripts/store-listing.mjs"
     },
     "devDependencies": {
         "@capacitor/cli": "^8.5.3",
